@@ -1,62 +1,47 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=65.21.61.41
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795707236;
-	b=R/O/4FrZ2YIhI29YEZKdGAViOMwG2FxGHjiwFHKfWF2ACC4M8UiSGgzfV6SfuAZShqKy
-	 MT2mqWgNJasDASiMqbydFjO/YXbVhOqXoLGBIcVKXjPWS3Rjmb/5t8WTRRtZgMoDLxdQY
-	 ODUfuTHnUHlr61QMc7gZ5URKOH/6wqVTYfEZemN4mZAN6NOcjXmLANdfo1bG4gqR+ZCbu
-	 wLPqmHISsjiz5Y0eR5atF1Qbzn5som+Wn+4LbSlR0nNG6O9jZXtc2QIqYzV7oPJQWmDKz
-	 5Ur3fONEeyc931OSOJwAmC5EaQV4auu3vsGmD9daBdxTFQeoTeOgM9igVn53uBHqGmw==
+	t=1795707903;
+	b=RM6cPiyiCbgJByOQwKDgMvQB3UF4Wz9CsiIUgEaSPzRC/A2s9TQA3SfPwDw5V21yGK5C
+	 bvYrDu7lQT4mLvaj8semy6V3KbQgxTaloXI7SEd12dwANL573hlsZkjbsl/71u0NLjYuO
+	 heDNhl8VV66TSz9PZnNbN9iFotfKue5zXsuIcjl0Hv3b0vtJEuq9Bdrbog3xNdaYgbbK5
+	 aWUniU/MINS2IisGq2q5FEmVggAOORYkQUVCr9GkYiegyhlCkIfrsmXEFvzMQ28aPk133
+	 sr04+sr7sJjnW1pdKUofgtJ+VW11Y62pbyP0UNKIgGGHkP32euECbX9qNb7li//U4hQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795707236;
-	h=Received:DKIM-Signature:Date:From:To:Cc:Subject:Message-ID:
-	 References:MIME-Version:Content-Type:Content-Disposition:In-Reply-To;
-	bh=R0nV4W+3k4nIH1noIyZb7CKek5JKvQVvEcpgjr5MFIA=;
-	b=4OvtQEb1TK8N/eFhCEsdcW+3iLKpAQ6LU5hQvKfLpPAdLcjxFZU/ZpnUWAys/poBnnt2
-	 qYgX040PuAwN6PeFaNGdclj4lk9by4NyA1J8Mvyn5HQdLhIsQMbODRtR36CPwsicf4i08
-	 4mJUFZNW0/YICV4f6QMlGoPHzb4s4yWQWcahnxB5fiO7hyT0aJQRqCtEaVHXbo2XcAJ79
-	 miwZ9dmb3wRQ4NA0FvAciFfAgPURHU9TRJOI3ASlPfOULBXSGLZtqomKmBcVxs5FWkYRj
-	 6mVVvTo+EEjFTwAeRHWJrGTg+A5uA+ATNRUNkAfMqE4ApsaztnOu4YtAIseowV3hvvw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795707903;
+	h=DMARC-Filter:Message-ID:DKIM-Signature:Date:MIME-Version:User-Agent:
+	 From:Subject:To:Cc:References:Content-Language:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=/1dJn4TAdBA4XljLfYsGFbvNTFReoQoHMmfJqvxrooc=;
+	b=GAxMHhOoWEegRJ7AQx5Pvoyqj3/dXMZIdYVxQiteTAvqZ9lQRbfcW+RmOrg9+OCS27Wn
+	 5RwKCLopEv1TNaD1Zdl2RxM4Tbh6zO9HSu0tDKHKRF9pa5nGDmqN/kmAOEJnwV68tAsHG
+	 MlwXntDmpBIpzTddjGD9+tpZLEpb5Ez9lq2MhpVkrjQOLTp0JIejvpDZ+EuJF7s9OQnrv
+	 +oLzIL8v7x2CJTnc74iZJjuKnizPbO0LW72XsB2sYzaqAySu9V4oAmiEy7AWSnLOWtFV1
+	 wi5EjeDrZzrMyuJMM2jfTRGETVM2W9dAOCTskoD1bBwc18QqRM3tV8Nz9M3MZYduXRw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XApmaMX+;
-	arc=none smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	dmarc=pass header.from=aliel.fr;
+	spf=pass smtp.mailfrom=aliel.fr;
+	dkim=pass header.d=aliel.fr header.i=@aliel.fr header.a=rsa-sha256 header.s=courrier-s1 header.b="RzUt/cFA";
+	arc=none smtp.remote-ip=65.21.61.41
+Received: from courrier.aliel.fr (courrier.aliel.fr [65.21.61.41])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with UTF8SMTPS id 7045F606A31E;
-	Thu, 26 Nov 2026 15:33:56 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55865606A321;
+	Thu, 26 Nov 2026 15:45:01 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 55865606A321
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=quarantine dis=none) header.from=aliel.fr
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=aliel.fr
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=XApmaMX+
-Received: by smtp.kernel.org (Postfix) with UTF8SMTPSA id A89951F000C6;
-	Thu, 26 Nov 2026 15:33:54 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795707235;
-	bh=R0nV4W+3k4nIH1noIyZb7CKek5JKvQVvEcpgjr5MFIA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To;
-	b=XApmaMX+MLKqq77XGKkuI/KX71CQ8SFdpJLS3LC5xrUuGZ+TgIwpikvJZGcqlIkWd
-	 FVn6JPmSWlop9KeScEfDc0Dlo7JrBolIJORs+aF5fE9n3sfyx22ciOOLzIBGy/QLhU
-	 JLmQguqGsu1BiRh9GR7F1uMKUhtzorTsLPwEZCVQPwj73y2Aln5ms9NFFwXSuxjD5J
-	 HS8zVqfVvqJr3Y98VAZQ85bv1vGEjN72wgBIb8exHdQS52lmYzxrU35Ho1HevrVaQf
-	 0I5Z8h8f/Q7KzPp5aNAoNhXyGrKauzEQ1voRpxbETgevJEheTNs4CSJtJBjem/XkiM
-	 QlK6HUuk95YTQ==
-Date: Thu, 26 Nov 2026 16:33:51 +0100
-From: Bartosz Golaszewski <brgl@kernel.org>
-To: Andy Shevchenko <andriy.shevchenko@intel.com>
-Cc: Wolfram Sang <wsa+renesas@sang-engineering.com>, 
-	"Lad, Prabhakar" <prabhakar.csengg@gmail.com>, Chen-Yu Tsai <wenst@chromium.org>, 
-	Cosmin Tanislav <cosmin-gabriel.tanislav.xa@renesas.com>, Jonathan Cameron <jic23@kernel.org>, 
-	David Lechner <dlechner@baylibre.com>, Nuno =?utf-8?B?U8Oh?= <nuno.sa@analog.com>, 
-	Andy Shevchenko <andy@kernel.org>, linux-pm@vger.kernel.org, linux-iio@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, Lad Prabhakar <prabhakar.mahadev-lad.rj@bp.renesas.com>, 
-	Geert Uytterhoeven <geert+renesas@glider.be>, Biju Das <biju.das.jz@bp.renesas.com>
-Subject: Re: [PATCH v2 1/2] power: sequencing: Allow desc=NULL in
- enable/disable stub functions
-Message-ID: <ujnzfnj666gkvu6zdpsqt7qovc65fnthxirlykeinjcgy6islj@ya35vuxrl4cp>
-References: <20261126081155.501493-1-wenst@chromium.org>
- <20261126081155.501493-2-wenst@chromium.org>
- <CA+V-a8tqzDTbMu5375vub=DBHmpJWW2TvUGKfsuPf_gjpSuC=w@mail.gmail.com>
- <awgoaQTep07E_w6i@shikoro>
- <awhNqrbdy_pJ9r0T@ashevche-desk.local>
+	dkim=pass (1024-bit key, unprotected) header.d=aliel.fr header.i=@aliel.fr header.a=rsa-sha256 header.s=courrier-s1 header.b=RzUt/cFA
+Message-ID: <57d28bc3-04f1-4a86-ba9a-aa851e42610b@aliel.fr>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=aliel.fr;
+	s=courrier-s1; t=1795707894;
+	bh=04dcLTbLWG5N5d7t79/Zb1pDQ+FtO2giwNZpa42wm9Q=;
+	h=Date:From:Subject:To:Cc:References:In-Reply-To;
+	b=RzUt/cFA0YHKfXN4T41/CPi6x2ah6O7gE/XstF5FnOYX1T84uet60DKZtR7E5seTg
+	 HFpwgcyCVQTGtMh6z22U0zua9LkkjUIJ3vhk/Gx0Gt1ftqGeS5OSG5K3LAMkWfBwby
+	 PhIGC35qaKLr/agm8X0j+s2MbCFx7wG8pYDtL6cA=
+Date: Thu, 26 Nov 2026 16:43:03 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -66,31 +51,72 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <awhNqrbdy_pJ9r0T@ashevche-desk.local>
+User-Agent: Mozilla Thunderbird
+From: linux-kernel-dev@aliel.fr
+Subject: Re: [PATCH v4 06/11] pmdomain: amlogic: meson-ee-pwrc: power up
+ memories for boot-enabled domains
+To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>,
+ Neil Armstrong <neil.armstrong@linaro.org>,
+ Kevin Hilman <khilman@baylibre.com>, Jerome Brunet <jbrunet@baylibre.com>,
+ Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
+ Vinod Koul <vkoul@kernel.org>, Manivannan Sadhasivam <mani@kernel.org>,
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>,
+ David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+ Ulf Hansson <ulfh@kernel.org>, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-amlogic@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-phy@lists.infradead.org,
+ dri-devel@lists.freedesktop.org, linux-pm@vger.kernel.org
+References: <20261123-meson-drm-create-hdmitx-phy-v4-0-3fb94f5534ca@aliel.fr>
+ <20261123-meson-drm-create-hdmitx-phy-v4-6-3fb94f5534ca@aliel.fr>
+ <CAPx+jO_K+sEwm4CCBUdYz0FzJuYNhKizy4VDpQ=Ystm1aPxbZg@mail.gmail.com>
+Content-Language: en-US
+In-Reply-To: <CAPx+jO_K+sEwm4CCBUdYz0FzJuYNhKizy4VDpQ=Ystm1aPxbZg@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Thu, Nov 26, 2026 at 05:18:02PM +0200, Andy Shevchenko wrote:
-> On Thu, Nov 26, 2026 at 01:39:09PM +0100, Wolfram Sang wrote:
+On 11/26/26 13:04, Ulf Hansson wrote:
+> On Mon, Nov 23, 2026 at 8:38 PM Ronald Claveau via B4 Relay
+> <devnull+linux-kernel-dev.aliel.fr@kernel.org> wrote:
+>>
+>> From: Ronald Claveau <linux-kernel-dev@aliel.fr>
+>>
+>> When a power domain is found already powered on at probe time (typically
+>> the VPU domain left enabled by the bootloader), the driver registers the
+>> genpd in the ON state with GENPD_FLAG_ALWAYS_ON and never calls
+>> meson_ee_pwrc_on(). As a result, the memory power-down bits of the domain
+>> are not touched.
+>>
+>> pwrc_ee_is_powered_off() only checks the top-level sleep bit, so a
+>> bootloader that enabled the VPU without waking every memory block
+>> leaves those memories powered down, and nothing in the genpd framework
+>> will wake them since pm_runtime_resume_and_get() is a no-op for an
+>> always-on domain.
+>>
+>> This is a preparatory change: a following patch drops the explicit
+>> HHI_MEM_PD_REG0 write from the meson_dw_hdmi driver, which relies on the
+>> power domain to power the HDMITX memory.
 > 
-> ...
+> A question, is the target to drop the GENPD_FLAG_ALWAYS_ON bit for
+> these PM domains, once the consumer drivers have received proper
+> support for runtime PM?
 > 
-> > > >  static inline int pwrseq_enable(struct pwrseq_desc *desc)
-> > > >  {
-> > > > +       if (!desc)
-> > > > +               return 0;
-> > > > +
-> > > >         return -ENOSYS;
-> > 
-> > Bike-shedding alert: What about the ternary operator? It is nicely
-> > concise here:
-> > 
-> > 	return desc ? -ENOSYS : 0;
-> 
-> In long term this may grow to something else and ternary would be harder
-> to read. (Gave a comment with my true love to ternary and Elvis in particular.)
->
 
-I prefer an explicit early return.
+Indeed, that would be the natural follow-up to me.
 
-Bart
+> In any case, this looks good to me! Do you want me to apply this via
+> my pmdomain tree?
+> 
+
+Yes please, that is fine to me.
+
+> Kind regards
+> Uffe
+> 
+
+
+-- 
+Best regards,
+Ronald
