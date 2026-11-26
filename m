@@ -1,110 +1,79 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.47
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.13
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795669855;
-	b=M4VXH06va/CGc/V6lQUadP9lBvevaUO2coE1IN/h8twXwF3devMzmc/2bqBIPGc9MZrr
-	 siCrZrHbl0Z3CyaAVlsuBKtMV6AZuNbmysrmiCJCu1dQfHIXAFDhJ0NXgqBA9Ecjkssv6
-	 z/Wqlg+U9jjBgHfYvsJDneW2XIXAjgdRAu8+ViT0T4aed7TXJz1fnuHnyJQ/PaPKTZxTl
-	 QZ2+FxvkvN/SooVzNfnzUAXLkH6QLrovEFcFr/G2uLmoqiE7XU8vk6ycPTa12jJ6uMYz0
-	 1SR/cKNGj1KeBE4djsBqIJueUyRB4uGmYDHsoh8lHB0zIpqdVvYl2n5Orx0kVj0FsVA==
+	t=1795675722;
+	b=lGw2vaRMcvN50k1+pnEum3lc/9Y58o5xlqef+j2NwfcNgej8mJ4+UHyLWFkSM6wCADWo
+	 nXZpM9seTyOuaykUnwNTsbVJjCL196VB2NKQpYl1EEaLXsVuvaDr+7w5aJ8PIxScW8KFN
+	 1zaY+J8G0edivN6s1cqQILH+iGPxR7jD6h9+qTvVlysI5fap3D8pXhKZLbXSQtQHrUmJ+
+	 eyUUNjYx6FF6xaEywa85boSHm2IXROaLSa+A+cAC3ND+0btjTHiL7P3g1lzEH0w9ahVSz
+	 IsNva4uuH2GSEIe2mozJrs5vS0o1v2okgbdyHo/YZHs9EOZG32VmxF4roDArgC2cEcg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795669855;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To;
-	bh=snVo1HNElaQNXOPEvwHsx/ZOqgseUpxA8o54IYlLJqs=;
-	b=QOQEDYNqzJHOdBTe2WkV55remxTQBbg6Q/q2Wd8HX0EnXjeMiD+B6AF7DL3Q/0VEWIm5
-	 qBPcrQRKVkKhBp98GOP6fVCCoeRat1S9O3mbl/NyKEwHaQ/QG3DOhi58YSPS5TSitXZAT
-	 c+s7bCiRcxjjnULWyX/SVyrWnhpYDfa3SmWsdPQVqUAKEobowGq5++AzoImzRCdK3MIgX
-	 PQ57F9sRJjh/YKI/k/og8PankNmX+1vibQMCN35t30zeRFW3/5LVc6SuJceNPK+NF+N5R
-	 2WtGWJgVqPbeBpLSXO3b1h9w+0Z8cMHcMBHHnUCOjUayl0X5Me12ZMR4wDphvjiZnVw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795675722;
+	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
+	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
+	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Date:From:To:
+	 Cc:Subject:Message-ID:References:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To;
+	bh=5YLjc7VnPsRFewiCI8g3WiBXnqqBztYYzZVy2pF8THk=;
+	b=yW1ZLN0z41fK307EwK1+a/WpFrvm7OxCrYLE290BynNJFMjBSt6tW2Rkq+bJcQjUGfJB
+	 yND/zNqzRG8bqfc+rc3Mzd70UtVL71pfereWGkYr/FDQKsRNlni/1nzyUPX5KLZiMmlk+
+	 VwNTtvYwigqBdK4SCv5fcaj9rquYy/Fr2KULa6WFz35fO6w8Dhe9DmIZMVCEem8uRtCjx
+	 A0Ieit13ZSmJWLh7UgngxJoxY/M4hCCapeoVc1wJCLSd6ZyGF/T8rwbTQYmm0pH+MdDBm
+	 MWL4buNhIL7lV7JJrf2uFYjHNpUbxhNllmG66hppWUR6SjB6O3/IhNjdcgg7S1Jtlwg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=linaro.org;
-	spf=pass smtp.mailfrom=linaro.org;
-	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=koo80xtt;
-	arc=none smtp.remote-ip=74.125.82.47
-Received: from mail-dl1-f47.google.com (mail-dl1-f47.google.com [74.125.82.47])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
+	dmarc=pass header.from=linux.intel.com;
+	spf=pass smtp.mailfrom=linux.intel.com;
+	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=J95JRxAn;
+	arc=none smtp.remote-ip=192.198.163.13
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
+	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 62115606A31E
-	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 05:10:54 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 62115606A31E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68BCB606A31C;
+	Thu, 26 Nov 2026 06:48:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 68BCB606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key, unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=koo80xtt
-Received: by mail-dl1-f47.google.com with SMTP id a92af1059eb24-1b3b4944a0eso5005865c88.0
-        for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 21:10:54 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1795669854; x=1796274654; darn=vger.kernel.org;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=snVo1HNElaQNXOPEvwHsx/ZOqgseUpxA8o54IYlLJqs=;
-        b=koo80xttp8geMgFWEU8bag5Cp8NMbqNHiK7kwUEroiZTZ29SdBiyGGotzYoiu33bTa
-         UwY/ptC145WUKHWBA3x8fQXypO5iGoJWBzrQa2siyDjf6QleJy3SlzLiFSjtpNBjWe/Z
-         5w6olFcNx37XXa94u4v/C9gbqIJS10mENTxBmCudh2SAB1iuNImFNr1XQSZ8dLWcLzo5
-         s7l605ESWnqrRYxZNVLgRDqQsYxX2Cxxat93m6kGhcp/Uy8bb/OB3gMKYEi5VufiL8S4
-         cFavEYRuNUHr2c943YG3QEsDfSPrMUyN8QHZKiCv+91BrB/EXTtqOaUvAomAAoKij+mg
-         cwgQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795669854; x=1796274654;
-        h=in-reply-to:content-disposition:content-type:mime-version
-         :references:message-id:subject:cc:to:from:date:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=snVo1HNElaQNXOPEvwHsx/ZOqgseUpxA8o54IYlLJqs=;
-        b=1hysZf76XFE4ZeBD4blsc6cui1EQvRahPIqTcTlGIk1nJybgpMlapQHZ0TzJL2h7Qx
-         bpmBn0dFUPJudQTB2dmV5ATNW4L/cuXOO35lED4dYWRy7rLHef3oF2m5Zb7cP0YPpqHA
-         LUFanpPpnQIcUmunaElv63UPufRMNeKtBK2KybDoifBZ0Dph4e29feB3rkMMSl9FinfB
-         ymV9viyU84OsJinsxzgPRijedA5VwcFW3ee8LnbOw3yVvER4ctSnUKgYVZTUmcPyjfTU
-         8WmDld1pqS0zfrpXKuVO1nz1paau9YWoz4RmvUpGXzjuU1njgdhy6QwNQG5yuAufC3DT
-         JMDw==
-X-Forwarded-Encrypted: i=1; AL+hErEqITNW4YToBLy896pTg3Gp4aejjKeWA8BGk3U2fNwdM4yH+NLYiDwsZVgtqvd8c/0SfZFzf7wu+Q==@vger.kernel.org
-X-Gm-Message-State: APuU4Z8H/jCpr68HBQT9+nlbS5HRTsTDNASKeZqp5sSpMk6ecXImND9d
-	EZJLZzl4EmiuS6Z7W/hCNjTuA2LM4VuGqCjsHRN7TzQLzuzvDXhTUmza/visx+nseHA=
-X-Gm-Gg: AZFdTZcqfmMjj2pv/7xHqQ71mhtG4d9P+/5L8NEZsuUjhv+OluggtefltswEo1gwoZ4
-	/xeF2O504VbuntVti/p9PIWP9U08w2nNiHGA88DLYg80bnNy4ibf3XfynXPD6gW+FwO4W69kxrG
-	ezWoC/QRCYHfNnoZaApXqHu/9ZtG2mlnQAoaqXp0pcmqstHmfpXWj9DTa3vCuFNW0g5UChJ4ks9
-	38ApnLr9or2m349xck+AhcsM5hyPbbbecJebe3iNi9THH5FWOYbjUIK8vJgy8EQSyR6XgM+W5P2
-	VtumBVTwZY94gxFFLRcX3+keDbB0ZOvO6HIynz2xiKh3XXiCcofTxA8WKKFvh7sf3Hi+5XJkV7s
-	IKZeRFSKPshDFgZoc/sxy66+SML9WqONWAK+D/zxKM39d5nx86P3CPo9JCKTLPGMZrR5sDOU93k
-	szDhAOGR1HBOtFNO+ijOogC6oztwzqEmg94PwtArq52YdqFeGAvo4mIbRUTtNdf6QQIFWJRkgxW
-	IBoZ/H2yXzlzSifnwqzHCzWvryNDOGXiHdWs7cj66RzDEhoPDWjd8i9avuUtl1Uubv8ZYtzacfk
-	i3WPWDrSdW9ZgweEGiEkIBdngkmrBQ==
-X-Received: by 2002:a05:7022:3f07:b0:138:30b1:4c00 with SMTP id a92af1059eb24-1b5567b5685mr22918571c88.3.1795669853936;
-        Wed, 25 Nov 2026 21:10:53 -0800 (PST)
-Received: from localhost ([122.172.83.36])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b55ff0e4e6sm38643650c88.11.2026.11.25.21.10.52
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 25 Nov 2026 21:10:53 -0800 (PST)
-Date: Thu, 26 Nov 2026 10:40:50 +0530
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: Chuan Liu <chuan.liu@amlogic.com>
-Cc: Martin Blumenstingl <martin.blumenstingl@googlemail.com>,
-	Christian Hewitt <christianshewitt@gmail.com>,
-	Jerome Brunet <jbrunet@baylibre.com>,
-	christian.koever-draxl@student.uibk.ac.at,
-	neil.armstrong@linaro.org, sboyd@kernel.org, bmasney+clk@redhat.com,
-	khilman@baylibre.com, rafael@kernel.org, robh@kernel.org,
-	krzk+dt@kernel.org, conor+dt@kernel.org,
-	linux-kernel@vger.kernel.org, linux-amlogic@lists.infradead.org,
-	linux-clk@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
-	Christian Stefan =?iso-8859-1?Q?K=F6v=E9r-Draxl?= <ckoever@outlook.de>
-Subject: Re: [PATCH 4/4] cpufreq: add an Amlogic speed-bin driver
-Message-ID: <awe_Wur5fVbeqV2d@vireshk-B250M-D3H>
-References: <at7lXEqds7ukoR2V@vireshk-B250M-D3H>
- <1jbj8gkff1.fsf@starbuckisacylon.baylibre.com>
- <at8WfX_G0tfTlFrm@vireshk-B250M-D3H>
- <9556e959-daf3-4c85-8794-9613e7e7a9ae@gmail.com>
- <A45EC676-5B14-4932-A4CF-87ED3B71108D@gmail.com>
- <4a51e879-708c-49dc-a08a-3f64eeec8bbf@amlogic.com>
- <CAFBinCBkJJeRPKLFBA9KYjwXMxFjow_NOtvFoKRQdxD=rOPW3w@mail.gmail.com>
- <48b333a3-ef88-4739-a087-3ed9d8ec60a4@amlogic.com>
- <CAFBinCCgmRmk--W53wqdJhF-SzJbai--s7wyzDNt3LpfN00spw@mail.gmail.com>
- <b606819a-661e-4488-b5fb-9e786de463c6@amlogic.com>
+	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=J95JRxAn
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1795675722; x=1827211722;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=lYjdectW2RKU1bEU2f272o7lhJl3HOXEa9UYjsc7jJ4=;
+  b=J95JRxAny/mwkfEqwdX9iXEdcX1RG0yKetFgn8Scrwgg0Pu79JPf8G8O
+   0jROWArqWCS0wwPEaOpvVwF0/tUtBJ9HpdPvkh0svr/IloYKWykEqOZlc
+   ei1h9VWRMXrwaY/CXSfChLnvJrpCX/XFYMoTLWb4G/6HfYrujApLGJRYy
+   bQxETjbCv3lkPR6aFW7cTH72SpVlyetHEEbLdk2Nof0N/Zdn3V+sHqxMY
+   exl2/RP6Sct1vFHwm0XYAPbzmKq8EJe4jr3G9turg6rBWCkqymS/QHXkn
+   rd+SYIM7B+eSgtnZWEk4GrotxzXSFt2+7e9Za83ck6/W1r2a+Lqvhu25M
+   Q==;
+X-CSE-ConnectionGUID: Ft9QYXHMR6ugcEOd6wqFbA==
+X-CSE-MsgGUID: g7BoukOwTGmwatUH8UNNHg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11977"; a="4542379"
+X-IronPort-AV: E=Sophos;i="6.27,234,1787036400"; 
+   d="scan'208";a="4542379"
+Received: from fmviesa012.fm.intel.com ([10.60.135.152])
+  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Nov 2026 22:48:41 -0800
+X-CSE-ConnectionGUID: aRTPWwSQQIqlaBWj/K/0LQ==
+X-CSE-MsgGUID: KhunosW+SUO0NEyMsCjTyw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.27,234,1787036400"; 
+   d="scan'208";a="13773070"
+Received: from black.igk.intel.com ([10.91.253.5])
+  by fmviesa012.fm.intel.com with ESMTP; 25 Nov 2026 22:48:38 -0800
+Received: by black.igk.intel.com (Postfix, from userid 1001)
+	id 5724498; Thu, 26 Nov 2026 07:48:37 +0100 (CET)
+Date: Thu, 26 Nov 2026 07:48:37 +0100
+From: Mika Westerberg <mika.westerberg@linux.intel.com>
+To: Marco Sousa <marcomsousa@gmail.com>
+Cc: linux-usb@vger.kernel.org, linux-pci@vger.kernel.org,
+	linux-pm@vger.kernel.org, westeri@kernel.org, bhelgaas@google.com,
+	lukas@wunner.de, rafael@kernel.org, superm1@kernel.org,
+	Shyam-sundar.S-k@amd.com
+Subject: Re: [BUG] AMD Strix Point USB4 (1022:150a): mid-s2idle pciehp
+ hot-add causes D3cold->D0 failure and hard hang
+Message-ID: <20261126064837.GK191152@black.igk.intel.com>
+References: <CAHRsBfbYF3wocif+a0FRyBBkhcL+FtKF2qm=ne0jgLCzL8cH9w@mail.gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -114,34 +83,66 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <b606819a-661e-4488-b5fb-9e786de463c6@amlogic.com>
+In-Reply-To: <CAHRsBfbYF3wocif+a0FRyBBkhcL+FtKF2qm=ne0jgLCzL8cH9w@mail.gmail.com>
 
-On 23-11-26, 20:23, Chuan Liu wrote:
-> I have already completed the support on A9, but cpufreq-dt currently only
-> supports the single-clock case, for example:
-> dt_cpufreq_early_init()
->   ->dev_pm_opp_init_cpufreq_table()
->     ->dev_pm_opp_find_freq_ceil()
->       ->_find_key_ceil()
->         ->assert_single_clk()
+Hi,
+
+On Wed, Nov 25, 2026 at 10:40:56PM +0100, Marco Sousa wrote:
+> Hi all,
+> I filed a bug report with full sanitized dmesg logs, lspci topology,
+> controlled A/B test results, and a thunderbolt.dyndbg=+p boot log here:
 > 
-> set_target()
->   ->dev_pm_opp_set_rate()
->     ->_find_freq_ceil()
->       ->assert_single_clk()
+>   https://bugzilla.kernel.org/show_bug.cgi?id=222327
 > 
-> Both of the interfaces above are limited to "single_clk", so SoCs that need
-> to adjust the DSU clock in coordination with the CPU clock (such as SM1, S7,
-> A9, etc. mentioned above) cannot directly work on top of cpufreq-dt.
+> Short summary:
+> On an ASUS Zenbook S 16 UM5606WA (AMD Ryzen AI 9 HX 370 / Strix Point,
+> BIOS UM5606WA.321, s2idle-only) docked to an HP Thunderbolt Dock G4
+> (Intel Goshen Ridge 8086:0b26 + igc 8086:5502), reproduced on vanilla
+> 6.18.65-lts and 7.2.4..7.3.6-arch1-1:
+> 
+> 1. At boot, tb_acpi_add_link() creates the device link from 0000:00:01.1
+>    [1022:150a] (consumer) to 0000:c6:00.5 [1022:151c] (supplier):
+>      [ 5.005536] thunderbolt 0000:c6:00.5: created link from 0000:00:01.1
+> 2. Host router reset tears down the firmware PCIe tunnel:
+>      [ 5.008763] thunderbolt 0000:c6:00.5: 0: resetting
+>      [ 5.008813] pcieport 0000:00:01.1: pciehp: Slot(0): Link Down
+>      [ 5.008895] pcieport 0000:00:01.1: pciehp: Slot(0): Card not present
+>    0000:00:01.1 then runtime-suspends into D3cold (power resource
+>    \_SB_.PCI0.GPP0.PWRS).
+> 3. After dock authorization, tb_tunnel_pci() activates the PCIe tunnel
+>    cleanly:
+>      [ 9.429077] thunderbolt 0000:c6:00.5: 0:5 <-> 2:9 (PCI): activating
+>      [ 9.430721] thunderbolt 0000:c6:00.5: PCIe Down path activation complete
+>      [ 9.432080] thunderbolt 0000:c6:00.5: PCIe Up path activation complete
+>    Yet 0000:00:01.1 remains asleep in D3cold and never wakes to enumerate
+>    0000:01:00.0 / 0000:60:00.0 (igc).
+> 4. On the first s2idle entry, pci_pm_suspend() runtime-resumes
+>    0000:00:01.1 mid-suspend, invoking pciehp_runtime_resume() ->
+>    pciehp_check_presence() concurrently with device_suspend:
+>      pci 0000:01:00.0: PM: parent 0000:00:01.1 should not be sleeping
+>      pcieport 0000:02:0x.0: Unable to change power state from D3cold
+> to D0, device inaccessible
+>      pcieport 0000:02:0x.0: pciehp: Slot #8191 ... /
+> pcie_do_write_cmd: no response from device
+>      igc 0000:60:00.0: PCIe link lost, device now detached
+>    Entering s2idle in this unenumerated/wedged state causes a complete
+>    hard hang requiring a ~30 s power-button EC reset.
+> 5. Controlled A/B proof on 7.3.6: waking 0000:00:01.1 from D3cold once
+>    before suspend (power/control=on + lspci, then restoring auto) makes
+>    pciehp immediately see Slot(0): Card present / Link Up, enumerates
+>    0000:01:00.0 + igc, and makes s2idle 100% reliable with full hardware
+>    S0i3 residency (11-27 s, Last S0i3 Status: Success).
+> 
+> Also attached on Bug 222327 is a secondary drivers/thunderbolt/nhi.c:143
+> (ring_interrupt_active) WARNING + Call Trace seen on dock hot-unplug.
+> 
+> I have the hardware on my desk and am happy to write and test a patch.
+> Could you advise where the proper fix belongs?
 
-Have you tried something like this ?
-
-drivers/ufs/core/ufshcd.c:int ufshcd_opp_config_clks(struct device *dev, struct opp_table *opp_table,
-
-Finding the right OPP should be done based on the primary clock only (right ?),
-but configuring multiple clocks is possible via the OPP core.
-
--- 
-viresh
+I would start checking if you are running the latest BIOS for this machine?
+This pretty much sounds like that something is mising on the BIOS side. The
+AMD guys that are in Cc: hopefully can help to check if the "power
+contract" _DSD is in place. It looks like it from the above but better to
+check.
