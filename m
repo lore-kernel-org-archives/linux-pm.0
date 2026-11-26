@@ -1,79 +1,130 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=192.198.163.13
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795675722;
-	b=lGw2vaRMcvN50k1+pnEum3lc/9Y58o5xlqef+j2NwfcNgej8mJ4+UHyLWFkSM6wCADWo
-	 nXZpM9seTyOuaykUnwNTsbVJjCL196VB2NKQpYl1EEaLXsVuvaDr+7w5aJ8PIxScW8KFN
-	 1zaY+J8G0edivN6s1cqQILH+iGPxR7jD6h9+qTvVlysI5fap3D8pXhKZLbXSQtQHrUmJ+
-	 eyUUNjYx6FF6xaEywa85boSHm2IXROaLSa+A+cAC3ND+0btjTHiL7P3g1lzEH0w9ahVSz
-	 IsNva4uuH2GSEIe2mozJrs5vS0o1v2okgbdyHo/YZHs9EOZG32VmxF4roDArgC2cEcg==
+	t=1795680438;
+	b=y5KEFoajypmCGFqr0Q4Ic6gJReLLP3YevCniH9UBdn218E8HYV2jdcjJTMfWwQC1VxRa
+	 Q9258kUW6UhR1oUlPMXrGFG4yD/hVDEQBMekzcXYr7KEswFCztUr9Cem11Mve6ZLU6QaP
+	 yQRIn1dNf1l0Et85zS5J6iuUwlCuRgdPsXBermLO3Ceb3dpw09yfrSQMDOkdJkzGMFuA+
+	 TErqP432cbZAfXYMHRfj8dr+6p+O6AsDfxLsIzcol/9LoN+pb7TNUroBd4voxSrGexGzM
+	 IKobtblUqkI55MXF6O7XQSXGEiOVMkHcoORIR+uEkHfwqmA+8CJmemYNRDJeogCxgOA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795675722;
-	h=DMARC-Filter:DKIM-Signature:X-CSE-ConnectionGUID:X-CSE-MsgGUID:
-	 X-IronPort-AV:X-IronPort-AV:Received:X-CSE-ConnectionGUID:
-	 X-CSE-MsgGUID:X-ExtLoop1:X-IronPort-AV:Received:Received:Date:From:To:
-	 Cc:Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To;
-	bh=5YLjc7VnPsRFewiCI8g3WiBXnqqBztYYzZVy2pF8THk=;
-	b=yW1ZLN0z41fK307EwK1+a/WpFrvm7OxCrYLE290BynNJFMjBSt6tW2Rkq+bJcQjUGfJB
-	 yND/zNqzRG8bqfc+rc3Mzd70UtVL71pfereWGkYr/FDQKsRNlni/1nzyUPX5KLZiMmlk+
-	 VwNTtvYwigqBdK4SCv5fcaj9rquYy/Fr2KULa6WFz35fO6w8Dhe9DmIZMVCEem8uRtCjx
-	 A0Ieit13ZSmJWLh7UgngxJoxY/M4hCCapeoVc1wJCLSd6ZyGF/T8rwbTQYmm0pH+MdDBm
-	 MWL4buNhIL7lV7JJrf2uFYjHNpUbxhNllmG66hppWUR6SjB6O3/IhNjdcgg7S1Jtlwg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795680438;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:From:To:Cc:
+	 Subject:Date:Message-Id:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Transfer-Encoding:X-Authority-Analysis:
+	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-GUID:
+	 X-Proofpoint-Spam-Info:X-Proofpoint-ORIG-GUID:
+	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
+	bh=aUkDNLO/u5puP38JXKFEnWyV5La/0VL8jM+AQyNlURk=;
+	b=TrhzGXOkG4kIWuBE8M1V7E9L3nf6iWltM9Fe7c81RL/07b37ww37p/f6OoQpyToiKNBw
+	 uKPIUwNA8Td9Soq5Z7rRuoTNa7FrnmNsJzyglZwP5XcQAEXTD/l7Mx9Kw9nUhrUk6MOxi
+	 1Q+L33ba/ObKNoaff6dG0xuvrTNmUqwyF+W/ODKmLMbjIySPkVALKmwGJhH43lr+IYQlC
+	 fRecMIjIWp1dm0fqa+mI0b1uIx/NbqwIjSL3qm+Qu6ZXg5dIdh04z4RAX22ie8pWifB3x
+	 IGZ2/rgtD9GdU+Nj2/EDfa76CML5FSCGttQRgmJCJwXc4ZG9q+SsfZLxfXc4BREWuEQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=linux.intel.com;
-	spf=pass smtp.mailfrom=linux.intel.com;
-	dkim=pass header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=J95JRxAn;
-	arc=none smtp.remote-ip=192.198.163.13
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.13])
-	(using TLSv1.2 with cipher ECDHE-ECDSA-AES256-GCM-SHA384 (256/256 bits))
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b="EGvR/5qI";
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b="gIZ17/I/";
+	arc=none smtp.remote-ip=205.220.180.131
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 68BCB606A31C;
-	Thu, 26 Nov 2026 06:48:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 68BCB606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.intel.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 08234606A32E
+	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 08:07:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 08234606A32E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=J95JRxAn
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1795675722; x=1827211722;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=lYjdectW2RKU1bEU2f272o7lhJl3HOXEa9UYjsc7jJ4=;
-  b=J95JRxAny/mwkfEqwdX9iXEdcX1RG0yKetFgn8Scrwgg0Pu79JPf8G8O
-   0jROWArqWCS0wwPEaOpvVwF0/tUtBJ9HpdPvkh0svr/IloYKWykEqOZlc
-   ei1h9VWRMXrwaY/CXSfChLnvJrpCX/XFYMoTLWb4G/6HfYrujApLGJRYy
-   bQxETjbCv3lkPR6aFW7cTH72SpVlyetHEEbLdk2Nof0N/Zdn3V+sHqxMY
-   exl2/RP6Sct1vFHwm0XYAPbzmKq8EJe4jr3G9turg6rBWCkqymS/QHXkn
-   rd+SYIM7B+eSgtnZWEk4GrotxzXSFt2+7e9Za83ck6/W1r2a+Lqvhu25M
-   Q==;
-X-CSE-ConnectionGUID: Ft9QYXHMR6ugcEOd6wqFbA==
-X-CSE-MsgGUID: g7BoukOwTGmwatUH8UNNHg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11977"; a="4542379"
-X-IronPort-AV: E=Sophos;i="6.27,234,1787036400"; 
-   d="scan'208";a="4542379"
-Received: from fmviesa012.fm.intel.com ([10.60.135.152])
-  by fmvoesa107.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Nov 2026 22:48:41 -0800
-X-CSE-ConnectionGUID: aRTPWwSQQIqlaBWj/K/0LQ==
-X-CSE-MsgGUID: KhunosW+SUO0NEyMsCjTyw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.27,234,1787036400"; 
-   d="scan'208";a="13773070"
-Received: from black.igk.intel.com ([10.91.253.5])
-  by fmviesa012.fm.intel.com with ESMTP; 25 Nov 2026 22:48:38 -0800
-Received: by black.igk.intel.com (Postfix, from userid 1001)
-	id 5724498; Thu, 26 Nov 2026 07:48:37 +0100 (CET)
-Date: Thu, 26 Nov 2026 07:48:37 +0100
-From: Mika Westerberg <mika.westerberg@linux.intel.com>
-To: Marco Sousa <marcomsousa@gmail.com>
-Cc: linux-usb@vger.kernel.org, linux-pci@vger.kernel.org,
-	linux-pm@vger.kernel.org, westeri@kernel.org, bhelgaas@google.com,
-	lukas@wunner.de, rafael@kernel.org, superm1@kernel.org,
-	Shyam-sundar.S-k@amd.com
-Subject: Re: [BUG] AMD Strix Point USB4 (1022:150a): mid-s2idle pciehp
- hot-add causes D3cold->D0 failure and hard hang
-Message-ID: <20261126064837.GK191152@black.igk.intel.com>
-References: <CAHRsBfbYF3wocif+a0FRyBBkhcL+FtKF2qm=ne0jgLCzL8cH9w@mail.gmail.com>
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=EGvR/5qI;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=gIZ17/I/
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AQ7j5BB132239
+	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 08:07:16 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=qcppdkim1; bh=aUkDNLO/u5p
+	uP38JXKFEnWyV5La/0VL8jM+AQyNlURk=; b=EGvR/5qIBwyKON95vHR6DpuzpeF
+	xd5QarYKpskzlMDr+0eMJBOsRZOS896GGOK4Lmhj2uvT9Ehf6oId50BbrNpVm1AO
+	6b9+MNjxxOrwd3CPzAZ6XavItJhF8qgVe5kDK4Gb4Sxrk5zbFy8R1QZX115WeFKc
+	AvYCUfkVNR1OH0MTnclIU/bag114evZTQQBTU6LTRFYeqIzOFFXGfUYNneJSzmfH
+	8qM8fisQ9BTHrfW/xWU/W177FkDp9315CGPmBmTDOSdGq9Ug+5jaYM45kB00ZYUd
+	MRADJHcZPQXK8MSGL2tJLo5LXpUvfi4O2WzDnR6GD5fc9kUtr8sLrhlftdA==
+Received: from mail-dy1-f198.google.com (mail-dy1-f198.google.com [74.125.82.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j6gne02k9-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 08:07:15 +0000 (GMT)
+Received: by mail-dy1-f198.google.com with SMTP id 5a478bee46e88-386c4e8b81eso266852eec.3
+        for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 00:07:15 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1795680435; x=1796285235; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=aUkDNLO/u5puP38JXKFEnWyV5La/0VL8jM+AQyNlURk=;
+        b=gIZ17/I/FCIJBA0Ie3erBFrgk3QUC+7L8ZzZhXLnyrA5XGB4AAqazK1C+2qSPCRGWg
+         FV1m3fxgkBh8HeOpOeaaC64huA4SCJABp+HgglMmznwgNY4x4nDECGxKN7ajd1njgA+o
+         F3pLwD4R9azURxef35RraeDb5iusbefmz6/8CwrqUbpflPzkA2dTq+qkjpRitApe1iGN
+         /gZpnvE9QSTLeeFrb/nKcG6cjjCv1p5Rc0jp2Z+3HdnFwkLuMlZWPyCdIh7s36vm34mu
+         BtyWUxZhpe7Qp5cZyby1pEyg1EUVKPnR1TeQWIlnO7SZXQjUESc1k4VRSQiWO9yojvKY
+         txIA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795680435; x=1796285235;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=aUkDNLO/u5puP38JXKFEnWyV5La/0VL8jM+AQyNlURk=;
+        b=bLCnRvbGzkDim8ycAhIipOhYLkmMPYT1rMj2lBmqL2x3E/lZIudcuGS5MLNnwUb9UQ
+         wQw1vL2dd3M7QL/iniFni2iA2OB37gliDNpCAdxB/6mrSo9joRpe1nos6aDp8vphQXS1
+         O/Pw0gkwG9Iz2t7XkifhyPJUFsbvCmNFuEgS484cTx+c9fJOQ9v+C0FmHmWCcGfousHU
+         FqTsKjVyhAGouM4AajEgD+G1YSi5/Bq/mCs+Vwcu2sZbUT5pr1MzdjWhTh5waFzLZFkR
+         TUsp5deBE8ocL3uJ6GulQ7RLerkvy6rNfkcXYYjtM60G9S5RowAoOEKtXcQLHgWIz8vD
+         m0zw==
+X-Forwarded-Encrypted: i=1; AL+hErGaoXQcZz7kGDrwrsn27EwRDssRP7HqecN22rgonxi6aRc5cHgMvEMuQDqy+cYPmx+X/QgJDWzGEw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/j6EWbI0oE0tnhHPllm+iRnV6tCnQmAHlojA2lhnbrRnJNOPxZ
+	LLOJ8oyuzAZeUUc963rGi7o42amirW6Rth43vs/hYfLYkYtwpzcTS73AjQu8zD/DLs5duORGUD1
+	u/G2wfUcc0RMAKu/KHVLYVP8Vx0Uwyc4dgXRt915EOQqWpCs17qCepV+TAwyJaw==
+X-Gm-Gg: AZFdTZejuzo9DVGQoHoHwNqfG385+FbiPxpopfe8cbauAMMYexbbV7MC1yUeMdWlnq7
+	ubhhBRZI7WRHveLwwmVfCa9kf2x9h8bY4wmR9m4z/N0gL3bHD/O3RZ12lY7WBHnyavzXBlm97bn
+	atwsUicD61zswet9jXYCHnHBN1GJinhKkzhr/gSdWA1LR2EdZeViG/PLoDV7GJNomnxhXUkxcH2
+	C+WenUyHWv2h1M7lx6h26cqdzPT5I/cHe5/zbv0LYhQJ8TvQ/4TCkQw4FsbdzQeUBsmH2vFXspy
+	SIAANCapYFQVHY0x5GyryjRV7qlE+3K5WAmJmaa7C0N1Nop1nzSIW5qhFMLgQnBZTMTv3Q4peBX
+	492lJBrfm2i7zx29b1emNCH5XvuoUNt5bUb3NcTZ+JrdDMLwGwF9Xh/Q1/RQUjVXaLFKfGyAZ
+X-Received: by 2002:a05:7300:16a3:b0:36d:5fbc:8c8d with SMTP id 5a478bee46e88-3856ef457b6mr29495498eec.2.1795680434483;
+        Thu, 26 Nov 2026 00:07:14 -0800 (PST)
+X-Received: by 2002:a05:7300:16a3:b0:36d:5fbc:8c8d with SMTP id 5a478bee46e88-3856ef457b6mr29495462eec.2.1795680433883;
+        Thu, 26 Nov 2026 00:07:13 -0800 (PST)
+Received: from hu-weiden-sha.qualcomm.com ([114.94.8.21])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-385677c371esm59870872eec.23.2026.11.26.00.07.07
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 26 Nov 2026 00:07:13 -0800 (PST)
+From: Wei Deng <wei.deng@oss.qualcomm.com>
+To: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>,
+        Manivannan Sadhasivam <mani@kernel.org>
+Cc: Marcel Holtmann <marcel@holtmann.org>,
+        Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
+        Bartosz Golaszewski <brgl@kernel.org>,
+        Amitkumar Karwar <amitkumar.karwar@nxp.com>,
+        Neeraj Kale <neeraj.sanjaykale@nxp.com>,
+        Philipp Zabel <p.zabel@pengutronix.de>,
+        Sherry Sun <sherry.sun@oss.nxp.com>,
+        Loic Poulain <loic.poulain@oss.qualcomm.com>,
+        Rahul Samana <rahul.samana@oss.qualcomm.com>,
+        Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+        Wei Deng <wei.deng@oss.qualcomm.com>, linux-bluetooth@vger.kernel.org,
+        linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+        linux-pci@vger.kernel.org, linux-pm@vger.kernel.org,
+        quic_chezhou@quicinc.com, cheng.jiang@oss.qualcomm.com,
+        shuai.zhang@oss.qualcomm.com, jinwang.li@oss.qualcomm.com,
+        xiuzhuo.shang@oss.qualcomm.com, mengshi.wu@oss.qualcomm.com
+Subject: Re: [PATCH 0/5] Rework M.2 Bluetooth instantiation using the auxiliary bus
+Date: Thu, 26 Nov 2026 13:37:05 +0530
+Message-Id: <20261126080705.1966830-1-wei.deng@oss.qualcomm.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20260915-pci-m2-bt-rework-v1-0-3c7d9cf9c010@oss.qualcomm.com>
+References: <20260915-pci-m2-bt-rework-v1-0-3c7d9cf9c010@oss.qualcomm.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -83,66 +134,117 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <CAHRsBfbYF3wocif+a0FRyBBkhcL+FtKF2qm=ne0jgLCzL8cH9w@mail.gmail.com>
+Content-Transfer-Encoding: 8bit
+X-Authority-Analysis: v=2.4 cv=XpVvqlF9 c=1 sm=1 tr=0 ts=6b07e8b3 cx=c_pps
+ a=wEP8DlPgTf/vqF+yE6f9lg==:117 a=Uz3yg00KUFJ2y2WijEJ4bw==:17
+ a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=u7WPNUs3qKkmUXheDGA7:22 a=3WHJM1ZQz_JShphwDgj5:22 a=VwQbUJbxAAAA:8
+ a=EUspDBNiAAAA:8 a=Unh1toCOKya3YOY-X0AA:9 a=bBxd6f-gb0O0v-kibOvt:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI2MDAzMSBTYWx0ZWRfX/Isxa0TEDMoD
+ XcAH+Rfx7xDYtF1BETaoSMTuf+jdhOoBhfE2HlPIdV9wWu7QDMIli45+tw/lZvIjxXPwdfdI3iv
+ UJMtDGssJFK0sG9asXNbx7FqlP3mvkWsnFWSsqGyFeS4SONlUEx9szmFXDIZOgOWwiYDayVUo9L
+ 9ws+NpDV8Vf0aj2PcICH9/wScD54DnCX/eyI8vjAkGryY7D2Gxt3dXadSurWd07yVk0e6E2cRaT
+ +XtgoTJENgqtQ1TRc4R7/G6C/+vc5icNZITW4sOWPCQftNNNRsqPcFQPXuDPLF69sIAD9WfMSyF
+ cYAI8gJvYzWxbg3/kOriFn/m1xyY2CDyQzwbVwbe/M0X7TZFxccO84QD3Y8QDZBdkrQgcYcwbaF
+ r2ONn78I15qDji7Zkl11gn7I3val855lxSp03sCsDybFsb42YHla+FM+Ls/4iq7q5XyiRNvrrVm
+ B+5/dRmt8xsOX4Q7XUA==
+X-Proofpoint-GUID: G6qmgDQ4St44oqkuY4iU1LXK5vYcQLGS
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI2MDAzMSBTYWx0ZWRfX2sKFLgUyezWF
+ d4JTqBR0kqnlO7Ro/N0vXMEG3MvplKSHwF8aAvLBweam4+47zXblF/YnSU9d9RNfCGDHNpJLfRH
+ UdiHUMJYz5+0c6QpbI2bNMa/nHGXkBs=
+X-Proofpoint-ORIG-GUID: G6qmgDQ4St44oqkuY4iU1LXK5vYcQLGS
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-26_02,2026-11-25_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 adultscore=0 priorityscore=1501 lowpriorityscore=0 malwarescore=0
+ spamscore=0 impostorscore=0 suspectscore=0 phishscore=0 clxscore=1011
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611260031
 
-Hi,
+Hi Mani,
 
-On Wed, Nov 25, 2026 at 10:40:56PM +0100, Marco Sousa wrote:
-> Hi all,
-> I filed a bug report with full sanitized dmesg logs, lspci topology,
-> controlled A/B test results, and a thunderbolt.dyndbg=+p boot log here:
-> 
->   https://bugzilla.kernel.org/show_bug.cgi?id=222327
-> 
-> Short summary:
-> On an ASUS Zenbook S 16 UM5606WA (AMD Ryzen AI 9 HX 370 / Strix Point,
-> BIOS UM5606WA.321, s2idle-only) docked to an HP Thunderbolt Dock G4
-> (Intel Goshen Ridge 8086:0b26 + igc 8086:5502), reproduced on vanilla
-> 6.18.65-lts and 7.2.4..7.3.6-arch1-1:
-> 
-> 1. At boot, tb_acpi_add_link() creates the device link from 0000:00:01.1
->    [1022:150a] (consumer) to 0000:c6:00.5 [1022:151c] (supplier):
->      [ 5.005536] thunderbolt 0000:c6:00.5: created link from 0000:00:01.1
-> 2. Host router reset tears down the firmware PCIe tunnel:
->      [ 5.008763] thunderbolt 0000:c6:00.5: 0: resetting
->      [ 5.008813] pcieport 0000:00:01.1: pciehp: Slot(0): Link Down
->      [ 5.008895] pcieport 0000:00:01.1: pciehp: Slot(0): Card not present
->    0000:00:01.1 then runtime-suspends into D3cold (power resource
->    \_SB_.PCI0.GPP0.PWRS).
-> 3. After dock authorization, tb_tunnel_pci() activates the PCIe tunnel
->    cleanly:
->      [ 9.429077] thunderbolt 0000:c6:00.5: 0:5 <-> 2:9 (PCI): activating
->      [ 9.430721] thunderbolt 0000:c6:00.5: PCIe Down path activation complete
->      [ 9.432080] thunderbolt 0000:c6:00.5: PCIe Up path activation complete
->    Yet 0000:00:01.1 remains asleep in D3cold and never wakes to enumerate
->    0000:01:00.0 / 0000:60:00.0 (igc).
-> 4. On the first s2idle entry, pci_pm_suspend() runtime-resumes
->    0000:00:01.1 mid-suspend, invoking pciehp_runtime_resume() ->
->    pciehp_check_presence() concurrently with device_suspend:
->      pci 0000:01:00.0: PM: parent 0000:00:01.1 should not be sleeping
->      pcieport 0000:02:0x.0: Unable to change power state from D3cold
-> to D0, device inaccessible
->      pcieport 0000:02:0x.0: pciehp: Slot #8191 ... /
-> pcie_do_write_cmd: no response from device
->      igc 0000:60:00.0: PCIe link lost, device now detached
->    Entering s2idle in this unenumerated/wedged state causes a complete
->    hard hang requiring a ~30 s power-button EC reset.
-> 5. Controlled A/B proof on 7.3.6: waking 0000:00:01.1 from D3cold once
->    before suspend (power/control=on + lspci, then restoring auto) makes
->    pciehp immediately see Slot(0): Card present / Link Up, enumerates
->    0000:01:00.0 + igc, and makes s2idle 100% reliable with full hardware
->    S0i3 residency (11-27 s, Last S0i3 Status: Success).
-> 
-> Also attached on Bug 222327 is a secondary drivers/thunderbolt/nhi.c:143
-> (ring_interrupt_active) WARNING + Call Trace seen on dock hot-unplug.
-> 
-> I have the hardware on my desk and am happy to write and test a patch.
-> Could you advise where the proper fix belongs?
+On Tue, 15 Sep 2026 16:24:01 +0200, Manivannan Sadhasivam wrote:
+> Hi,
+>
+> This series reworks the PCIe M.2 Bluetooth instantiation using the auxiliary
+> bus.
+>
+> The Bluetooth interface of the QCA2066, WCN6855, WCN7850 and NXP 88W8987
+> M.2 modules is accessed over UART, but the modules show up at runtime over
+> PCIe and are not described in firmware like devicetree. To make the serdev
+> bus match the Bluetooth driver, the power sequencing driver was creating a
+> devicetree node at runtime using an of_changeset. But, creating a node just for
+> driver matching is not recommended as per Krzysztof [1].
+>
+> So this series reworks the instantiation to use the auxiliary bus instead. The
+> power sequencing driver still allocates the UART serdev, but now hands it over
+> through an auxiliary device along with the power sequencing target. So this
+> series adds auxiliary driver support to hci_qca and btnxpuart drivers binding to
+> this device and brings up the controller over the existing UART transport.
+> Finally, it drops the serdev based M.2 code from both BT drivers.
+>
+> Dependency
+> ==========
+>
+> This series depends on Monza series from Loic [2] and reuses its
+> pwrseq_is_controllable() API.
+>
+> [1] https://lore.kernel.org/linux-pci/768142f0-2638-41f3-a34f-dc80bb99eb7f@kernel.org
+> [2] https://lore.kernel.org/all/20260904-monza-wireless-v6-0-d8c5042b3efd@oss.qualcomm.com
+>
+> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+> ---
+> Manivannan Sadhasivam (5):
+>       Bluetooth: hci_qca: Add auxiliary driver for PCIe M.2 modules
+>       Bluetooth: btnxpuart: Add auxiliary driver for PCIe M.2 modules
+>       power: sequencing: pcie-m2: Create auxiliary device for the M.2 BT interface
+>       Bluetooth: hci_qca: Drop serdev based M.2 power sequencing code
+>       Bluetooth: btnxpuart: Drop serdev based M.2 power sequencing code
+>
+>  MAINTAINERS                               |   1 +
+>  drivers/bluetooth/Kconfig                 |   2 +
+>  drivers/bluetooth/btnxpuart.c             | 193 +++++++++++++++++++-----------
+>  drivers/bluetooth/hci_qca.c               | 138 +++++++++++++++------
+>  drivers/power/sequencing/Kconfig          |   2 +-
+>  drivers/power/sequencing/pwrseq-pcie-m2.c | 137 +++++++++++----------
+>  include/linux/pwrseq/pcie-m2-bt.h         |  38 ++++++
+>  7 files changed, 343 insertions(+), 168 deletions(-)
+> ---
+> base-commit: e5e04726cdd043e309677071ab1b65a4b18f422b
+> change-id: 20260806-pci-m2-bt-rework-78dc2c926f00
+> prerequisite-message-id: 20260904-monza-wireless-v6-0-d8c5042b3efd@oss.qualcomm.com
+> prerequisite-patch-id: c4e777757ca9358cc4dd35e23738cd7dc1ead1a0
+> prerequisite-patch-id: 09600595c2e80b12eda3aae39af192847d0f03d0
+> prerequisite-patch-id: afe88432c4d459e9094c0e6dd31ebeab6c9f2f08
+> prerequisite-patch-id: 60fd7b13447ccad7546fa8e5b5609d8f133f788f
+> prerequisite-patch-id: 61dcbe55fdb6f33a3229c197f16a678785aa16d8
+> prerequisite-patch-id: 14099e5c573d7c41b899c3f9bb9126aa23f1553e
+> prerequisite-patch-id: 647ee15b77671054b4bb012afa9ba8694b6c86c5
+> prerequisite-patch-id: c3a774cae81a6fad287731a38f1b76c7e8babc4c
+> prerequisite-patch-id: 18b0fa62060a1a2c96e76051944d692699035572
+> prerequisite-patch-id: df02ab167976ac1f0d5a38c78e559a7372b16c1f
+> prerequisite-patch-id: 3f2dddd108677252a539cdb1eb661912836289ca
+>
+> Best regards,
 
-I would start checking if you are running the latest BIOS for this machine?
-This pretty much sounds like that something is mising on the BIOS side. The
-AMD guys that are in Cc: hopefully can help to check if the "power
-contract" _DSD is in place. It looks like it from the above but better to
-check.
+I tested this series with Bluetooth over UART, based on your patches with
+two local additions: the QCC2072 PCI ID and its auxiliary device ID, and a
+check of the pwrseq_enable() return value in the always-on path of
+qca_bt_aux_probe(). The patches were only adjusted for context differences
+with the tree used for testing.
+
+Both cases were tested with a QCC2072 M.2 Key E module: pwrseq_is_controllable()
+returning true (W_DISABLE2# wired) and returning false (W_DISABLE2# not
+wired). Bluetooth works in both cases, including powering hci0 off and on.
+
+Tested-by: Wei Deng <wei.deng@oss.qualcomm.com> # QCC2072 over UART, pwrseq_is_controllable() true and false, patches 1/5, 3/5 and 4/5
+
+I did not test the NXP side (patches 2/5 and 5/5).
+
+I plan to send the QCC2072 enablement on top of this series. It needs no
+devicetree binding since the module is instantiated as an auxiliary device.
+
+-- 
+Best Regards,
+Wei Deng
