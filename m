@@ -1,122 +1,88 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.168.131
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795699710;
-	b=YccVt8fEysSdhqocLTwqj+Jq9J3EhmnKlwDCk+NDeMwUTrDsX/kyyTmigpIRYbT5jFc8
-	 ubrqb7PHmFCQeVyGN0FJUUtv38ow0KrEbV52oaoKTPOJUdMPF9WfTTCOVvbzBqqrW5wW7
-	 rcI1uCgjbEIc+w68PpNcpuKEmqOlP4ZBYoxv9oBT9F2zkeQc0MaJNkJtfCV8aQSLihEKw
-	 JPAO1gEtwFzqJyYNrPO+y4EeqTx3F3a+jf6jXvbk8RQyWAndXvvOl5f26sfewjBGN0Frn
-	 8lA8dYIbRqglSZ7n09JEdCIJItL5ncffvVXVDfFVGv7bvrV80yZMDa5gk/Qgrd4JIxQ==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795699710;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
-	 X-Received:X-Received:MIME-Version:References:In-Reply-To:From:Date:
-	 X-Gm-Features:Message-ID:Subject:To:Cc:Content-Type:
-	 Content-Transfer-Encoding:X-Proofpoint-Spam-Info:
-	 X-Proofpoint-ORIG-GUID:X-Proofpoint-GUID:X-Authority-Analysis:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=1+I6fHMDuPRbKnrDXPojoIz2V9mnQ+E25HZfyDXGVP8=;
-	b=4JCVJ/720N/mx280dLfohHG2KC2wNOmQmlR8wQSyLb87EwRElg089TQyxfeXCyW7g003
-	 wwPjpcY3EhyfCC3IzYQfuHDJ98uPTWglWU/BidS5f/PNUrCAzjhBRvEdb9/qtv1u9QxB3
-	 IgR5TywDGJFHQD739pBZM+Mg07ex97F7UC55wlXqDEb4KCd+OiZdYNJtv3zAn9Xfnndaw
-	 ycAmeexS64mXG0bzenaVXsFmGe/z0+xzEA5Fvt+oYJXgsKb9s8msJoFuAq3tgds2Z2LIG
-	 iee3n+oraiZXYm2+IHn32qAHNOmxdVLClimPDxcm5VcnLHiOg8MBksFBZiVl/uZMMug==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Jeqcw3t6;
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=VN6tOihf;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.177
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1795699715;
+	b=2z1cQZXhnx4y4kmhLta+5JlApex5j8KjwlYciC2siGlivYptArFssJK/YDA3HrplPAEq
+	 9by1M5LBj0oEj7TKmHrysVMOBz2mnJhQAYRpRP5DiFkdDw1RseVkbuaTzkF8xC875xoeh
+	 txS7lhHB0DixeuulUNXvaWHBgjxGpKGqDHagzD9DqEsNmexY4WVvT9APVDhf1gddbvo+S
+	 M/3QBZBtJWxMqT2nXoRgEZyQ2zapNYxnuhxTLhg7ENIseU+JP86GfppH9X/riMZHKcbPK
+	 TkcRwgdJR5egmvS22Hk4bLMRegzOkRZOMtMJW58BCDFZQz3n7oDR8O8NFsIEJ26XtGA==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795699715;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 Message-ID:Date:MIME-Version:User-Agent:Reply-To:Subject:
+	 Content-Language:To:Cc:References:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding;
+	bh=pFahHhnApCqp4xWzSbnlx6J9bvCFbftUctTIaRpbdJw=;
+	b=rp8INGECKNuHJZ4B9XtaJS9JVTR77uEXa2ri02/PfkMFaCUUAliSMjseB4t/06u0Aebn
+	 2yv2Qdz0RR/YVZZ98yCBgCwmzUAXwH150kd4Zz2hxqeBCOrpEu9xu7YO+F6vMVtKUC9rZ
+	 AmSbdt9+KneF9qTghBcdKj9HbyWpAqS3WDIl8N0ovI8ku12qDr6zBDKELF8l4eccwm72m
+	 WwTfT2VG6rXIBD7Br375e8hD6lDEZPv54OJuUqLEqkDA35zGq5JM4YVyroi5+0C17rIJO
+	 hEo0BpJ6ilEnqgq1IthFbszLXYYsbCZvmBAxlFTOJUjf+V8rnTXWJoqMEVnpskwWn6w==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b="MC/TKS47";
+	arc=none smtp.remote-ip=74.125.82.177
+Received: from mail-dy1-f177.google.com (mail-dy1-f177.google.com [74.125.82.177])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 30A3C606A321
-	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 13:28:28 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 30A3C606A321
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id A89D7606A336
+	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 13:28:34 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org A89D7606A336
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Jeqcw3t6;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=VN6tOihf
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AQBVU7Q4128748
-	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 13:28:28 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	1+I6fHMDuPRbKnrDXPojoIz2V9mnQ+E25HZfyDXGVP8=; b=Jeqcw3t6sCzKEA5S
-	7m1Hu1eZRvWLVR8yKNZ0lsPUJWNMLz9Gtz1/kEdN5Mt3JMWd44c7PuQ4a2U+NIsy
-	vIhlYkk/meL+McV3PyPWxdLqrwQpvjmsBCu2PCPfI4lYm6+Jxi1/G4YIMn1LEEwZ
-	7Icd+2KYEcmzQPgqSthYEObrkVsSZ90EmnEweTDzHXdIUV/lmhueCzzoNnKCNf+U
-	l8ZEz+YkwIoSD8CnfIerj2aP29GoHgdzU0AGy4LEOCT/3xQn73FZF4XGpeaSlhhN
-	OsIuT2YPW2Nvgrzry5Kd82daet6ntXWkJxwz9viduff1ieJKWsM0l9yAKNrk/q9e
-	IUQ7Hw==
-Received: from mail-pj1-f72.google.com (mail-pj1-f72.google.com [209.85.216.72])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j62vav3je-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 13:28:28 +0000 (GMT)
-Received: by mail-pj1-f72.google.com with SMTP id 98e67ed59e1d1-3b3b4208826so4983462a91.1
-        for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 05:28:28 -0800 (PST)
-ARC-Seal: i=1; a=rsa-sha256; t=1795699708; cv=none;
-        d=google.com; s=arc-20260327;
-        b=hdqZC6uJBzbsiCmF3scI8dBx2y79TKBdYcahMiIRc8o8sKjwYyLPu7r14evNUOPmku
-         pgbCyuFcYmSejfafvZfNgM+CDiaU0jVaOi61gZXXspox22q7BE237TauGLsq1TOF1Crg
-         8DknRLR38S5yYV7x8zqj9pDs8yL0EqvHLMTCwEiiIbwiAC8JRXm/2baZ4UIMXNEnQP9A
-         T/kuyDmmh3JR+CF+LcC2hHnbkQQ5xbf4yjJki8OzkBAfdVwPCtSjzjXFP+tL6Ozg0CBW
-         UzL4X/Yv5JZPOGXFjq7Y2SZ+aF8g6gzl1bIkpSkZdhR0ZTOgStHZLvmroyHWnLGm1GnE
-         wpUA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=google.com; s=arc-20260327;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:dkim-signature;
-        bh=1+I6fHMDuPRbKnrDXPojoIz2V9mnQ+E25HZfyDXGVP8=;
-        fh=CG1AwK0l5wIS9W42+/yEhkZAjb9JUrsv5gTq0jEKT0U=;
-        b=UNesr2IhuGTAqaYWNyAMZ/77SFzVkNju7bKZKvBPxj/+ZFcO9oa3TnZqgw+tosmBfe
-         RYw7eku47QfjSQ6JJKrK5TIZnqJd2cMZYL9UDXief+M84e0XyY9tm6pyFGddj1ucmoEz
-         Z9MUGClRQLDHrQHEQ0MJrO32GffFOemnPy2O8C9KoCdMK1KS/wiiqbO4KZ1zptpOhezJ
-         pOnf6qZXqL3hRyOOLotEDNZqcIyv6yUYNxZjMZmHxWdAWwDoC9US9a15/Wlo0xJpK9fG
-         84UgWsdpMQ6Lz2rNDBwqUta8PHVShG5/90+NHV6248I4ozGgb/PCxKg++Rg2l8tcf4fc
-         cR3A==;
-        darn=vger.kernel.org
-ARC-Authentication-Results: i=1; mx.google.com; arc=none
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=MC/TKS47
+Received: by mail-dy1-f177.google.com with SMTP id 5a478bee46e88-38190551625so13610930eec.1
+        for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 05:28:34 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1795699708; x=1796304508; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to:content-type;
-        bh=1+I6fHMDuPRbKnrDXPojoIz2V9mnQ+E25HZfyDXGVP8=;
-        b=VN6tOihflp+SHVp9SHC7JikYazTgw13123KrIf2ByS2UnyU7QdE99mAXYG0evdSYTf
-         pGkof1aZfxMmagyDaGFrgtacN3lnFyGPh4s34EbEjzmPcbNjhzldDLyPEGneFWvzXhRf
-         7E5QgNSPnPMnedBzHBNf6Iw5yyDb2eYo9YW5zfny7FyNBgm8pZmAyYgJuu97VCefYz1Q
-         a3SS4XMXjzE2w1sbyoIyGeoDY5cCy58Ov4a8gD6de+BbsB9JpRAlhP8pcQqkBG6QLZzs
-         2xlGcUK8vhCm6a6zf1XkUNMDp8nsD7vif8PjVmLTZulrCHy1XoC/RSjlSBVZ89BCiAb9
-         Jauw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795699708; x=1796304508;
-        h=content-transfer-encoding:content-type:cc:to:subject:message-id
-         :date:from:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+        d=gmail.com; s=20260707; t=1795699714; x=1796304514; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from:references
+         :cc:to:content-language:subject:reply-to:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
          :content-type;
-        bh=1+I6fHMDuPRbKnrDXPojoIz2V9mnQ+E25HZfyDXGVP8=;
-        b=WCip/fYMkushQxiclhLKnqWkFx0tRuMrZ9/TzLIRG74VJAQsPU6OjnlBuSIB36HHhj
-         /ah0qW+VquxbxF0MKZ8OxUbgYA9B7iNs7bpiozk7ZenvcKi8maEE9jDHIJ1HSy9/ezlh
-         xeOzATow8mEo53qTwamv4cBYXiByrGsU4HhXNJXjGUc4JW6mfFJlXy7/bhF8DeuJKMGq
-         89FmRH6rzXpkZlspM1UD7kRM2izf2m9Artq25fsV8zbI1T6zbSAAo9pXg/QnQFfcP0Zo
-         PyuVMoHbG9OGAi5lnNAEp0HBNkNMWfsstMLc0h991Ktdstlw3efF0z8kRhEjT/qczQiw
-         /rqw==
-X-Gm-Message-State: APuU4Z8Y7Q0qfxgA1KlEI+n1v5uhJSgDN/hO0INb0v/YeR8bheWflb9o
-	9chmW5IwQ/7tB4mBDho3VlStoSZHRbniyYACs2CviTAljx1DOokhh3hx8MP5kPjVHnarlho3fVg
-	pc+WLG068aBT+aoYsazah6umKuXv/t6A7zIW5cPtSk0kMwDZp8sIOq4vONu9ihtcwaq5TkIroTW
-	baG27yrztrc+F6SbPbTp2sLs61aJGfdCORNyUM
-X-Gm-Gg: AZFdTZfigjAFtbC4LDAzRfW/w+lgJ6bNRivAqn4XpB4COSiBsa4wS4qdtDhsaIqmW6q
-	H1gb0nFpA8Wh0TY9K5y/XGtB+x9LD8i9Xj64iXea8FqcrHpWbk1rlnw/oLP7fyZ1gJEjFZmuKMM
-	2rSmp3GIErH4zfRS007QhHxt59lZOgcLCTxBvVq+NaepzndeKVpVQYvtxPJw==
-X-Received: by 2002:a17:90b:4e8c:b0:3b0:99f8:72f4 with SMTP id 98e67ed59e1d1-3b40a5ddc20mr17103190a91.23.1795699707508;
-        Thu, 26 Nov 2026 05:28:27 -0800 (PST)
-X-Received: by 2002:a17:90b:4e8c:b0:3b0:99f8:72f4 with SMTP id
- 98e67ed59e1d1-3b40a5ddc20mr17103161a91.23.1795699706928; Thu, 26 Nov 2026
- 05:28:26 -0800 (PST)
+        bh=pFahHhnApCqp4xWzSbnlx6J9bvCFbftUctTIaRpbdJw=;
+        b=MC/TKS47PCVThH4hxBVbgYAI17PI8aoyvnUrzLlf5cUFLIk+p2ddtVf+hQToBZH+Q/
+         rB5Im9GJK7ymW6o+kw2H38ubAlvFSPrnLV7QUMeiielvCCVXjFgTv9pPaMj7j5bKFWgq
+         IbMU6BMgevQG1NxYkx63x1CZ1CrFMrFtSuCi8sABEky3K6kX7E0ldh4+6UPuYNnMdTHW
+         Bz1jigNK9fpe2VkAaSyGXsKvGbRhb+8I4k8LzZkkFdqc/bZrTYAIonP49b8b0MsEuwkT
+         GAW+ARRDnT9SD9ayDaZpUz7XLSvG1CfXy+gvHuMerhQ22jporeapnIv76onGGYCGVYpw
+         lXdg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795699714; x=1796304514;
+        h=content-transfer-encoding:content-type:in-reply-to:from:references
+         :cc:to:content-language:subject:reply-to:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=pFahHhnApCqp4xWzSbnlx6J9bvCFbftUctTIaRpbdJw=;
+        b=XeJD/Atm6DcDgmrIgd8NfbURSL40ZiWL0tfVxRaSEdyZyrEMpNYzmTdx6U97orj4AF
+         gGmbg0TFDYpMcpYpfBrU0UG+nL9qu8iYu79UuO0quKQuGUiufkSGBo//zXqOC1hjrmVW
+         pvM9MaGSwGzNrxJvIaEyvsOVwsaF1aeIRFm0BOUrYpujHvjw5BIgHUMy2Gzm6XvfamNc
+         Vpeic3s6lQgc4ONs4F0SXkwz5TBXh1nvk1ydYcEHZRHQH8OpoWi3BzAAxMEB2l9mkyjy
+         6EyyOOUYjMvwscmKkCk+pasmtFuK59az7BqREiuq/GTeryLPSjYnnqsN/4EIgoSrLGm+
+         vREg==
+X-Forwarded-Encrypted: i=1; AL+hErG8C+35UuDIbMtttzYOn3UAmlFfFsX83YP+TS27pkd9OrgPWBDqQenZZrtRdfCe56psZ+1hfk1q8A==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+HORgK5M7dw0taBg2bNn9HFcJjxaQ6056YlEWMxmEPg20Dr2vS
+	h7OvDN0kVLaoyrq7roZYbMC14nNaIv2kXGiXpVnyWbcS4akbqA6ApMt6
+X-Gm-Gg: AZFdTZc25eGJ+BluychVj0SPisOxlYeIOgzr2tmlf+GoCzg9irgTXnrYyWriW/lfHSn
+	yxm0fdrLzCUlbdYx/3eRvr6+2TuzzaPNhZB23efPFNN6Vka/2hiremZUQUeY08fuPdbbagCPWHf
+	npt2VjZbz/sB/S39semP4NY4cMi80V+YVhuNTRf/lR1n5KX38RqUOFXG1PJ0bKXvzKde5wbcEaj
+	MZW8uesga0Dea3Qu/htrjFdud0WM3zrIdHIAVqlOYi8c5Tl2F+ekgeWvo3OTJnRy3bnPdkWC2z2
+	qB4nD+9nAvWGdTHnQkhnK/e1bdn+t+W8bRqLeqaDQTjahTSw5J+1ZEGY5kXDsiZSkt0JV9up0Ti
+	6FAYrVjTCP3loPrq/VeSOSgOnx05ST5anJ1mMqiNMUnjVBK4pSoQFJJhf5LOu6qBB10ItTkFvqD
+	OFrRI/FBi+slmh5i8+Y2EVtbz5DWCApA62xv50XdK0h3UaV6G9SV5dBADXkE9oeEPg73h6m8FTg
+	CVQ4MCqRmrFVFubN7TQgMEcnatfBCFxh9nSBLsVJFy1WCWkMzbYJxwTpsDSsCm4wXW5PtpzKLi5
+	YmTF0B3GzbaEZbQj+8Upsz/WIn8jMSSctU6B0ImJrPIbRZy11RZukGxGKfC6VPb+Fik=
+X-Received: by 2002:a05:7300:c00e:20b0:386:c3ab:ab7d with SMTP id 5a478bee46e88-386c3abaf3bmr8681892eec.3.1795699713612;
+        Thu, 26 Nov 2026 05:28:33 -0800 (PST)
+Received: from [192.168.35.43] ([218.50.238.131])
+        by smtp.gmail.com with ESMTPSA id 5a478bee46e88-385666e96bdsm59213477eec.7.2026.11.26.05.28.29
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 26 Nov 2026 05:28:32 -0800 (PST)
+Message-ID: <86a7174f-c44b-4663-862b-3631b0d6c5bd@gmail.com>
+Date: Thu, 26 Nov 2026 22:28:28 +0900
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -126,165 +92,87 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-References: <4779892.LvFx2qVVIh@rafael.j.wysocki> <CAPx+jO8d-25kLQw9X0wW4i3YV4Jn+2Zr7_ZOT9rE10D99kPU_Q@mail.gmail.com>
- <CAJZ5v0j5M7fax8_XP1G4oENykq6vg-hgiW4JPaqf=AvRiY-xFA@mail.gmail.com>
-In-Reply-To: <CAJZ5v0j5M7fax8_XP1G4oENykq6vg-hgiW4JPaqf=AvRiY-xFA@mail.gmail.com>
-From: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Date: Thu, 26 Nov 2026 14:28:15 +0100
-X-Gm-Features: Aa3M54osf1Ltqb35tf2iD0aVrSfLOXZ5vwQSyn4Tud5SI8CTusSvx9qN5agwOyw
-Message-ID: <CAPx+jO--Nzeh+vv0g_sZXxXehLU1hv-O1MbA_wsRj5oHUZK7aA@mail.gmail.com>
-Subject: Re: [PATCH v2 0/4] PM: runtime: Fix issues related to autosuspend
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>,
-        Brian Norris <briannorris@chromium.org>,
-        Alan Stern <stern@rowland.harvard.edu>,
-        Sakari Ailus <sakari.ailus@linux.intel.com>,
-        Linux Driver Core Development <driver-core@lists.linux.dev>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI2MDA1MiBTYWx0ZWRfXyG3N8WSUMjWv
- XkYPc1u0d7VWdBZecJU052moIPKbeEqECrw5xXiIthZYrF+Nbb4SgqG4M05W/LSrX5oIhnGUN6k
- bi4sXWL5id489YdM/b8N8NQnSnRZEKw=
-X-Proofpoint-ORIG-GUID: Nb-q32bSNJLE_urWzNKhEtEGBqP2VYiY
-X-Proofpoint-GUID: Nb-q32bSNJLE_urWzNKhEtEGBqP2VYiY
-X-Authority-Analysis: v=2.4 cv=QZPzLcbv c=1 sm=1 tr=0 ts=6b0833fc cx=c_pps
- a=RP+M6JBNLl+fLTcSJhASfg==:117 a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10
- a=s4-Qcg_JpJYA:10 a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22
- a=eoimf2acIAo5FJnRuUoq:22 a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8
- a=SvWRspn6cuzICisoxksA:9 a=QEXdDO2ut3YA:10 a=iS9zxrgQBfv6-_F4QbHw:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI2MDA1MiBTYWx0ZWRfX7AkL4oJxaJ3/
- nlLh/ro5i13wzcTwZaZKk8LUMR+nrjrhg4f6kZuQ+1Ni0uMJiXKmpF4HT12vqttpz9J4Tc6HLz+
- EPpY1RqlHOTfTYm8E/prglz/t9gChLQ566ow4HY9WGXYVvjE5BvogMWaASKkRliqW/qLnFq72oY
- xtEENV3BP0nqlg3rq4of2bg3j1OinyTulbSceOgZYeLVw3M3DkOYlY0/WB/ao8Tq3S6SLqJcH3o
- xV/cDEIUwjQrZov3lh0pXxpivat2eKJv/SGkW8zCxh0QHK2uHj7Cc9WvDVZqDKnvbSqs3kV/FIt
- gJUQEcLpBAXkpj/yQR6Ny4ErNPkEo1YL7yDWaN66L3R7kQt0zaIK8Rd9iZKVjbWi1TGkJck39ab
- MEkhXzhiK4ztiDPaXaOqDwBTP6BtDVK1ufZs5J5WgJ+vW4G8Ro+COFVd970sXvRqRlRckljMr+d
- ceWgjpH571dD8lUuQLA==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-26_03,2026-11-26_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 priorityscore=1501 lowpriorityscore=0 bulkscore=0 phishscore=0
- adultscore=0 malwarescore=0 impostorscore=0 spamscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611260052
+User-Agent: Mozilla Thunderbird
+Reply-To: chanwoo@kernel.org
+Subject: Re: [PATCH v4 00/11] PM / devfreq: rockchip-dfi: cleanups and RK3576
+ support
+Content-Language: ko
+To: Sebastian Reichel <sebastian.reichel@collabora.com>,
+ Chanwoo Choi <cw00.choi@samsung.com>, MyungJoo Ham
+ <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Heiko Stuebner <heiko@sntech.de>,
+ Sascha Hauer <s.hauer@pengutronix.de>
+Cc: Nicolas Frattaroli <nicolas.frattaroli@collabora.com>,
+ linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-rockchip@lists.infradead.org,
+ linux-kernel@vger.kernel.org, kernel@collabora.com,
+ Sashiko <sashiko-bot@kernel.org>, stable@vger.kernel.org
+References: <20261119-rockchip-dfi-rk3588-cleanups-and-rk3576-support-v4-0-517a68c008fe@collabora.com>
+From: Chanwoo Choi <cwchoi00@gmail.com>
+In-Reply-To: <20261119-rockchip-dfi-rk3588-cleanups-and-rk3576-support-v4-0-517a68c008fe@collabora.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Thu, Nov 26, 2026 at 1:51=E2=80=AFPM Rafael J. Wysocki (Intel)
-<rafael@kernel.org> wrote:
->
-> On Thu, Nov 26, 2026 at 12:51=E2=80=AFPM Ulf Hansson
-> <ulf.hansson@oss.qualcomm.com> wrote:
-> >
-> > On Tue, Nov 24, 2026 at 4:40=E2=80=AFPM Rafael J. Wysocki <rafael@kerne=
-l.org> wrote:
-> > >
-> > > Hi All,
-> > >
-> > > This is a follow-up series for
-> > >
-> > > https://web.git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.g=
-it/commit/?h=3Dlinux-next&id=3D26236a3e8803f7e1ace104020d7f006edb220116
-> > >
-> > > which is in linux-next and it replaces
-> > >
-> > > https://lore.kernel.org/linux-pm/3076901.e9J7NaK4W3@rafael.j.wysocki/
-> > >
-> > > (hence v2).
-> > >
-> > > First of all, there is a potential issue with respecting autosuspend =
-delays
-> > > in pm_runtime_put_autosuspend() and pm_runtime_put_sync_autosuspend()=
- that
-> > > existed before the above commit, which is addressed in the first patc=
-h,
-> > > and that fix is relevant for the other patches in the series.
-> > >
-> > > Second, the commit above overlooked some cases in which a running aut=
-osuspend
-> > > timer may trigger between dropping a runtime PM reference to a device=
- and
-> > > updating its last_busy timestamp, which may cause the device to suspe=
-nd
-> > > without respecting its autosuspend delay.  Those cases are addressed =
-by
-> > > the second patch.
-> > >
-> > > Next, I was mistaken when I wrote this in the changelog of the above =
-commit:
-> > >
-> > >  Updating the last_busy timestamp when rpm_idle() returns an error
-> > >  without calling rpm_suspend() is not useful because the device is th=
-en
-> > >  going to remain active for an unknown amount of time and its autosus=
-pend
-> > >  delay needs to take effect later.
-> > >
-> > > There actually is a reason for doing this which is that an autosuspen=
-d timer
-> > > (left behind by an intermediate runtime resume) may be running when r=
-pm_idle()
-> > > runs and that autosuspend timer needs to be prevented from using a so=
-on-to-be-stale
-> > > last_busy timestamp value.  That is addressed by the 3rd patch.
-> > >
-> > > Finally, the last patch updates a kerneldoc comment that has become o=
-utdated after
-> > > the commit above.
-> > >
-> > > For details, please see the patch changelogs.
-> > >
-> > > Thanks!
-> > >
-> > >
-> > >
-> >
-> > Again, thanks for working on this! For the series, please add:
-> >
-> > Reviewed-by: Ulf Hansson <ulfh@kernel.org>
->
-> Thank you!
->
-> > As somewhat also proven by the subject $series, there are some churns
-> > that we need to deal with in regards to the intermediate rpm_idle()
-> > phase. I am wondering if it perhaps may be the time to consider
-> > removing it altogether, unless we still think it's useful of course.
->
-> I don't think that the rpm_idle() phase is super-useful.
->
-> Of course, eliminating it would require getting rid of the runtime
-> idle callbacks in the first place, but we all seem to agree that this
-> should be doable and probably worth doing.
+On 11/19/2026 10:01 PM, Sebastian Reichel wrote:
+> This is a combination of the DFI driver patches from the following two
+> series to ease applying to devfreq tree. It is based on devfreq-next
+> and there are no other dependencies.
+> 
+>  * https://lore.kernel.org/linux-rockchip/20260921-rockchip-dfi-cleanup-v2-0-43ff34ac8599@collabora.com/
+>  * https://lore.kernel.org/linux-rockchip/20260921-b4-rockchip-dfi-rk3576-support-v2-0-04f847016321@collabora.com/
+> 
+> Changes in PATCHv4:
+>  * Link to v3: https://patch.msgid.link/20261117-rockchip-dfi-rk3588-cleanups-and-rk3576-support-v3-0-32ff1546b0e4@collabora.com
+>  * In PATCHv3 I accidentally used the patches from PATCHv1 as base with
+>    the wrong DT bindings; this is now fixed
+>  * I've fixed num_clks typo in kernel doc (Sashiko)
+>  * I've fixed incorrect LPDDR5 BANK_MODE_MASK for RK3576 (Sashiko)
+>  * I added a fix at the start of the series correcting LPDDR5 bank
+>    mode value (Sashiko)
+>  * I've added a fix at the start of the series avoiding usage of
+>    uninitialized memory (Sashiko)
+> 
+> Changes in PATCHv3:
+>  * split out DFI driver patches from both series and merge them into a
+>    new one; clock controller and DT patches will be sent separately.
+>  * rebase to devfreq-next
+>  * collecting Reviewed-by / Acked-by
+> 
+> Signed-off-by: Sebastian Reichel <sebastian.reichel@collabora.com>
+> ---
+> Nicolas Frattaroli (6):
+>       dt-bindings: devfreq: event: rockchip,dfi: add clocks to rk3588
+>       dt-bindings: devfreq: event: rockchip,dfi: add rk3576
+>       PM / devfreq: rockchip-dfi: move to per-variant const structs
+>       PM / devfreq: rockchip-dfi: add NO_INTERRUPT perf capability
+>       PM / devfreq: rockchip-dfi: use bulk clock APIs
+>       PM / devfreq: rockchip-dfi: make RK3588 use its clocks
+> 
+> Sebastian Reichel (5):
+>       PM / devfreq: rockchip-dfi: drop incorrect shift of LP5 bank mode
+>       PM / devfreq: rockchip-dfi: initialize dmc_count structs
+>       PM / devfreq: rockchip-dfi: move register offsets to variant struct
+>       PM / devfreq: rockchip-dfi: prepare support for v4 DDRMON
+>       PM / devfreq: rockchip-dfi: add RK3576 support
+> 
+>  .../bindings/devfreq/event/rockchip,dfi.yaml       |  89 +++++-
+>  drivers/devfreq/event/rockchip-dfi.c               | 297 +++++++++++++++------
+>  2 files changed, 290 insertions(+), 96 deletions(-)
+> ---
+> base-commit: f9316c13d6f621af4f6f4a6089d3c989ffe899e6
+> change-id: 20261117-rockchip-dfi-rk3588-cleanups-and-rk3576-support-74727d64d729
+> 
+> Best regards,
+> --  
+> Sebastian Reichel <sebastian.reichel@collabora.com>
 
-Okay, agreed!
+Applied them. But you also need to send the clock patch[1] and get it applied.
+[1] https://lore.kernel.org/linux-rockchip/20260921-rockchip-dfi-cleanup-v2-6-43ff34ac8599@collabora.com/
 
->
-> > In the past we have discussed introducing support for *multiple* (a
-> > dynamical amount based on what the device supports) low power states
-> > to runtime PM. When I started looking into how to implement it, I
-> > stumbled over the rpm_idle() thing, which kind of prevented me from
-> > moving forward at that point.
-> >
-> > What do you think?
->
-> Here I have some doubts.
->
-> I'm not sure if there is a single model covering multiple idle states
-> that can be applied to every device in every system.
->
-> There are different semantics and different requirements.  For
-> example, you may consider "clock gate" and "power gate" states for
-> some devices, such that a device needs to go to "clock gate" first and
-> then to "power gate".  On the way back, it would need to go to "clock
-> gate" before reaching full power.  However, this is not how PCI or
-> ACPI PM works: There you can go from shallower to deeper, but to go
-> the other way around you need to transition straight to full power.
+Thanks,
 
-I fully agree and honestly it's been a while since I thought about this.
-
-In principle we would need something that is flexible enough to allow
-us to support all the different devices and use cases. It's not a
-straightforward thing, but removing rpm_idle() is probably going to
-make it a bit easier, I think.
-
-Kind regards
-Uffe
+-- 
+Best Regards,
+Chanwoo Choi
+Principal Engineer, Samsung Electronics
