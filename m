@@ -1,87 +1,103 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.231.203
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.47
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795649021;
-	b=iMBQRHu+9ncouHIaIgxWtq6nxGPqBoS6Jbe1ZPWnLz5O2lG7cA5wKZtZFATPT4KrQXjh
-	 aA9oy+VMZbRfWTGtsuxIuf4eE8x5uRqvrjaReugwIApLvae6DTgYxe2lrVygQwJIWJMWa
-	 ThltDRIzCBt0ksmjhg+YZ4FELhTjkhM69IhvpADmdCS1SdpWbE678HxeNyfsapv5bn6iL
-	 6nBSCe0evKqJhnO4GefHGMU6n2cXd4B2JraVSJ828eeTTRYmkS1fts8sRRwEVnfNH6CJC
-	 gsz0HPW/avIKbqLBxygWBm05picuJrxySCdkRt3MWyW/vYoYOLgYSNMcR3H0CVXKRng==
+	t=1795652413;
+	b=IpVXrarsSNbyOtRvvF2o9dGDq7SGCYeHbaTGIi5SCRdhjNK+Bow1ZpC4J9AfRpBCASRh
+	 7EAjefyT3VknZHTzDG6S2lyM2Ja0+JlP3Z19zW1EBmkNfq1NwBA7RVNLoDyH1jVVYH9ai
+	 QH3AQMOgK4Pkmd2d0JD2R3uTu/5k9QE8BQnDhE8/OgGDMbupQO7lqUI2EIO39ddnWpAah
+	 SYG71qjFRQPNiaXt4PLI5ysTwRd0NKb7rZWiffFcsEysXjFgU/wOAYv0HM0Awd9zHRDZV
+	 ZMdNFxiLFs/rt4OykrN9L+YUIBPx+TL3/9VtTK8m5FrnEEzPdfhkr//ETIcm08c8gog==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795649021;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795652413;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:Date:Subject:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:
-	 X-B4-Tracking:X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:
-	 X-Developer-Key;
-	bh=RwepV34j5nNPfrfrTOoxO68UcVdQ4nwsTdHGe5ShZEI=;
-	b=qDFX7wB6MCQ6Gv8Mo8FwYT2yGfTOpKF4rXcMoBBnIErPgCdUGicVsRsSzasw7WuOZEGS
-	 yDho3ScEACurOYyFag6ih8+hO7xdS43ICddhrzzM0Z+nreu81bZM1+KnOuTnY6on4jVq3
-	 jRQwv0eOs95DGLwrQ8Hb7Nb1ZU+APvI0qvYqWToEsrngkrUtd0LfyyKYwwRFA0MWKQtHF
-	 tAHNkSClLuXHt/7tL4qoM/b2/7mpN3cmSeaCPgd0keeGP79InVe/+Kjd4FZ1w6b4Rn4Y+
-	 sDY6dJGm4ZITYYEkPLJJZDmi1H9BLsGzsk9DWYflE4X1NQva5vo9RCJepcfuGdsaiJg==
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=67RnFo9t94m6kVPT2M6dT+gKsUjvLfhYxs4nIkL8V4Y=;
+	b=pyb1zwblleD4NAsiJKe14YkC/wUnoMoOdUoo5cS4Mv10Tbza/chJOy3Y5iNYeM2wc4b3
+	 /fU4jDEYpp9ZB+C+/YfIXYPUdnvsyAhcQ6BUzJA09HfLKSvl8pPzlQLWohHQrsRL5oBQB
+	 3pj7X5PS92vtCHTo84bFZ8ddjcwwfK3bTiVSGgUv8JPpMywuyimZ+ZxU54wWLGqpLtmSB
+	 W6dV3if9oTNT7hV+iI9Pjs+4m+O83v1IeVOtr/XFPuDqZ0N/5/xzTpYpD8F3kCNmwjGpF
+	 uP8ptfjHOjIzud088naLAojtQCq8QRTKfMcl28hgFxH5eLJL1QYtlgftdMt8W/qA4Mw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=k4TtAVd0;
-	arc=none smtp.remote-ip=74.125.231.203
-Received: from mail-oi2-f11.google.com (mail-oi2-f11.google.com [74.125.231.203])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=stB+5PBX;
+	arc=none smtp.remote-ip=74.125.82.47
+Received: from mail-dl1-f47.google.com (mail-dl1-f47.google.com [74.125.82.47])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id B86AA606A321
-	for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 23:23:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org B86AA606A321
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9C243606A31E
+	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 00:20:12 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9C243606A31E
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=k4TtAVd0
-Received: by mail-oi2-f11.google.com with SMTP id 5614622812f47-56820670d00so2154094b6e.0
-        for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 15:23:40 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=stB+5PBX
+Received: by mail-dl1-f47.google.com with SMTP id a92af1059eb24-1ae58d17cd9so7070834c88.1
+        for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 16:20:12 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795649020; x=1796253820; darn=vger.kernel.org;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=RwepV34j5nNPfrfrTOoxO68UcVdQ4nwsTdHGe5ShZEI=;
-        b=k4TtAVd0Q5yeT53kuCv2tVlWnh7TyZgeD7vMYoZbEGHgEFe5HK2S7Hl9ez0W15w8ep
-         eCOF/X4FRwK3lEeGPWNf6OE1jFA9Z6tpfG71FHX+++Ckk5ihwMtGuf4z3h4LzDxRgUdB
-         Mh5RbVda0NnYuq188GEAtRtOREIEcUBZ9Z/jvLFE7ame7Lno4ARV2MjM69lUj69NM5Br
-         oxsNe3eYjdFmGEF5uupC+JtWg11BOfqYLk2zqHhobq34DvNUyoyD8oK+/IZjF+ycHGXu
-         qDDo4A+xa2JiEqKsMPambU8FHltgC557iziezI0LIsaviEqu7TG1JuxigEx5GSx2HkVH
-         qriw==
+        d=gmail.com; s=20260707; t=1795652412; x=1796257212; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=67RnFo9t94m6kVPT2M6dT+gKsUjvLfhYxs4nIkL8V4Y=;
+        b=stB+5PBXW/avFEos/qFibZqG4ycUMnCS1eSSsFgmU36+3Y0TKFH/tXe07+2Fwi1IyN
+         ROC47M/MSdbYyW3z4iAsvRco7wfgKg11ngXKoWF9vRc8kyCrHWxEUee5X03Sd1wU8eCG
+         Kcz9mPZz2k52z71Kfyud969RsW1AwM4Qw03iEsjB1u02NTT9lDYNc9om9SPWWclxpVM3
+         5wvEBpzJ+CwHgOi6BO7jjP2AGwPvjF86z0oRvBMvk1I42ZaeME58zN/1Li18UTXMWuhz
+         qc7g1IFW3yrGxw/XB8uG1dha1wRjmdqfhmHYvGG7ErnUE+z7DElh+S669I1dHzOFfAjO
+         oFYA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795649020; x=1796253820;
-        h=cc:to:message-id:content-transfer-encoding:content-type
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to:content-type;
-        bh=RwepV34j5nNPfrfrTOoxO68UcVdQ4nwsTdHGe5ShZEI=;
-        b=Yx86Pc6IitDlV0DO8dika9c4nQ2OYgn11IUqyuTcZJ5XnkydwYpZYo1BAodcR8j1Yu
-         Rupvx1hv2p7CLKKRmxvN372is77pIde6mCw6LtZL7xDBG6kqG5FmkumcHh3oKaj/4zkE
-         41c004ByXkze7ssjzzNRl+xUiZhIDvattm24+Bi5bNy2pXXgZMY9s8tXsqt+gptlg3YK
-         e5oQGtyGQWOH4wWkLKiXTQxDC4/GIX7I7Ym7KR6Jtd5K1bnNndZ6o7Kzom9cvqx2SAvQ
-         EueQDGh+Bxvgm23dIkRO4X8ABz7p0XD12GLrOZtHSDCo1DXwPDOGZ416mPcJD8RE8mLj
-         NXCg==
-X-Gm-Message-State: APuU4Z8lxi2sS+k22fV5g0Buwyk4/B5AwhuGrS4pQGL5wzICiseMwuqV
-	ploEDx9CsbLWRxr3gnjlbTYPUSlD6nSQusCvVThKoffLcBO9vNwiwX7krSo1uZXYGn77nw==
-X-Gm-Gg: AZFdTZetmeocQktaW5gsyKsSQougHHU0iBomcWJ62cKP3Gppecxly4/EpInseHFhjhW
-	+YEDYCGoKubDYVingm8PjjB0h0fzN9rypX7BfAvFjyZK+gk8atimHFrl8+whsKAi57ii3we3RF1
-	Uk9wetG4i0q695OfjZcGW6kRfDVoA0z4zmCE/hQ436zkq/Zw/JJ+lX6DJCD1F62IwC/S/Cveda0
-	4OWYEjQJzwrnuwFpyybBhgfWGxE+66bvAGgpjbJ52vFY4zBJzbvarhacMFnHSrvXt02zfobCcdk
-	Pc6ZU/JlMtV6nytMw+4PXPEvMjEzqfQ/AA17vFk5lqURHxG+zzYbW2WNK3rK9kJ+ZDp4VdaESd0
-	c4sR1E8MLUFAKX9OCnMNvmFagZZkZyrxeUHzcwayMhLDW82Zf1sGwV9yu++PaLuaXaPgpWZbA+b
-	2s/WOH4tgan31htj/Co1FOz8UvcqW0DcZIuH7oBqRda9qMvw4KmKepzA+ZyO0bI8ASe4ZTFKR0G
-	6BJe9VSo7NdMq/8dmlfCrqJ/gkvGf05w/cDO4tyZGLborn3LvimvsniVeKx8snLK1uYazM0d5VB
-	hIoJLo2TxgNKR/SEA4J5DxdGrtbl0T5+Cj4=
-X-Received: by 2002:a05:6808:c2bd:b0:571:a186:d6a8 with SMTP id 5614622812f47-57a0a20acc0mr18248900b6e.17.1795649019601;
-        Wed, 25 Nov 2026 15:23:39 -0800 (PST)
-Received: from [192.168.0.98] ([50.26.120.197])
-        by smtp.gmail.com with ESMTPSA id 5614622812f47-57a35c5ac5dsm15369084b6e.15.2026.11.25.15.23.36
+        d=1e100.net; s=20260707; t=1795652412; x=1796257212;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=67RnFo9t94m6kVPT2M6dT+gKsUjvLfhYxs4nIkL8V4Y=;
+        b=hlr8FFG60kcju5h+nqc4o/zIqrBDItmOO8PsaheYyPoIM4I8kni1E3xmAJPrippIOW
+         K7dwr/KkdmIatHSiogCgxBu09i7GdvfrhN0WQ7F8Le6LihCSc63NYfNhSRnOLRaZFcdv
+         +UKtsz+jq0yHz+w1xgohVa9mWn3Sx+4pBl6y9Pnj7uYICRZ3r4PD5YBLhmBrl07Bd/Gv
+         svXGZzC/eNtuVMsBkj2aHVNTEfg6+z0VtDvuz7BqXc/d0tVxm50ZZPtgNoUEE+HgL+WC
+         u59bVCZlgKJCwIyQpkkbuuGOX3lKQCYoDlclpyULLrwQ9bQZMPTSDTdqhBoSDFB60T6C
+         bc0A==
+X-Forwarded-Encrypted: i=1; AL+hErHEQVR7SVu9aoUuRHRvahJ8rZJQDKq+ndN585oyLwedaMgh5oZTDb7Jex9AjGcXlbgTPIuicPzF4g==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9uqXRcQ/V2gv7p0D6gXIEQGixoCkIAU4HoG5IpdTr+zd6gB78V
+	IrQ2885RDcUzGvWO3Vj/4CN4PHw9vc+/MHwgSlKKzrw9ZiyqgMqypFMy
+X-Gm-Gg: AZFdTZc1+HlWj+MEiKvi6KyDjMg620QBhKZvnaxAnMWj6+AhFgZAekt6uITMwonQBka
+	iCW3XRczNUCikbWktsC3nOP3+aK6xtINaab+4rbxwMhqH4mY1XUj1HyQKTZJfAYjdiBFtDUZvab
+	yohwmUt93bte8UOCQYReyJDx4AbtsVNLhIw4hB8W34r5epNH4opK5is/vBaG3p9IHpJCBlDCGX5
+	ADwkh3bEhcJaO0L+fT0qAVfWUZnSmTUe7igVR+gWy5S13KhslJc/dkpz7djWsweuG4991eCE0Ou
+	dH/lKybim07qTNuKGoh3wE/wwGbk5Prnxf4MPWUT9aOEK23q2qWCGGEgjR1mq+VTlYNMrjRxsUf
+	TOuMybHCaX2A4ORIDA8jvyxWmJZUrazIyzlYUFuesDEyQ2hiTb1yNMqX8yn6oBJj57yM9sD5aHG
+	BEgI6dIt+qwEzoYoDmzW15PVqtcA1kGboAA16rYLhjH9eQ0ZnIxO6lJq4dZlDX+Bp5HqEUPksrj
+	Di0oteSH0OFSkLLcUR64KxBKzd0UvZYSbrcpHXR6xFETnESox9z+cCFoRnjWJpLWxjvX+a6K+Aw
+	vvdv4io4oSWdjkItEYZWSuU1r9BlpeTDlzk3/zE63lTxRmOfjznh8Ernpr//Bk7E4Wvwj8lVmW5
+	pvaPs7g==
+X-Received: by 2002:a05:7022:28b:20b0:1ac:f84d:4036 with SMTP id a92af1059eb24-1b55686f9bamr17189301c88.9.1795652411529;
+        Wed, 25 Nov 2026 16:20:11 -0800 (PST)
+Received: from dboxtp14.fish-porgy.ts.net ([211.63.184.49])
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-1b556829d31sm72708969c88.9.2026.11.25.16.20.08
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 25 Nov 2026 15:23:38 -0800 (PST)
-From: Ryan Brue <ryanbrue.dev@gmail.com>
-Date: Wed, 25 Nov 2026 17:23:22 -0600
-Subject: [PATCH RESEND] power: supply: core: give each supply's epc_sem its
- own lockdep class
+        Wed, 25 Nov 2026 16:20:10 -0800 (PST)
+From: Jason Kim <dialogbox@gmail.com>
+To: Mathias Nyman <mathias.nyman@intel.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Jason Kim <dialogbox@gmail.com>,
+	linux-usb@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	platform-driver-x86@vger.kernel.org,
+	regressions@lists.linux.dev,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Xi Pardee <xi.pardee@linux.intel.com>,
+	Hans de Goede <hansg@kernel.org>,
+	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Rajneesh Bhardwaj <irenic.rajneesh@gmail.com>
+Subject: [RFC PATCH] usb: xhci-pci: resume Lunar Lake xHC before system suspend
+Date: Thu, 26 Nov 2026 09:20:06 +0900
+Message-ID: <20261126002006.25823-1-dialogbox@gmail.com>
+X-Mailer: git-send-email 2.53.0
+In-Reply-To: <CANb8v8EGmQf90hRvr8cE3vTKOOY8b6LTxki1uORW_TJ9HadrZw@mail.gmail.com>
+References: <CANb8v8EGmQf90hRvr8cE3vTKOOY8b6LTxki1uORW_TJ9HadrZw@mail.gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -91,126 +107,205 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20261125-power-supply-epc-lockdep-key-v1-1-c8a41b8a4470@gmail.com>
-X-B4-Tracking: v=1; b=H4sIAAAAAAAA/33NvQ6CMBRA4Vdp7sw1vRAwMDnI6qCjYajlAg0/b
- VpFCeHdTXB3Psn5VgjsDQcoxAqeZxOMnaAQFAnQnZpaRlNDISCWcUYkE3T2zR7Dy7lhQXYaB6v
- 7mh32vGCsGpkqylOtNUQCnOfGfPb9Ha7lrbycoYoEdCY8rV92daa9/gCS/4GZkDDJH7VUcXJUm
- T61ozLDQdsRqm3bvkglgnzQAAAA
-X-Change-ID: 20261103-power-supply-epc-lockdep-key-2af05a195ccc
-To: Sebastian Reichel <sre@kernel.org>, 
- Sebastian Reichel <sebastian.reichel@collabora.com>, 
- Hang Nan <2122295973@qq.com>
-Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org, 
- Ryan Brue <ryanbrue.dev@gmail.com>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795649016; l=4188;
- i=ryanbrue.dev@gmail.com; s=20260906; h=from:subject:message-id;
- bh=aHS9VlhwbSd4ISaj/nw4cXUIJavrqEgLKdMBe+KGpqo=;
- b=FPlfiH8acOc2+ZC4ConFbGPH/aAReeCpfEAjvRtDpj6DPYrQcOW0W3sBWd1/pZUKK69/r6NZ9
- hVTL0a/0vM/AgTCmKrhODIS5imfYu5uImchQTzMtfiT6hPvC/hzWNYw
-X-Developer-Key: i=ryanbrue.dev@gmail.com; a=ed25519;
- pk=KsUvVaP//v/2q+ZBuacc7cLbsyEYn+AD71Sn28oZWKo=
+Content-Transfer-Encoding: 8bit
 
-Since commit 9f7f7a859451 ("power_supply: serialize property access with
-unregister"), power_supply_get_property() takes the target supply's
-epc_sem for read. Every supply's epc_sem is initialised at the same site,
-so they all share one lockdep class.
+On a ThinkPad T14s Gen 6 (Lunar Lake), suspend-to-idle often fails to
+reach S0ix when the PCH xHC (8086:a87d) is runtime-suspended when the
+system suspend starts. The Intel PMT counters show the PCH blocking
+package C6 (PREVENT_PKGC6_CHIPSET_1/2) for the whole sleep period, and
+the package stays in PC2. No LPS0 constraint is reported as unmet.
 
-A driver that reads another supply while holding a lock that its
-get_property() callback also takes is then reported as a circular
-dependency, even though the two semaphores belong to different supplies.
-sc27xx_fgu_get_property() does this with data->lock and the charger, and
-a fuel gauge driver in preparation did the same with its charger:
+A runtime-suspended PCI host controller is runtime-resumed by
+pci_pm_suspend() and then suspended again, so it goes through a
+D3hot -> D0 -> D3hot cycle in the middle of the system suspend
+transition. If the controller is kept active until the transition
+starts (power/control set to "on"), S0ix is reached reliably.
 
-  WARNING: possible circular locking dependency detected
-  kworker/2:1/60 is trying to acquire lock:
-   (mutex_#2){+.+.}-{4:4}, at: mt6397_battery_get_property+0x50/0x23c
-  but task is already holding lock:
-   (&psy->epc_sem){.+.+}-{4:4}, at: power_supply_get_property+0x34/0x80
+Add an HCD flag that makes hcd_pci_prepare() runtime-resume the
+controller before any device is suspended, and set it for the Lunar
+Lake xHC through a new quirk. The PM core holds a runtime PM reference
+from ->prepare() to ->complete(), so the controller stays active until
+the system suspend proper and goes from D0 to D3hot once.
 
-Lockdep then turns itself off for the rest of the boot.
+Results on v7.4-rc4, battery, 8 s rtcwake cycles, counted as S0ix
+entered when last_hw_sleep > 0:
 
-Register a lockdep key for each supply, so that only a supply's own epc_sem
-is ordered against its own locks.
+  runtime-suspended xHC (unpatched)       0/30, 4/30
+  power/control=on right before suspend  97/100
+  with this patch                        28/30
 
-Fixes: 9f7f7a859451 ("power_supply: serialize property access with unregister")
-Signed-off-by: Ryan Brue <ryanbrue.dev@gmail.com>
+The analysis, the patch and this changelog were prepared with the help
+of an AI coding assistant (Claude Code). I reviewed the change and ran
+the tests above on my machine.
+
+Link: https://bugzilla.kernel.org/show_bug.cgi?id=222281
+Link: https://lore.kernel.org/linux-usb/CANb8v8EGmQf90hRvr8cE3vTKOOY8b6LTxki1uORW_TJ9HadrZw@mail.gmail.com/
+Signed-off-by: Jason Kim <dialogbox@gmail.com>
 ---
-Since v7.4-rc1 power_supply_get_property() takes the target supply's
-epc_sem, and every supply's epc_sem shares one lockdep class. A driver
-that reads another supply under a lock its own get_property() takes is
-then reported as a circular dependency, and lockdep switches itself off.
+This follows up on my report in the thread this mail replies to.
 
-Tested on an MT8173 tablet (Amazon Fire HD 10, 2017) with PROVE_LOCKING:
-the report came at boot with a fuel gauge that reads its charger under
-its own mutex, and doesn't come with this patch (debug_locks stays 1).
+Sent as RFC because I have seen this on only one machine, a ThinkPad
+T14s Gen 6 (BIOS N4IET31W 1.17), and I cannot tell whether it is a
+Lunar Lake issue or specific to this platform and its firmware. The
+ACPI power resource of the xHC here is \_SB.PC00.LPCB.EC.PUBS, which
+is defined under the EC device, so firmware may well be involved.
+Could someone at Intel check whether other Lunar Lake systems show
+the same behaviour? Depending on the answer, the quirk could stay on
+the PCI ID as in this patch, be limited by DMI, or be dropped in
+favour of a firmware fix. I would appreciate advice on which way to
+go.
 
-This is a resend of the 11-10 patch, now also to Sebastian's Collabora
-address, which I left off the first time. The code is unchanged, and it
-still applies to v7.4-rc4 and to the power-supply for-next branch.
+Notes:
 
-This patch was developed with the help of an LLM coding assistant.
----
-Changes in RESEND:
-- Added Sebastian's Collabora address; no code change.
-- Link to v1: https://lore.kernel.org/r/20261110-power-supply-epc-lockdep-key-v1-1-39bd0a237a6c@gmail.com
----
- drivers/power/supply/power_supply_core.c | 3 +++
- include/linux/power_supply.h             | 3 +++
- 2 files changed, 6 insertions(+)
+- Tested only on v7.4-rc4, on this one machine. The Thunderbolt xHC at
+  00:0d.0 (8086:a831) is not touched by this change.
 
-diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/supply/power_supply_core.c
-index de15314ef954..76bbe8772143 100644
---- a/drivers/power/supply/power_supply_core.c
-+++ b/drivers/power/supply/power_supply_core.c
-@@ -1662,6 +1662,7 @@ static void power_supply_dev_release(struct device *dev)
- 	struct power_supply *psy = to_power_supply(dev);
+- No Fixes: tag. On Ubuntu 7.0 the same failure happens about 14% of
+  the time and on 7.4-rc4 most of the time, but I have not found the
+  commit that made it worse, so this works around the trigger rather
+  than reverting a specific change.
+
+- Resuming 00:14.0 alone in ->prepare() is enough. A debug variant that
+  resumed both xHCs in ->prepare() gave the same result (29/30), and so
+  did taking a runtime PM reference from a PM_SUSPEND_PREPARE notifier
+  (29/30).
+
+- Separate issue, mentioned only because I left it out of the numbers
+  above: in two boots (one of them with this patch applied) S0ix failed
+  in every cycle no matter what the xHC did, including with
+  power/control=on (0/30). In those boots the display DMC
+  "DC5 -> DC6 allowed count" never increased during sleep, while it
+  goes up by 15-20 per cycle in every other boot. It does not seem
+  related to USB, and I will report it separately once I can
+  reproduce it.
+
+- If a more generic fix is preferred, for example avoiding the runtime
+  resume in the system suspend path for this device in USB or PCI core,
+  I am happy to test it.
+
+ drivers/usb/core/hcd-pci.c  | 21 +++++++++++++++++++++
+ drivers/usb/host/xhci-pci.c | 14 ++++++++++++++
+ drivers/usb/host/xhci.h     |  1 +
+ include/linux/usb/hcd.h     |  2 ++
+ 4 files changed, 38 insertions(+)
+
+diff --git a/drivers/usb/core/hcd-pci.c b/drivers/usb/core/hcd-pci.c
+index cd223475917e..85df50237e4c 100644
+--- a/drivers/usb/core/hcd-pci.c
++++ b/drivers/usb/core/hcd-pci.c
+@@ -8,6 +8,7 @@
+ #include <linux/pci.h>
+ #include <linux/usb.h>
+ #include <linux/usb/hcd.h>
++#include <linux/pm_runtime.h>
  
- 	dev_dbg(dev, "%s\n", __func__);
-+	lockdep_unregister_key(&psy->epc_key);
- 	kfree(psy);
+ #include <asm/io.h>
+ #include <asm/irq.h>
+@@ -521,6 +522,24 @@ static int resume_common(struct device *dev, pm_message_t msg)
+ 
+ #ifdef	CONFIG_PM_SLEEP
+ 
++static int hcd_pci_prepare(struct device *dev)
++{
++	struct usb_hcd		*hcd = dev_get_drvdata(dev);
++
++	/*
++	 * Some host controllers misbehave if they are runtime-resumed and
++	 * suspended again in the middle of a system suspend transition, which
++	 * is what happens to a runtime-suspended controller in
++	 * pci_pm_suspend().  Resume them here instead, before any device is
++	 * suspended.  The PM core holds a runtime PM reference from now until
++	 * ->complete(), so they stay active until the system suspend proper.
++	 */
++	if (hcd && hcd->resume_before_system_suspend)
++		pm_runtime_resume(dev);
++
++	return 0;
++}
++
+ static int hcd_pci_suspend(struct device *dev)
+ {
+ 	return suspend_common(dev, PMSG_SUSPEND);
+@@ -599,6 +618,7 @@ static int hcd_pci_restore(struct device *dev)
+ 
+ #else
+ 
++#define hcd_pci_prepare		NULL
+ #define hcd_pci_suspend		NULL
+ #define hcd_pci_freeze			NULL
+ #define hcd_pci_suspend_noirq	NULL
+@@ -631,6 +651,7 @@ static int hcd_pci_runtime_resume(struct device *dev)
  }
  
-@@ -1765,6 +1766,7 @@ __power_supply_register(struct device *parent,
- 	if (!psy)
- 		return ERR_PTR(-ENOMEM);
+ const struct dev_pm_ops usb_hcd_pci_pm_ops = {
++	.prepare	= hcd_pci_prepare,
+ 	.suspend	= hcd_pci_suspend,
+ 	.suspend_noirq	= hcd_pci_suspend_noirq,
+ 	.resume_noirq	= hcd_pci_resume_noirq,
+diff --git a/drivers/usb/host/xhci-pci.c b/drivers/usb/host/xhci-pci.c
+index e278db940a58..261c77ba794c 100644
+--- a/drivers/usb/host/xhci-pci.c
++++ b/drivers/usb/host/xhci-pci.c
+@@ -60,6 +60,7 @@
+ #define PCI_DEVICE_ID_INTEL_COMET_LAKE_XHCI		0xa3af
+ #define PCI_DEVICE_ID_INTEL_ALDER_LAKE_PCH_XHCI		0x51ed
+ #define PCI_DEVICE_ID_INTEL_ALDER_LAKE_N_PCH_XHCI	0x54ed
++#define PCI_DEVICE_ID_INTEL_LUNAR_LAKE_XHCI		0xa87d
  
-+	lockdep_register_key(&psy->epc_key);
- 	dev = &psy->dev;
+ #define PCI_VENDOR_ID_PHYTIUM		0x1db7
+ #define PCI_DEVICE_ID_PHYTIUM_XHCI			0xdc27
+@@ -419,6 +420,16 @@ static void xhci_pci_quirks(struct device *dev, struct xhci_hcd *xhci)
+ 	     pdev->device == PCI_DEVICE_ID_INTEL_MAPLE_RIDGE_XHCI))
+ 		xhci->quirks |= XHCI_DEFAULT_PM_RUNTIME_ALLOW;
  
- 	device_initialize(dev);
-@@ -1810,6 +1812,7 @@ __power_supply_register(struct device *parent,
++	/*
++	 * If the Lunar Lake xHC goes through a D3hot -> D0 -> D3hot cycle
++	 * during system suspend (it is runtime-suspended when the transition
++	 * starts), the platform often fails to reach S0ix: the PCH keeps
++	 * blocking package C6 for the whole suspend-to-idle period.
++	 */
++	if (pdev->vendor == PCI_VENDOR_ID_INTEL &&
++	    pdev->device == PCI_DEVICE_ID_INTEL_LUNAR_LAKE_XHCI)
++		xhci->quirks |= XHCI_RESUME_BEFORE_SYSTEM_SUSPEND;
++
+ 	if (pdev->vendor == PCI_VENDOR_ID_ETRON &&
+ 	    (pdev->device == PCI_DEVICE_ID_ETRON_EJ168 ||
+ 	     pdev->device == PCI_DEVICE_ID_ETRON_EJ188)) {
+@@ -679,6 +690,9 @@ int xhci_pci_common_probe(struct pci_dev *dev, const struct pci_device_id *id)
+ 	else if (xhci->quirks & XHCI_DEFAULT_PM_RUNTIME_ALLOW)
+ 		pm_runtime_allow(&dev->dev);
  
- 	spin_lock_init(&psy->changed_lock);
- 	init_rwsem(&psy->epc_sem);
-+	lockdep_set_class(&psy->epc_sem, &psy->epc_key);
- 	init_rwsem(&psy->extensions_sem);
- 	INIT_LIST_HEAD(&psy->extensions);
++	if (xhci->quirks & XHCI_RESUME_BEFORE_SYSTEM_SUSPEND)
++		hcd->resume_before_system_suspend = 1;
++
+ 	dma_set_max_seg_size(&dev->dev, UINT_MAX);
  
-diff --git a/include/linux/power_supply.h b/include/linux/power_supply.h
-index cce61137aef4..3cfe2520862e 100644
---- a/include/linux/power_supply.h
-+++ b/include/linux/power_supply.h
-@@ -371,8 +371,11 @@ struct power_supply {
- 	 * the callback is still using it.
- 	 * Must not be shared with extensions_sem: callbacks may read their own
- 	 * properties, which takes that one for read.
-+	 * Each supply has its own lockdep class: a driver may read another
-+	 * supply's properties while holding a lock its own callbacks take.
- 	 */
- 	struct rw_semaphore epc_sem;
-+	struct lock_class_key epc_key;
- 	struct rw_semaphore extensions_sem; /* protects "extensions" */
- 	struct list_head extensions;
- #ifdef CONFIG_THERMAL
-
----
-base-commit: 6628e7d4c6b25c8d18f1345e3a20d21829aae7e4
-change-id: 20261103-power-supply-epc-lockdep-key-2af05a195ccc
-
-Best regards,
+ 	if (device_property_read_bool(&dev->dev, "ti,pwron-active-high"))
+diff --git a/drivers/usb/host/xhci.h b/drivers/usb/host/xhci.h
+index ec4bfeb4887c..d3f202cde46b 100644
+--- a/drivers/usb/host/xhci.h
++++ b/drivers/usb/host/xhci.h
+@@ -1652,6 +1652,7 @@ struct xhci_hcd {
+ #define XHCI_CDNS_SCTX_QUIRK	BIT_ULL(48)
+ #define XHCI_ETRON_HOST	BIT_ULL(49)
+ #define XHCI_LIMIT_ENDPOINT_INTERVAL_9 BIT_ULL(50)
++#define XHCI_RESUME_BEFORE_SYSTEM_SUSPEND	BIT_ULL(51)
+ 
+ 	unsigned int		num_active_eps;
+ 	unsigned int		limit_active_eps;
+diff --git a/include/linux/usb/hcd.h b/include/linux/usb/hcd.h
+index 181db044c4d2..616d334436a1 100644
+--- a/include/linux/usb/hcd.h
++++ b/include/linux/usb/hcd.h
+@@ -160,6 +160,8 @@ struct usb_hcd {
+ 	unsigned		tpl_support:1; /* OTG & EH TPL support */
+ 	unsigned		cant_recv_wakeups:1;
+ 			/* wakeup requests from downstream aren't received */
++	unsigned		resume_before_system_suspend:1;
++			/* leave runtime suspend in ->prepare of system suspend */
+ 
+ 	unsigned int		irq;		/* irq allocated */
+ 	void __iomem		*regs;		/* device memory/io */
 -- 
-Ryan Brue <ryanbrue.dev@gmail.com>
+2.53.0
 
