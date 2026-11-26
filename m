@@ -1,87 +1,103 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=194.199.235.221
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.46
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795712500;
-	b=366QjNBaCCTJO9mcvrCQzcTksMtlSNzpl8NjmWAeAhamEGlgQKqSAxRajdJ5/nZZ8XLC
-	 PzxkqfPlDWL/jpmmMUD5VQabiQ3QFKMrdxRtCDI5BnM6JAMD3gdT5nVDHbwPE1i/nmJI7
-	 4rtKC12NO47ZJh7ae7pWmMlVKSgZXur5IhKk8GNYyCZeIVqaDf1ime/bzOGY1E1cTyGMJ
-	 9h5o07LQdj/xwWbljjZqHsW5QQ+Nso+I69bAj5L34EaHBYLwyvIX+CMLXqIzYobm/0Cw8
-	 j35MLrw9+3C4sXh+AO9XfdCTeHnKVETACUV6EOksN3RZV2KCrkaqO8WcDuRXnb1PofA==
+	t=1795716556;
+	b=zH5tpKhj8mVLNAwUnsbaPbQcgjtDNCVg3Cd6DA9vb/djXBE5sPVzUre9vp5Ra1fI1IE+
+	 XcOz+KYj7muttn49DtykFALICccuB351Wa11NGBNO38sbGc9EfH42THQ8tQvcDmfeQBvQ
+	 i/BSgflBa8hD9KbV2QvCRQ9CShEDEXFrqmmRAKeISWUvZC7Z8hYUF+2GeMh5OHr13VspT
+	 vo3x0Zw/CerSY/I/iquGgZj1rRM3KMYTOoMsLlyXqgnbm35ZPAQG4Z4XhSV6vYvSRb4hK
+	 Ewe382EtehKaVj/jppNA/llkwI71E7gltDHiQnZJnXKkreI+hdkN3Hq3AeEeYMSPdmQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795712500;
-	h=DMARC-Filter:Received:Received:DKIM-Filter:DKIM-Signature:
-	 X-Virus-Scanned:Received:Received:From:To:Cc:Subject:Date:Message-ID:
-	 X-Mailer:In-Reply-To:References:MIME-Version:Content-Type:
-	 Content-Transfer-Encoding;
-	bh=WJTpt+X9RF5ov4+gkKKicVGwQVPCzHMz365+2em8uJI=;
-	b=YBOIgxitVeRyZPOBRQYmjFf/WuaniB06xx8Z7snr/SBEBIpHCd942JYIGpCs68wv2XLB
-	 0S1AM2aGy5k2aE3A/ddM0tpeIy8LESxNbki0fAuDet9hEfPzqzR2vQsHsOggipr11QYUB
-	 gYdlV0dzd4SFKOeYUkh0J+OxyOhLZ8TsKGGrzBoNT8l9S+r/M7I5mebfDlm2UsxIVieg+
-	 2XZNYTMEpzGCLxmW1APB7CT8nLGCY1GOaAxoU/DDnI0c13YEoBixj2oycs6UsBov1O9NA
-	 xXzM2SUG8AamRv4ABWfFT/KMYP0NnYApbw4c82ueUvkVZiH6v9wQDMkfNm5K7vL1TtA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795716556;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type;
+	bh=5Ua8eli/eeePNuHrLso0Ijy+DWauR2C0WdOXLlgWKW4=;
+	b=gQU3Wnjj3QAxztmovHZT1o2KxLKNsvAj99a2ix+puSzOAe3gxoeH23eUNrLHRka9mP1S
+	 YAoCpNhINRSdySVgiOhWI4be3UINFc28nq4i0UxEDCMgLfhFGqThmmoU+ByZZfgUe5Vkg
+	 ineL0s5eFG+3WGJ07tiLI/++N9w2u+RapmBNrQjrejV5Lun3ADeaeaxbAhZtvL9DTbWv3
+	 NJaZfSnjelLezhjzfl9dO4EDi1EpX6ukQAzY7Y2hllCZMu8KPHctTRKlq4GY2CTHMAm1w
+	 liAg/9EXl5uDNX5opTU1QQJH9C54IpEgOtaFeO3BtLg7790P7DRmGIGuQXREZ3vXrjQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=cirad.fr;
-	spf=pass smtp.mailfrom=cirad.fr;
-	dkim=pass header.d=cirad.fr header.i=@cirad.fr header.a=rsa-sha256 header.s=573E3878-7916-11F1-BF4B-F68474317960 header.b=V24TKzqm;
-	arc=none smtp.remote-ip=194.199.235.221
-Received: from retz.cirad.fr (retz.cirad.fr [194.199.235.221])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Z4ysYqZI;
+	arc=none smtp.remote-ip=209.85.221.46
+Received: from mail-wr1-f46.google.com (mail-wr1-f46.google.com [209.85.221.46])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2DEFE606A31E;
-	Thu, 26 Nov 2026 17:01:40 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2DEFE606A31E
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=cirad.fr
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=cirad.fr
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C37E3606A31E
+	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 18:09:15 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org C37E3606A31E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=cirad.fr header.i=@cirad.fr header.a=rsa-sha256 header.s=573E3878-7916-11F1-BF4B-F68474317960 header.b=V24TKzqm
-Received: from retz.cirad.fr (localhost [127.0.0.1])
-	by retz.cirad.fr (Postfix) with ESMTPS id 97C8B210CB3E;
-	Thu, 26 Nov 2026 18:01:38 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by retz.cirad.fr (Postfix) with ESMTP id 6D3D820DC677;
-	Thu, 26 Nov 2026 18:01:38 +0100 (CET)
-DKIM-Filter: OpenDKIM Filter v2.10.3 retz.cirad.fr 6D3D820DC677
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=cirad.fr;
-	s=573E3878-7916-11F1-BF4B-F68474317960; t=1795712498;
-	bh=WJTpt+X9RF5ov4+gkKKicVGwQVPCzHMz365+2em8uJI=;
-	h=From:To:Date:Message-ID:MIME-Version;
-	b=V24TKzqm6S5AO/9g3OMqRN4hLIB/rPeMeao0L2Z9/UsK/sdGBdwHBf+NEO39BH3Os
-	 jb2gK6vTXGeKTCP+6Hs6EfGdpcGlMkAgJOMApZv5IZv/lX43K7V9GgTSh36ezB/MjB
-	 lt3qc97uZaF5iOv6gMbkU6YJXdYTYFlXIrBD4BFgle8Ldm/+2Sw9ci3qkfXheNGsjj
-	 QGWTMFQN08S7+HprJcNybEhKbE9ewkn1pDdkDIE8Cs7au6IoJeFJHN/891aJ7jP80W
-	 D9cncgvx0SI3iqxmX+a2qxOf7Lrx3R69SCQ043n5GiEmMd5G9rwl2xYAPv9p6CJP2n
-	 TQ6bSoUIKYXuQ==
-X-Virus-Scanned: amavis at retz.cirad.fr
-Received: from retz.cirad.fr ([127.0.0.1])
- by localhost (retz.cirad.fr [127.0.0.1]) (amavis, port 10026) with ESMTP
- id cJicDJtaFHn5; Thu, 26 Nov 2026 18:01:38 +0100 (CET)
-Received: from localhost.localdomain (78-196-243-100.subs.proxad.net [78.196.243.100])
-	by retz.cirad.fr (Postfix) with ESMTPSA id 6B332210CB3E;
-	Thu, 26 Nov 2026 18:01:37 +0100 (CET)
-From: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Mah=C3=A9?= <frederic.mahe@cirad.fr>
-To: Yixun Lan <dlan@kernel.org>
-Cc: =?UTF-8?q?Fr=C3=A9d=C3=A9ric=20Mah=C3=A9?= <frederic.mahe@cirad.fr>,
-	Ulf Hansson <ulfh@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Paul Walmsley <pjw@kernel.org>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	devicetree@vger.kernel.org,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Conor Dooley <conor.dooley@microchip.com>,
-	linux-riscv@lists.infradead.org,
-	spacemit@lists.linux.dev,
-	Iker Pedrosa <ikerpedrosam@gmail.com>
-Subject: Re: [PATCH v5 0/2] PM: spacemit: Add power domain support
-Date: Thu, 26 Nov 2026 18:01:12 +0100
-Message-ID: <20261126170113.905375-1-frederic.mahe@cirad.fr>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20261118-04-k3-pm-support-v5-0-42394acdf3e3@kernel.org>
-References: <20261118-04-k3-pm-support-v5-0-42394acdf3e3@kernel.org>
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=Z4ysYqZI
+Received: by mail-wr1-f46.google.com with SMTP id ffacd0b85a97d-4a42b34e930so6397248f8f.2
+        for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 10:09:15 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20260707; t=1795716554; x=1796321354; darn=vger.kernel.org;
+        h=content-type:mime-version:references:in-reply-to:message-id:date
+         :subject:cc:to:from:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=5Ua8eli/eeePNuHrLso0Ijy+DWauR2C0WdOXLlgWKW4=;
+        b=Z4ysYqZIi8yTtEsGaz3PJPdELo5yah/1bnKBGrQNdDouR5yhyfZgAiqVpFk2dXVvNR
+         saVwKIPGbZ0WHF7+ScrB7Nn+ThzlMcjK4sI+u9ysAQpkDXIRhGd5iGa5sRNT5BEVUHlB
+         51yQUuvr1KzVN3EJl2MorHrHyXgbCLCyqu0ZAJMTHy2RlgdvtAa6A+w1+9nkA5RU5Jkw
+         zAqsyMWKeR50HjRN65BXcOyLcE615jvvZHikjzc/kq2xvqbbMYrUQ8mRrYd4LbcZJye8
+         dsDComUeHBZAMqWWwMe+eda/TqBmk9RUDBNQ56KOGC4Zf2HZYQIDV2KFGcx2+oYZP+f9
+         K7xw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795716554; x=1796321354;
+        h=content-type:mime-version:references:in-reply-to:message-id:date
+         :subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=5Ua8eli/eeePNuHrLso0Ijy+DWauR2C0WdOXLlgWKW4=;
+        b=A/SCxNjzuTjZ9Z6Iok9VsZsuPGEBT2Ulzi2fWmWR7vz9ZoxB0ikPKkDKxj6cCReWYI
+         YvzRd5UK573OG90xCrKhkbtJOl7F5auBD7Wk0jGxV+PCzQAjlG5B15lRVgv4ojlZ/DX4
+         ma+e6hmt2kFxV3ZNbMXxbDfYVq4hqzdl2Ox9OaCCaQe/fWTbN/dCAE26SwChfybt+4Ri
+         kaOQz/qcmMU3HbmqHKwrIzYRA2YlrPg6Mi/BI9airca3Imekr1Us0JX4HjKZ6P2Sj/kr
+         kdJvDKoaWvqdJ4Q1jbRaa7hHgMOLWdEb3hE7TO4ly2ryZhqYlPCa8ZGDJLpwDROmqAFh
+         FRSg==
+X-Forwarded-Encrypted: i=1; AL+hErHEsvm/IYyzY/MwTyIM7iOCPbTXqg6WrF3yDs2bYqoiuPenhfJKlV/XOcYWzWHfTjf2uXwIJHxnPQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z+isoR+NRt9oCIelueyJj4p+bKe/mM683yfdSqjh7abYVZ6AQdi
+	AEBYq6gqKRcH6ZQgO7XV43vk2y0PuvNrl+fiQTbhKh1MPechYIhFrcCb
+X-Gm-Gg: AZFdTZc/02ThTxUp/AAugtJmFmit3pW/Ex9Kf+y8+cEjWqqMQ+TMjG69UukXIVxU1uy
+	DMQo1yy0BK1vlfJlL69YrD6cNLvtfYku/Fdr58QXLq+CLrCezC/kVpN3J7je+q9XlyqS5z9nKtl
+	X/QBRChBTzUXGBmRcTaV74rr8sWeGbyTvWurnIpuF1PIEXVApCZS2W8rJXgJyx65yUnFS4aG6Es
+	ir6lYU7bACoaO/njKkzgDdpf19+CM9+MxTSc7MCs9aIKEcsJ3kRep/2IrTeHRIIkv/zlFZcbIdD
+	ko0T5wiCfTYsYdmvPtlOf4BySQasf3tbff0byLb4L3a+zJB8mMYRtQpSURmruGjuku8xSlU0uHX
+	d4ewIhiTzlSDuSoUCK5cMtmbqdWPauobiyrKAL3L8Q10zGZIoZY8JngNTxNEP5sMIFaMmYImNFE
+	Ek680bwjZpUfr0ve6BXp1I9hDzeRHPGqvZDWNQ7lBvjUVdg5EvSAx6bcJfMT5dqZO95bmwSuU05
+	FTDdcS13at1yBRH24uXcp/vb4ad0u0ohjfCmL74DqX4lgH5cGOTrvWmqxZiLg4l8AmuU8dl8tuB
+	VUXXZaB9DuX7r5094oROXkcszU3/eOmWV9t88NQJ2w==
+X-Received: by 2002:a05:6000:2506:b0:48d:ba3b:af36 with SMTP id ffacd0b85a97d-4abb47b0f64mr52009407f8f.37.1795716553993;
+        Thu, 26 Nov 2026 10:09:13 -0800 (PST)
+Received: from strix.localnet ([197.250.160.193])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4ab6a67f204sm50447904f8f.21.2026.11.26.10.09.08
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 26 Nov 2026 10:09:13 -0800 (PST)
+From: Stefan =?UTF-8?B?RMO2c2luZ2Vy?= <stefandoesinger@gmail.com>
+To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, Philipp Zabel <p.zabel@pengutronix.de>,
+ Lee Jones <lee@kernel.org>, Ulf Hansson <ulfh@kernel.org>,
+ Vinod Koul <vkoul@kernel.org>, Neil Armstrong <neil.armstrong@linaro.org>,
+ Manivannan Sadhasivam <mani@kernel.org>,
+ Agustin Santiago Isasmendi <isasmendi.agus@gmail.com>,
+ Navid Ghahremani <ghahramani.navid@gmail.com>, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ mfd@lists.linux.dev, linux-pm@vger.kernel.org, linux-phy@lists.infradead.org
+Subject: Re: [PATCH 3/6] pmdomain: zte: Add a zx297520v3 power domain driver
+Date: Thu, 26 Nov 2026 20:26:25 +0300
+Message-ID: <qBBdBMwWSaK2Eq9RGMmPfg@gmail.com>
+In-Reply-To:
+ <CAPx+jO_zuvcNnBWqUKJHJ246xEDb=FbN6FYKcrN+p6ERmjg2tQ@mail.gmail.com>
+References:
+ <20261120-zx29usb-v1-0-b0433258e51b@gmail.com>
+ <20261120-zx29usb-v1-3-b0433258e51b@gmail.com>
+ <CAPx+jO_zuvcNnBWqUKJHJ246xEDb=FbN6FYKcrN+p6ERmjg2tQ@mail.gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -91,18 +107,77 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: multipart/signed; boundary="nextPartfY-J0jcIRweO3vnQrxe_bQ";
+ micalg="pgp-sha256"; protocol="application/pgp-signature"
 
-Hi Yixun,
+--nextPartfY-J0jcIRweO3vnQrxe_bQ
+Content-Transfer-Encoding: 7Bit
+Content-Type: text/plain; charset="utf-8"; protected-headers="v1"
+From: Stefan =?UTF-8?B?RMO2c2luZ2Vy?= <stefandoesinger@gmail.com>
+To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Subject: Re: [PATCH 3/6] pmdomain: zte: Add a zx297520v3 power domain driver
+Date: Thu, 26 Nov 2026 20:26:25 +0300
+Message-ID: <qBBdBMwWSaK2Eq9RGMmPfg@gmail.com>
+In-Reply-To:
+ <CAPx+jO_zuvcNnBWqUKJHJ246xEDb=FbN6FYKcrN+p6ERmjg2tQ@mail.gmail.com>
+MIME-Version: 1.0
 
-Tested v5 on a Banana Pi BPI-F3 (v7.4-rc4 plus your two CCU pm-aux
-patches): the seven K1 domains register and unused ones are turned off
-at boot. With Iker's PowerVR GPU node (v2), the gpu domain turns on when
-the driver binds and the firmware loads. No new warnings; W=3D1 build is
-clean. Reboot from this kernel is clean.
-Testing done with the help of Claude (AI assistant).
+Hi Ulf,
 
-Tested-by: Fr=C3=A9d=C3=A9ric Mah=C3=A9 <frederic.mahe@cirad.fr> # BPI-F3
+Thanks for the review!
 
-Fr=C3=A9d=C3=A9ric
+Am Donnerstag, 26. November 2026, 15:26:20 Ostafrikanische Zeit schrieb Ulf 
+Hansson:
+> This doesn't belong in this particular driver, but rather in the genpd
+> core. In fact, we have a proposed patch [1] that is being discussed;
+> but the bigger question is if we need genpd provider drivers to be
+> removable at all.
+> 
+> What is your use case for this?
+
+It's extrapolated from the clock system maintainer's request to keep clk 
+drivers buildable as modules. The pmdomain is even less critical than clk and 
+can easily be unloaded and reloaded, even though I don't see much practical 
+application.
+
+I see the following options, in order of preference:
+
+1) Simply remove the device_link_add() call from the driver and add a line to 
+the patch description that this is deliberate to maybe shut up Sashiko.
+
+2) Set .suppress_bind_attrs = true and make the option bool.
+
+Note that the MFD parent is tristate and unbindable, but that should be ok as 
+the pmdomain consumers target its own node.
+
+.suppress_bind_attrs = true combined with tristate isn't going to help. Unlike 
+the phy subsystem, pmdomain doesn't hold a reference to the driver, so you can 
+rmmod the pmdomain driver while there are active consumers.
+
+--nextPartfY-J0jcIRweO3vnQrxe_bQ
+Content-Type: application/pgp-signature; name="signature.asc"
+Content-Description: This is a digitally signed message part.
+Content-Transfer-Encoding: 7Bit
+
+-----BEGIN PGP SIGNATURE-----
+
+iQJPBAABCAA5FiEEQxb0tqoFWyeVMl1sPRO8yFRPGiIFAmsIa8EbFIAAAAAABAAO
+bWFudTIsMi41KzEuMTIsMiwyAAoJED0TvMhUTxoiBIUP/05AbhnlM2LcacFX58EL
+N7rFiT+lhfKkTk2WyMVEI10KwIOop+Y/Am5zrnL5YXQPyLWu8N+pfkUki9SvJSBH
+iKKDQAncXwJ7lWkBISVb2/BxeqJxIHWfDJ0GYhYsaHxLyYo4PWMjT+tq9s+Naqvv
+gu5WXpYb3F5sqS0qshsJicHYiU4z1vU9hg4Qazrs61AjDU46L6XpevR5L8mONzHZ
+piLakQdu+Hp1LFMtu7mMqniIc/RnlRoL76NDcjP7BZ5iS9l+INN5R4bIYGP5uCJR
+84bozcygfkiO6tlkIIcumE/Z5DtZfUlC+u4vvpy1X3jbtMokGZ9K+hpKLCVOQkqq
+nklQEfe5EwJVW55bPLRj8LD3npSlBNsAWI5BdgyEqvBf4RuLdbVmodDK5dT8p4YM
+/u/o0m891tAX9tp9dMrkPPJyyhHe5rmRoV9mSBNDzqLuOUfQcvhsHdyPgi/xFLY2
+FHugaTeVu2QhrRUvurddqz6liNm5+sfy7uzYUtjVjQWxAQZ0GBnDKaVkIaYYUHnv
+i1VRm13aavhPdH3WgQh//hh7gZZxc3zO4ioU9gRtxWGwOoCZOYhM43WrTmImaRMG
+EMld6KpU6bCcuWmK9sC7u6W7PXOrExL+8Z6bO09no49EU90SimbONtaWrHM9i/jI
+0jucOU5MLX8n7BJ4G4cwpoor
+=3XcY
+-----END PGP SIGNATURE-----
+
+--nextPartfY-J0jcIRweO3vnQrxe_bQ--
+
+
+
