@@ -1,79 +1,98 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
-	t=1795687294;
-	b=vyYylnOHvOM62SGgDTVYfyWSHW3Pc4hbZfkOenkiHMNvHe0UpSvcJp7TDrKlpWmQ3bG4
-	 X64PgmyBummT+2Lcht0USXToacXHcrQcZU3GPXXWXo0KWVaVr3ULHQm359UOrfWVieA3h
-	 VOPJL4aSEcJRUmIuiVlAfwVCRUjG/LzLmKRf7Iq6YqfurYAbp5H7vYwo936WzmhI6XAxD
-	 6OItjyFtfoBhWisSX3EvYyIkkhW7u1vmPe+hppwApVUHH5EL0RMvklcOFijaYgMj6KjRQ
-	 mM5je78DtxO8MAAf87VPMIM6Sx2V8mzNJHJduRTp0+2VniUBW8YcIyVvC7G1kJ8WU0A==
-ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795687294;
-	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
-	 Content-Type:Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=2ujEHY0Zi0y5OyztYT2I9S8JHnB/HKpYJXPk+96/YlQ=;
-	b=ku0mcp9O4aDA0WOipAPGQrPbNPPo/+urR6VU5CnwsKbP4xkXOS0vJngjoQF3Yu1Bqt2X
-	 z13VoVK1JGn5aK1rd55u2zL2zESrf3g02l2n8cBNcN7lTI4KOuXrPnJyqw20scndRY1ic
-	 cTZ6ahbwDugVk1W6Ap+qYetaQiZa7qZdvxLedO6qmXfVrsIe5xPMlGsFvK8+0EvEFSInf
-	 DBSqrsO3c1Huu+VqaiY2Z9Sfr1AvgwQ7Chyogg8oT58VPrrDpmXmHIrBi9zjMr2DvbeoL
-	 Kx+DzACvOY8VhBPAp7fTxiOSI/Cu0Fw5y179JtRc+fKJ6aqgvLoBeUuVJcSQiygYQ4g==
-ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HvLVGao1;
-	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
-Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (prime256v1))
-	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C0147606A6A3;
-	Thu, 26 Nov 2026 10:01:34 +0000 (UTC)
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=HvLVGao1
-Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
-ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
-	t=1795687294;
-	b=08eWDTeaGy9O9yX3lSmkdz4AMrqV68LTlluPNuwhd+g9o8mY9oSEtkTJVyHF3SOYDaJq
-	 kw4X0g9hJJGTCcV+L5DfVyJX4I8gxNk1gaOaIldGa5mq+unPxIyiVmnqTeRNvnBgCAq5V
-	 QIqc5A/Ve1YSWs7MpvSgbKaUcdtU84yhNFiNmRgb0XNnCFb6o4L+DQKcK/6ac8sgniveU
-	 /C73L8aBeMecLWJdwbnA+IJgM9m8WpOO98VPO+Tow4m1h+3Z7WdXRHdamMPketDijsYL1
-	 gcAuvvEnYpkf42xx58wTVjTLo9JPGTMD063Nw0itOjO33CQbCzH/e7L3A+m0EP9cCDw==
-ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
-	c=relaxed/relaxed; t=1795687294;
-	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
-	 Message-Id:References:In-Reply-To:To:Cc:X-Mailer:
-	 X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
-	 X-Original-From:Reply-To:Content-Transfer-Encoding;
-	bh=2ujEHY0Zi0y5OyztYT2I9S8JHnB/HKpYJXPk+96/YlQ=;
-	b=s0XfIVpdJ+ZQNC00JhNVV5GN6NgLQMbv6EG+6tmYJc7q0WoSflo+uTCE4O6oh7v0P1xc
-	 IeWixMDDktab53M+1g5FHg2khbxqZUzjiy9LrerZ4oCXMJbyyDjaSIKkUISPZguSkLaFT
-	 z6Qek7pDnf4wC+J9ecSdc7Aij7PtERtnTjyN00yL6pEyjWlw2l7hXlFQVTt7UtZJ69Ms+
-	 7eeajzZH+Dg8hTT+rpNzpeqG/83c7FD2Qbw7jaSZ4JX0jSzUTZfuLGBybXsV42KwFT05X
-	 i5AHr7b8Mw32ctQCbrnwvvVOgH7i9ar8XGewx8vbNLjwGSDuWyWsyEyg6lRy+SPdAqw==
-ARC-Authentication-Results: i=1; smtp.kernel.org; 
-	arc=none smtp.remote-ip=100.80.115.77
-Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.49
+ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
+	t=1795688835;
+	b=fUp1vu7gjeMWTvYv2zUkbtMUJvasFXe3JoPx/sm0kP8Fm4Y6gJxYLHXCWvfkBOcc5jNb
+	 iuzq1KILhzezznCH2I3U4gPaBTPRmTOjE1Zwb+BuGJvnCCwWHCJLKzPPVb5Ji2V2OygAY
+	 tEaNtXLofdHETPosSBqzlXrUR7cLjUxm8OHIUBMWHfX+nlbqVHZdj+jE7qQdAVJbKIPuf
+	 woAP87gI1IgvKVPNuQqwfB+zW6WS7smQuWVUNSM5+82NF3iOoPrjoCdJMM/ukx8MQOuO+
+	 F4F4W0W5NpjDoE1peJRB/Aexd7qwxPaanfd4kryPoq8zlOw+f0pQZymfJTk0Y2f9prQ==
+ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795688835;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Message-ID:Subject:
+	 From:To:Cc:Date:In-Reply-To:References:Content-Type:
+	 Content-Transfer-Encoding:User-Agent:MIME-Version;
+	bh=hyUTUpsSAlQcCsDB6lwU6/zmOD65Zpl/jNjaMxbFRhE=;
+	b=E/AANQQm27mWWzVF+8hv7VNjibROjBay29zkUoCtXi8/uB7jxL/0KscDHZG6xctTZ1Ru
+	 guar98OtSrThxRIY0YNZnOCn1c2s6Yhb8MpyPHTznXF6eyDyxpj1kyC/IxvWq1WL17U94
+	 7J7o1RfHkMXlDnSdz0pSivXcEmb+eU4u/sBos2450OQORxcWi/IPdooClMnrk9vFnuTq1
+	 hQnDO+a6QlgD05DlwAlLd9DQW0PDfso+1BUpqYSXxMq3y5+UqvhBc0dCMr8l6zOqR8o+E
+	 vfNbHt7mqmljP9atUikeXRYnquXo+wb5/yAcdpHOSYgEkzWCEq910M1CsqqP+G70n8g==
+ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
+	dmarc=pass header.from=linaro.org;
+	spf=pass smtp.mailfrom=linaro.org;
+	dkim=pass header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=tqhDiL2Z;
+	arc=none smtp.remote-ip=209.85.128.49
+Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.kernel.org (Postfix) with ESMTPS id 84B5E1F000E0;
-	Thu, 26 Nov 2026 10:01:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795687294;
-	bh=2ujEHY0Zi0y5OyztYT2I9S8JHnB/HKpYJXPk+96/YlQ=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
-	b=HvLVGao1kuLiqQTBMvEvYO8v7JJZ4FCSdcNxgXRhVB+856TBzxK4vKn1rUI5yfoEa
-	 UzquUmytJTuOe/uYh1UA/WZ//ZbLUSVLHCPTm8Pq3i1oi6C4nx3WxbECIaNHjt/q9h
-	 lSeQXsatbtLaCAf385wocA5zLs53xcsgWw5No88myg2vtqqZbQZBcyHrusqHq9JnmR
-	 BL766KnrVXU5Ac/Y11E55GQHR2uTJtXM37s85AVDjQXPHqCx6gCFlYAfIgYA4KdGoK
-	 tYnKZBKtUB5g/ZArm34q3IJHwsjqDFpqBO3eAAnh+E44pbD9Rl2Wdim22zR2ZUn7iA
-	 /Tt4aRMD1v8ag==
-Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
-	by lkml.kernel.org (Postfix) with ESMTP id 0D9A34D3EE;
-	Thu, 26 Nov 2026 10:01:24 +0000 (UTC)
-From: Arun Iyengar via B4 Relay <devnull+aiyengar1990.gmail.com@kernel.org>
-Date: Thu, 26 Nov 2026 10:01:25 +0000
-Subject: [PATCH 2/3] pmdomain: rockchip: use dev_err_probe() in the probe
- path
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id EE287606A31E
+	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 10:27:14 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org EE287606A31E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linaro.org
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key, unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=tqhDiL2Z
+Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-4a1fbd52ab6so46578445e9.0
+        for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 02:27:14 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1795688833; x=1796293633; darn=vger.kernel.org;
+        h=mime-version:user-agent:content-transfer-encoding:content-type
+         :references:in-reply-to:date:cc:to:from:subject:message-id:from:to
+         :cc:subject:date:message-id:reply-to:content-type;
+        bh=hyUTUpsSAlQcCsDB6lwU6/zmOD65Zpl/jNjaMxbFRhE=;
+        b=tqhDiL2ZCxkie0sVNn34wqp/FemsKe7D7Fxyd6nZD/8KKxjW+gtdqa3gMbO+DiBrEL
+         tce9+3y0NedN8iMlWcQUd9ZrDixQf0mddvwE+YhwEaqWTFoDjLa9HagQ0UJaBztMl6Hb
+         fnTQuFZUVxURn+5nVQTCtVOeraBztVlxWWpupR125KK83vmXpzak4OMRZM8DbdqiG90c
+         U207vhlAzv1DnhC9ChY5IdtbeXAdk0qKyGpPBTqQbke99EYPTz472RJqhqWnaRHKbt/t
+         I1qPvWexbisMJAANUmhpb3eOccH/1Gkhj/Fmlo35gtHBApX0PAOdsfyDcjl36iaz4X5e
+         lLCg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795688833; x=1796293633;
+        h=mime-version:user-agent:content-transfer-encoding:content-type
+         :references:in-reply-to:date:cc:to:from:subject:message-id:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=hyUTUpsSAlQcCsDB6lwU6/zmOD65Zpl/jNjaMxbFRhE=;
+        b=NErNNIGGHLbCRjb0wYWGYr2RyJT05VruSbIGK76Nr3useGF19HvYtmDgXMIIjLUBkg
+         lPArxEZMOZQR57BfR0hHCe0zVbX2Y+RId06NjvL27ZqyQq6QryZ6D7pFH/n6kF++tn7b
+         2PWEe1HPnEnxejRFQQ0Dx+8S8CPB2pjZFyCwub2cfgjbaposKhKBVMDeyyeQY2+GTA4P
+         lJPfyxoDjlu1LHgXC9bBYef21e246fDfWk7YC4tI0EokXQfXKXoWoXAArxwIi6TRab2+
+         QdWchzBapyMf8cZHS7AyTsZrAAWJTjHFPtl3kT74sPuBGj3gjpLcXGKXmUi4u6QP2IGA
+         vkXQ==
+X-Gm-Message-State: APuU4Z8tPVZklq5i/SFo6OePkeIHt0MI5of4N4SMvnbE47dTy+tQeupD
+	cYpWXX2URBcThkKhKKDbWS9+kGERN5CkeKWiWBoWsBSBxJESMH+dPS9H8QdKBT0tp5M=
+X-Gm-Gg: AZFdTZfIhzB9vZp8uKTAAd+cdNbgHk+Wx/zQjtFvVVFPnHzPUDIvzm40WOWyhd6m8hM
+	rnjYhbXxdxrZyWgil400btJqmAchAzcjheW1npOerMzTN7S4FI16mHavJEifuGnBcRE6/x3S+Mr
+	VmP590MaT+Wv18VJ/VTJ6rEGEosOPdVeNLVBPx5SMhodbZYbwdoVexDf0NOWdQxvcap1zlLn/wG
+	rv54AG1q/uea8hcYgQD2t/6ESaKs48bwKk6VvIdRZ1cv6vdJGMfxcQmh6kGHmlV88xJiQJZt+Lk
+	FvvX5+cTrdx4Ln6lPdaul97vpXOIf1DI/Ble1WgFecmcX/ylIqx3gwD29pSLTBXreFkchzaIBlu
+	wG6dJ0KHEQ1O5yvKa81teO5YXiJXt6BKLYl+jJhzoHnIuT/afYwt9atEHKPAIf4W2XF0fkGGHYH
+	s624MHo2QrfzIxs0MNOCdBuBNBrqpWCJJXhEVKlLEMHjwMRkXI/bi5Ix26B1MwO8xp1y7OlFM/S
+	njGYD1zIdgEuH79u96JNY18PVFNZeNbrAaG0XjjwhuOkf3Qi8WVWaLGvvG3WMTvcc1Xk6GGO3u0
+	Zzjti3aT8CCNOsMRQWw3ES4TERKG4PcKvF0=
+X-Received: by 2002:a05:600c:4585:b0:4a1:83f0:7c91 with SMTP id 5b1f17b1804b1-4bb8882948dmr422256135e9.18.1795688833275;
+        Thu, 26 Nov 2026 02:27:13 -0800 (PST)
+Received: from [10.1.1.59] ([109.255.181.4])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb9067846esm399651265e9.4.2026.11.26.02.27.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 26 Nov 2026 02:27:12 -0800 (PST)
+Message-ID: <f203e85c22e97363a220fc09b45ff6ba33c3f59d.camel@linaro.org>
+Subject: Re: [PATCH RESEND] power: supply: core: give each supply's epc_sem
+ its own lockdep class
+From: =?ISO-8859-1?Q?Andr=E9?= Draszik <andre.draszik@linaro.org>
+To: Ryan Brue <ryanbrue.dev@gmail.com>, Sebastian Reichel <sre@kernel.org>, 
+ Sebastian Reichel <sebastian.reichel@collabora.com>, Hang Nan
+ <2122295973@qq.com>
+Cc: linux-pm@vger.kernel.org, linux-kernel@vger.kernel.org
+Date: Thu, 26 Nov 2026 10:27:29 +0000
+In-Reply-To: <20261125-power-supply-epc-lockdep-key-v1-1-c8a41b8a4470@gmail.com>
+References: 
+	<20261125-power-supply-epc-lockdep-key-v1-1-c8a41b8a4470@gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2-9+build1 
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -83,181 +102,99 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Message-Id: <20261126-pmdomain-rockchip-cleanup-v1-2-a19f5ea7d555@gmail.com>
-References: <20261126-pmdomain-rockchip-cleanup-v1-0-a19f5ea7d555@gmail.com>
-In-Reply-To: <20261126-pmdomain-rockchip-cleanup-v1-0-a19f5ea7d555@gmail.com>
-To: Ulf Hansson <ulfh@kernel.org>, Heiko Stuebner <heiko@sntech.de>, 
- Shawn Lin <shawn.lin@rock-chips.com>, 
- Sebastian Reichel <sebastian.reichel@collabora.com>
-Cc: linux-pm@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linux-rockchip@lists.infradead.org, linux-kernel@vger.kernel.org, 
- Yao Zi <me@ziyao.cc>, Arun Iyengar <aiyengar1990@gmail.com>
-X-Mailer: b4 0.15.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795687283; l=4842;
- i=aiyengar1990@gmail.com; s=20261110; h=from:subject:message-id;
- bh=EuQMv/4YZ9MKBCAwmy2pWeQx5JPLsPHE+V7fKlPqOcE=;
- b=PkWY7V9lN6YIaE5jS+PW/vU+Ml5zf9WOW6JDrNkQEWpdrHtdPrqAE7zHSQl56yI17wpz0+JnB
- F02kVG33IuUCwYpNho0/o2KlnExh/zWPiELveBTgGBoa4qa7KkpzuQ2
-X-Developer-Key: i=aiyengar1990@gmail.com; a=ed25519;
- pk=zXpRgUTrhaFe6jLyPqbBy3ccfkj04w0g2690Wv3mg+0=
-X-Endpoint-Received: by B4 Relay for aiyengar1990@gmail.com/20261110 with
- auth_id=1480
-X-Original-From: Arun Iyengar <aiyengar1990@gmail.com>
-Reply-To: aiyengar1990@gmail.com
-Content-Transfer-Encoding: 7bit
 
-From: Arun Iyengar <aiyengar1990@gmail.com>
+Hi Ryan,
 
-Convert the dev_err() and return pairs in the probe path to
-dev_err_probe(). The return values do not change.
+On Wed, 2026-11-25 at 17:23 -0600, Ryan Brue wrote:
+> Since commit 9f7f7a859451 ("power_supply: serialize property access with
+> unregister"), power_supply_get_property() takes the target supply's
+> epc_sem for read. Every supply's epc_sem is initialised at the same site,
+> so they all share one lockdep class.
+>=20
+> A driver that reads another supply while holding a lock that its
+> get_property() callback also takes is then reported as a circular
+> dependency, even though the two semaphores belong to different supplies.
+> sc27xx_fgu_get_property() does this with data->lock and the charger, and
+> a fuel gauge driver in preparation did the same with its charger:
+>=20
+> =C2=A0 WARNING: possible circular locking dependency detected
+> =C2=A0 kworker/2:1/60 is trying to acquire lock:
+> =C2=A0=C2=A0 (mutex_#2){+.+.}-{4:4}, at: mt6397_battery_get_property+0x50=
+/0x23c
+> =C2=A0 but task is already holding lock:
+> =C2=A0=C2=A0 (&psy->epc_sem){.+.+}-{4:4}, at: power_supply_get_property+0=
+x34/0x80
+>=20
+> Lockdep then turns itself off for the rest of the boot.
+>=20
+> Register a lockdep key for each supply, so that only a supply's own epc_s=
+em
+> is ordered against its own locks.
+>=20
+> Fixes: 9f7f7a859451 ("power_supply: serialize property access with unregi=
+ster")
+> Signed-off-by: Ryan Brue <ryanbrue.dev@gmail.com>
 
-Signed-off-by: Arun Iyengar <aiyengar1990@gmail.com>
----
- drivers/pmdomain/rockchip/pm-domains.c | 82 ++++++++++++++--------------------
- 1 file changed, 33 insertions(+), 49 deletions(-)
+Thanks for the patch =E2=80=94 I hit the same shared-class issue on Pixel 6=
+ (Oriole)
+with max77759-charger reading properties from its TCPM supplier via
+power_supply_get_property_from_supplier(), which triggers a "possible
+recursive locking detected" splat.
 
-diff --git a/drivers/pmdomain/rockchip/pm-domains.c b/drivers/pmdomain/rockchip/pm-domains.c
-index b52bdf0e8a19..9d5a79c6d4f9 100644
---- a/drivers/pmdomain/rockchip/pm-domains.c
-+++ b/drivers/pmdomain/rockchip/pm-domains.c
-@@ -842,28 +842,22 @@ static int rockchip_pm_add_one_domain(struct rockchip_pmu *pmu,
- 	int error;
- 
- 	error = of_property_read_u32(node, "reg", &id);
--	if (error) {
--		dev_err(pmu->dev,
--			"%pOFn: failed to retrieve domain id (reg): %d\n",
--			node, error);
--		return -EINVAL;
--	}
-+	if (error)
-+		return dev_err_probe(pmu->dev, -EINVAL,
-+				     "%pOFn: failed to retrieve domain id (reg)\n",
-+				     node);
- 
--	if (id >= pmu->info->num_domains) {
--		dev_err(pmu->dev, "%pOFn: invalid domain id %d\n",
--			node, id);
--		return -EINVAL;
--	}
-+	if (id >= pmu->info->num_domains)
-+		return dev_err_probe(pmu->dev, -EINVAL,
-+				     "%pOFn: invalid domain id %d\n", node, id);
- 	/* RK3588 has domains with two parents (RKVDEC0/RKVDEC1) */
- 	if (pmu->genpd_data.domains[id])
- 		return 0;
- 
- 	pd_info = &pmu->info->domain_info[id];
--	if (!pd_info->pwr_mask && !pd_info->req_mask) {
--		dev_err(pmu->dev, "%pOFn: undefined domain id %d\n",
--			node, id);
--		return -EINVAL;
--	}
-+	if (!pd_info->pwr_mask && !pd_info->req_mask)
-+		return dev_err_probe(pmu->dev, -EINVAL,
-+				     "%pOFn: undefined domain id %d\n", node, id);
- 
- 	pd = devm_kzalloc_obj(pmu->dev, *pd);
- 	if (!pd)
-@@ -1072,12 +1066,10 @@ static int rockchip_pm_add_subdomain(struct rockchip_pmu *pmu,
- 		u32 idx;
- 
- 		error = of_property_read_u32(parent, "reg", &idx);
--		if (error) {
--			dev_err(pmu->dev,
--				"%pOFn: failed to retrieve domain id (reg): %d\n",
--				parent, error);
--			return error;
--		}
-+		if (error)
-+			return dev_err_probe(pmu->dev, error,
-+					     "%pOFn: failed to retrieve domain id (reg)\n",
-+					     parent);
- 		parent_domain = pmu->genpd_data.domains[idx];
- 
- 		error = rockchip_pm_add_one_domain(pmu, np,
-@@ -1091,23 +1083,20 @@ static int rockchip_pm_add_subdomain(struct rockchip_pmu *pmu,
- 		}
- 
- 		error = of_property_read_u32(np, "reg", &idx);
--		if (error) {
--			dev_err(pmu->dev,
--				"%pOFn: failed to retrieve domain id (reg): %d\n",
--				np, error);
--			return error;
--		}
-+		if (error)
-+			return dev_err_probe(pmu->dev, error,
-+					     "%pOFn: failed to retrieve domain id (reg)\n",
-+					     np);
- 		child_domain = pmu->genpd_data.domains[idx];
- 
- 		error = pm_genpd_add_subdomain(parent_domain, child_domain);
--		if (error) {
--			dev_err(pmu->dev, "%s failed to add subdomain %s: %d\n",
--				parent_domain->name, child_domain->name, error);
--			return error;
--		} else {
--			dev_dbg(pmu->dev, "%s add subdomain: %s\n",
--				parent_domain->name, child_domain->name);
--		}
-+		if (error)
-+			return dev_err_probe(pmu->dev, error,
-+					     "%s failed to add subdomain %s\n",
-+					     parent_domain->name, child_domain->name);
-+
-+		dev_dbg(pmu->dev, "%s add subdomain: %s\n",
-+			parent_domain->name, child_domain->name);
- 
- 		error = rockchip_pm_add_subdomain(pmu, np);
- 		if (error)
-@@ -1126,10 +1115,8 @@ static int rockchip_pm_domain_probe(struct platform_device *pdev)
- 	const struct rockchip_pmu_info *pmu_info;
- 	int error;
- 
--	if (!np) {
--		dev_err(dev, "device tree node not found\n");
--		return -ENODEV;
--	}
-+	if (!np)
-+		return dev_err_probe(dev, -ENODEV, "device tree node not found\n");
- 
- 	pmu_info = device_get_match_data(dev);
- 
-@@ -1146,16 +1133,13 @@ static int rockchip_pm_domain_probe(struct platform_device *pdev)
- 	pmu->genpd_data.num_domains = pmu_info->num_domains;
- 
- 	parent = dev->parent;
--	if (!parent) {
--		dev_err(dev, "no parent for syscon devices\n");
--		return -ENODEV;
--	}
-+	if (!parent)
-+		return dev_err_probe(dev, -ENODEV, "no parent for syscon devices\n");
- 
- 	pmu->regmap = syscon_node_to_regmap(parent->of_node);
--	if (IS_ERR(pmu->regmap)) {
--		dev_err(dev, "no regmap available\n");
--		return PTR_ERR(pmu->regmap);
--	}
-+	if (IS_ERR(pmu->regmap))
-+		return dev_err_probe(dev, PTR_ERR(pmu->regmap),
-+				     "no regmap available\n");
- 
- 	/*
- 	 * Configure power up and down transition delays for CORE
-@@ -1204,7 +1188,7 @@ static int rockchip_pm_domain_probe(struct platform_device *pdev)
- 
- 	error = of_genpd_add_provider_onecell(np, &pmu->genpd_data);
- 	if (error) {
--		dev_err(dev, "failed to add provider: %d\n", error);
-+		dev_err_probe(dev, error, "failed to add provider\n");
- 		goto err_out;
- 	}
- 
+Two minor suggestions:
 
--- 
-2.55.0
+1. It would be helpful to also mention the "possible recursive locking
+   detected" case in the commit message (e.g. consumer callbacks calling
+   power_supply_get_property_from_supplier() or power_supply_get_property()
+   on another supply), so people hitting that variant can easily find this
+   fix.
 
 
+> [...]
+> diff --git a/drivers/power/supply/power_supply_core.c b/drivers/power/sup=
+ply/power_supply_core.c
+> index de15314ef954..76bbe8772143 100644
+> --- a/drivers/power/supply/power_supply_core.c
+> +++ b/drivers/power/supply/power_supply_core.c
+> @@ -1662,6 +1662,7 @@ static void power_supply_dev_release(struct device =
+*dev)
+> =C2=A0	struct power_supply *psy =3D to_power_supply(dev);
+> =C2=A0
+> =C2=A0	dev_dbg(dev, "%s\n", __func__);
+> +	lockdep_unregister_key(&psy->epc_key);
+> =C2=A0	kfree(psy);
+> =C2=A0}
+> =C2=A0
+> @@ -1765,6 +1766,7 @@ __power_supply_register(struct device *parent,
+> =C2=A0	if (!psy)
+> =C2=A0		return ERR_PTR(-ENOMEM);
+> =C2=A0
+> +	lockdep_register_key(&psy->epc_key);
+> =C2=A0	dev =3D &psy->dev;
+> =C2=A0
+> =C2=A0	device_initialize(dev);
+> @@ -1810,6 +1812,7 @@ __power_supply_register(struct device *parent,
+> =C2=A0
+> =C2=A0	spin_lock_init(&psy->changed_lock);
+> =C2=A0	init_rwsem(&psy->epc_sem);
+> +	lockdep_set_class(&psy->epc_sem, &psy->epc_key);
+
+2. Because lockdep_set_class() stringifies the key argument, the lock shows
+   up in /proc/lockdep (and any future splats) as "&psy->epc_key" instead o=
+f
+   "&psy->epc_sem":
+
+     ffff0008068e26e0 FD:  167 BD:   13 .+.+: &psy->epc_key#2
+      -> [ffff000816c3eee0] &psy->epc_key
+
+   Replacing init_rwsem() + lockdep_set_class() with:
+
+     __init_rwsem(&psy->epc_sem, "&psy->epc_sem", &psy->epc_key);
+
+   like block/blk-crypto-profile.c does, preserves the lock name while
+   using the per-supply key.
+
+Tested-by: Andr=C3=A9 Draszik <andre.draszik@linaro.org>
+
+Cheers,
+Andre'
