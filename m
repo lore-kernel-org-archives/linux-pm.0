@@ -1,95 +1,101 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=74.125.82.174
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.210.173
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795655572;
-	b=U/VIxqqbTjp5tPe8DJi3uJa6uaplSzfnbbtXeyjJ/p3w87FSny6tg3I++3OqxfnzAnEg
-	 dhDiyWJIc+ggEqLqg6OVJQ9nnsOpRBaW2HW6TK7RlJQU956mLVKLuNvAcJ6CRbV7+UZHl
-	 pvTFOpBUiqISb0SqOIzsO+whpei/GnCgtbuGQ439duZm9G/BrD08iWYWPm08sUanMoM0+
-	 76mrRl2MR73hpJIxPAiesaOmfMZniLdfmnCAgW8ZtbwQts5LE/kCroN/E61lec5Ygq3qP
-	 YwLLCYP4HVLbWduwS2dpIcWQjCrZLaTGXPd92j0Xe2Mds7elWsiLG2ZfoH5Z4IDDPmw==
+	t=1795656994;
+	b=vKlR6wYz9wG9pVS374gQRQQY6ZGp0y2SjW3mX82506KgGwGM5bbRQxULgK03yNJ6S42G
+	 S4zYeQP8d1MDZFZsfdPnkhDXblcJ1KCZl6bKNBTYHXIm9BsBnRU48GK9BeRapF9wpJTI+
+	 t+htqAl/BhqXqw8nJM0p5SkdsTohCihMgS18KGgWQbaLtu6Hor6tKBjSSQij8lL3dYLr9
+	 ofKKwx9H7SmldVoivjKGq0atV98FLs4sLpTH9n0uiqWNDVMfaXAzXwHL9PJOE3IVXzfTb
+	 2jj1S+gTZ6wbH1CJvXQgfEt2AilfIrH+dFzHD9kBGBpykOgLf1+5rSu8mQwcp52Najg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795655572;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795656994;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:Date:From:To:Cc:
-	 Subject:Message-ID:References:MIME-Version:Content-Type:
-	 Content-Disposition:Content-Transfer-Encoding:In-Reply-To;
-	bh=2pA3VHlw07C80DtGhf3Wk+ni9onBDYYv/Wt986Zz2Ew=;
-	b=KCB4UfrUn6Fr7UJS3F41387ItNnxithvePGnN2lacF7XwBT1kHF67yTif1shmGveui1h
-	 B7POI8ckorsb9n6LfBxq8evb76ECfv6VlSFzBsdAiKX7w642Ton93cQbbzjB8dVCYD/OK
-	 iwrpyqJHOD+7boSYn+pwykEjuIcNzEOPxdp1SOD9vHHKUXdPQrCIx7Oc04ncOTWPlDFOD
-	 SNimG5WHzzoSq9QTltmuncqoXq4w6h35N6E7q0rz3TPRvKQebzXzgkfnCFriVWeUkoeFH
-	 ZJirk0P+ECi2fhQh36PZ9lKTX9M9jJlpoTbH+8OJt7JhyDczsJB+9CzwgeDhs7MwwxQ==
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-Id:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Type:Content-Transfer-Encoding;
+	bh=SP15XaZUbGtlp60P327+ssWhkCWUemMIccsR99IzlyI=;
+	b=ezyFih8SBcwG9X0p/avxbWwA/yojQObMHtYFvKbXgxaMIYtb9SHhg3op2nW/+NTUo8wc
+	 2+iptvuMMviG98Iwi1laAy8dxR9xyiPYe9Ba1dcNnEmQiiF8jJ1jZh+0srF7XN2rZjJOJ
+	 guTgbd1sMtA5eOykL6GZ+DxV7snmx5krdjU4VeHwB9vbW5AvFzCWiXkiOAUqMr7OZU5YY
+	 x7W3kt5eu9JbhQC2V8tDtOxpd4mdcHtT0d7PsLGZKlnEcFYaeLlV/U0+vyk1t6XDeNcC5
+	 4p7TSKAaGIfhn9xqUO4qVX3DEK87IB67rRaL2cyU4gElDZvN7deh9e9Wv43m6zkhYaA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=chromium.org;
-	spf=pass smtp.mailfrom=chromium.org;
-	dkim=pass header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=EO8gYqJw;
-	arc=none smtp.remote-ip=74.125.82.174
-Received: from mail-dy1-f174.google.com (mail-dy1-f174.google.com [74.125.82.174])
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=IkOtKQEs;
+	arc=none smtp.remote-ip=209.85.210.173
+Received: from mail-pf1-f173.google.com (mail-pf1-f173.google.com [209.85.210.173])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 5DD8D606A335
-	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 01:12:52 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 5DD8D606A335
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=chromium.org
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=chromium.org
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 59A71606A31E
+	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 01:36:33 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 59A71606A31E
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=EO8gYqJw
-Received: by mail-dy1-f174.google.com with SMTP id 5a478bee46e88-38190551625so12689262eec.1
-        for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 17:12:52 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=IkOtKQEs
+Received: by mail-pf1-f173.google.com with SMTP id d2e1a72fcca58-8b600fae14dso2327316b3a.2
+        for <linux-pm@vger.kernel.org>; Wed, 25 Nov 2026 17:36:33 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=chromium.org; s=google; t=1795655571; x=1796260371; darn=vger.kernel.org;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=2pA3VHlw07C80DtGhf3Wk+ni9onBDYYv/Wt986Zz2Ew=;
-        b=EO8gYqJwSOWwgaagR05ypeUIi3kVjBLP2bBLY+xFo/Q35UuVd7UtXwLkCZHeWppAgF
-         TBeU5MIvB914D+7qVvAmvwJP9In2A3daYXG7IRIb44VJOX0m+JZ5ye+Xl2VkL2a7jtvg
-         6V4FBwMU2RVADclcgrlt27k68hvedp4U2p7Ek=
+        d=gmail.com; s=20260707; t=1795656992; x=1796261792; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:from:to:cc:subject
+         :date:message-id:reply-to:content-type;
+        bh=SP15XaZUbGtlp60P327+ssWhkCWUemMIccsR99IzlyI=;
+        b=IkOtKQEsw1P6Qem2Ym5jSb3VAZZX8TmwwUNgxT9DOWowClgIO3DlHf2mSKx2B1wjbP
+         0AuxWFLGf2lq1RyFgUQmH0XHDv5gGI6zu00dAbb1L3ezjWpjf/dHnE3u6ZDt6C3W2TXm
+         wCtQo4bG4EUmvmT+u7tNN8sQpQAUygbvQN71LN3myFzJpYq9OOmdyDDHqWv1MW2fSCXa
+         KG4PzYEqRyb/zxyv6KU3eJyGm4QF82Yn4VGnsmLb9lcqpNh59TNXFGjGac6mTkymDYLn
+         suV+97W7fCn7Go40/Ef6MQaiyG5Wd0MQjt2aCFYx7uWUaJLuEqukfQZd9cq0TmzDfUCo
+         nksg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795655571; x=1796260371;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :content-type:mime-version:references:message-id:subject:cc:to:from
-         :date:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=2pA3VHlw07C80DtGhf3Wk+ni9onBDYYv/Wt986Zz2Ew=;
-        b=h81l00WOIcmBgOFOd6m/bKIxY5FKghK5vXw1YyGUZYnbDFXZRFWPly+tRF1xUjqpO0
-         gU7mwr6bA5wtisWk+22gY9QZ/7nwJO8ldO6HTMwYuPqPEQdI/Rky1w6s2Dt0q+K0Ws/o
-         1iWrNMN49Qj77+5I5V7CBJ/YkVnd6h3JVIlJqhQQjRyBbk1CQsct2G6DumnrEZMQ0oWy
-         qDRz4rVO9SLeNnnhIM90sCTz7hvgzOaBAXuJjWqmLBrfHjO3qEBotVFj/EigkLmJEgsF
-         A19YVmBXAzDLZHy3seePiA7lAHl3t7vLjvKBgaZXAnP6ujNi1hpp18vqOGUlTIS55hPh
-         AXhw==
-X-Gm-Message-State: APuU4Z95Odc0G2ylW9sI2zH9JPJeGwymxzaD3D/TM7+8mpNHQN/4LoBH
-	iZWtGejpyt+Ynhi5EIwj/10fgQti4oAK53JEaMN2fl/bhLrDqE/0U2S2SF6Z55Wg0A==
-X-Gm-Gg: AZFdTZdWdD8MuNUgTD4TjBU8HhjtsSJZF+coPZrSoc1ZInsMXsFfzm/Yo4QsiAPtQQw
-	rWUyFmRH/UAMXbQzQ0LkmpVZjtWJOM8SvEiytgnGQEblpi4WYYlmPhAPir/lK0hNXejv0rqWCAT
-	9HwyKoz2ErHgjEf3Q2wkrdON/NoJVAJNYTtx0uJxwC2v4xVjwTQZxNM0nkBLfGBBw9Fm5m2aPSv
-	Bu9D+58Vo+qnvxPG34j/RAaDcngLNyKjLpCF+ZjBeoio3HvHzxg3wFxJER8HjVt9mY8ZTNnzjRv
-	R2mJ/LVg2LfnxR7vQ7aVrNFABfZ/o+XHH8MsMNZnWGtjfI/hGo2P0aYtUPxz/8cVwNRA2c984IA
-	ghD9eo7DKC3M2ka9hXvwq7uNOq/lsm0IjmbYoZi5T83QvUIjtX/jTntREDT22p8OucnyJAb6J9I
-	MJrfuN/0oX+LwquItNJkQJx7XyfMhiYfr+gUg5ETMtlzK0NMiuGlM5l1YN2tUKjRbjk9B4PqIzI
-	e64mlxVIdZmOmx4Ncwh+8o9sOZ6kcwa/MRAfFgG0gxs9p5NKXfJN0U78kbXe2obUBE5mn7rHa2m
-	rTPomJvQl1m9lCR19ciXwkxYnws1Cj3Hw3c+8wpEBRZCUXUYfwEyz38wZCPjQIeuRr0z
-X-Received: by 2002:a05:693c:880e:20b0:386:b54a:7f6e with SMTP id 5a478bee46e88-386b54a8032mr10146885eec.6.1795655571381;
-        Wed, 25 Nov 2026 17:12:51 -0800 (PST)
-Received: from localhost ([2a00:79e0:2e7c:8:dda6:7575:bbfe:db80])
-        by smtp.gmail.com with UTF8SMTPSA id 5a478bee46e88-386aaae4960sm30443084eec.18.2026.11.25.17.12.50
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Wed, 25 Nov 2026 17:12:50 -0800 (PST)
-Date: Wed, 25 Nov 2026 17:12:48 -0800
-From: Brian Norris <briannorris@chromium.org>
-To: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Cc: Linux PM <linux-pm@vger.kernel.org>,
-	Alan Stern <stern@rowland.harvard.edu>,
-	Sakari Ailus <sakari.ailus@linux.intel.com>,
-	Ulf Hansson <ulf.hansson@oss.qualcomm.com>,
-	Linux Driver Core Development <driver-core@lists.linux.dev>
-Subject: Re: [PATCH v1 3/4] PM: runtime: Let devices suspend after an
- attempted resume
-Message-ID: <aweHkBnEGG5f8veE@google.com>
-References: <1978814.tdWV9SEqCh@rafael.j.wysocki>
- <10954171.nUPlyArG6x@rafael.j.wysocki>
- <awC1xx1Wi2BYo5rb@google.com>
- <CAJZ5v0jgBeJkeKfzaMnSx3c7HV6EpXrUoKJCyAZNHwfkvh=PZQ@mail.gmail.com>
+        d=1e100.net; s=20260707; t=1795656992; x=1796261792;
+        h=content-transfer-encoding:content-type:mime-version:references
+         :in-reply-to:message-id:date:subject:cc:to:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=SP15XaZUbGtlp60P327+ssWhkCWUemMIccsR99IzlyI=;
+        b=gA7gIrP6Ijqz5rgy5v1KqCeXYLXBoF7+SZjqBa6yRifJ2GNxuzylCUyrvGa71/MbGo
+         3H+jdzlGeYCSfxzOaB/keNwt9l9idQILTlc8I7/KOjTQmJ9pFjdzrrJzUgJf4kbrUkND
+         aIZJzrB28g1zh67915hQFYHq7kq/KZcwa1+P2m18DiAluEdxfKbEzicNVMzKYZJ3g4st
+         urBhNjhlhmkWMIoYD4kbjRT2D/tTLCu0iAQghd0/DM9ydZRsQdhjESd1hwEGrAWeMNyf
+         6k2JPnrjoQKtvVibJ4drTIKA/Q65RwhS7/z1QvaP047/L/PEHcYLt/MZhHrbwwA7MA1o
+         pFVg==
+X-Forwarded-Encrypted: i=1; AL+hErGCTc6mz+AAmXOTLo8WV/G2CNkghDjzRXfWxLB4iyPvKm+Dc5qm5/4sxVniYqMnPymAARUm3klNng==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/K5GCRwGQ9VwwmEme5wjluQ8SSZg4MN2X+IKJLrLYwGbr5C13C
+	zm4SBlM5672pRnvAOiR9jmWcPkhAIoDb1r8+/AyRTApI9IkpwqGap562
+X-Gm-Gg: AZFdTZekQh7dqQkxw6X2qAJpAzhMO6/wc1xXSE8B7+AhddafFzwAqvM2u5WJIGMgf+o
+	iqVgKlgTaGPb1bZdIFD570XN0lFk9MW2CTX6spy6HnjL1J3xmULp/8rb8ZcoW2VF8Gu6DXr0Cad
+	N8l7KB59E3MAarNK8RsJiY6FWj9qu45Z1XF32cNzxsBr4RqIcQOWGa8Gyj66SV1E3x83w6Tmit0
+	/cR5NHWawyv9mV65SAInkSAifCBhYOw1LUiwdtxxGJLLRPVvyptFh6C6JjG5mc2oe5gU9T4NpG7
+	MSkI0tVqpnu0s5HU9FL3mBX1nVx8NmZVB7Tde5JKaoySox7AU7kL7pFqDzMmiX4qWUnEQS0ECkX
+	J5dFyl+nGRh/OmDciY2YKlBYZGh7mBP3IsqNgeECnXkZsSXpPtledg6QC7U4bI98r1eiyjAc5tR
+	EqwbKw8sMWBXvWlvo2MlceGSGPY3MO/eDDMCjq/pH7wAdV25Qd+JEXco5B/EiwDV0nc3FSMi6Mi
+	IL3Y2AZvLS31sfKvNV4YS67gNYWpFFjIz1fN669/GLUgxCpEhnlDk099vD/aZ8iE64aT5YG7xyf
+	x//wkDc+KoTh4w9m02+FDYJdc7SVplbwD2kV2pl5ZoTG9agc4gnPJ1DL6XSZusmTU35fsOQ/zzt
+	FXl1Kl4TpTBqO7UEoqIIAaD8YN+n078CKpfgWesQFJ4M2WME=
+X-Received: by 2002:a05:6a00:8015:b0:89e:92e:4211 with SMTP id d2e1a72fcca58-8c87bcbcecdmr16856465b3a.16.1795656992438;
+        Wed, 25 Nov 2026 17:36:32 -0800 (PST)
+Received: from lwq-server.tail118c18.ts.net ([74.176.208.23])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-8c872951febsm9748633b3a.14.2026.11.25.17.36.29
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 25 Nov 2026 17:36:31 -0800 (PST)
+From: Yaohan Li <shunsheng1218@gmail.com>
+To: =?UTF-8?q?Niklas=20S=C3=B6derlund?= <niklas.soderlund@ragnatech.se>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>
+Cc: Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Magnus Damm <magnus.damm@gmail.com>,
+	linux-renesas-soc@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v5] thermal: rcar_gen3: check for sensors before reading the fuses
+Date: Thu, 26 Nov 2026 09:36:26 +0800
+Message-Id: <20261126013626.2168810-1-shunsheng1218@gmail.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20261125060429.GK3898744@ragnatech.se>
+References: <20261125060429.GK3898744@ragnatech.se>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -99,155 +105,73 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAJZ5v0jgBeJkeKfzaMnSx3c7HV6EpXrUoKJCyAZNHwfkvh=PZQ@mail.gmail.com>
 
-On Tue, Nov 24, 2026 at 05:23:52PM +0100, Rafael J. Wysocki (Intel) wrote:
-> On Fri, Nov 20, 2026 at 10:04 PM Brian Norris <briannorris@chromium.org> wrote:
-> >
-> > On Thu, Nov 19, 2026 at 09:17:51PM +0100, Rafael J. Wysocki wrote:
-> > > From: "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>
-> > >
-> > > On a successful runtime resume of a device, rpm_idle() is called by
-> > > rpm_resume(), but only if the runtime PM status of the device was not
-> > > RPM_ACTIVE when rpm_resume() was called, which is inconsistent.  For
-> > > instance, if the given device uses autosuspend, an autosuspend timer
-> > > will most likely be started for it after it has been actually resumed
-> > > by rpm_resume(), which will not happen if it is already active when it
-> > > is passed to that function.  This may lead to observable differences in
-> > > behavior going forward.
-> > >
-> > > Address it by rearranging rpm_resume() to call rpm_idle() also if the
-> > > device has been active to start with.
-> > >
-> > > Signed-off-by: Rafael J. Wysocki <rafael.j.wysocki@intel.com>
-> > > ---
-> > >  drivers/base/power/runtime.c | 12 ++++++++----
-> > >  1 file changed, 8 insertions(+), 4 deletions(-)
-> > >
-> > > diff --git a/drivers/base/power/runtime.c b/drivers/base/power/runtime.c
-> > > index 5a0b4600c244..1a3b32e299d8 100644
-> > > --- a/drivers/base/power/runtime.c
-> > > +++ b/drivers/base/power/runtime.c
-> > > @@ -794,7 +794,8 @@ static int rpm_suspend(struct device *dev, int rpmflags)
-> > >   * suspending (deferred_resume) or wait for it to finish.  If the RPM_ASYNC
-> > >   * flag is set then queue a resume request; otherwise run the
-> > >   * ->runtime_resume() callback directly.  Queue an idle notification for the
-> > > - * device if the resume succeeded.
-> > > + * device if the resume succeeded or the device's runtime PM status was
-> > > + * RPM_ACTIVE to start with.
-> > >   *
-> > >   * This function must be called under dev->power.lock with interrupts disabled.
-> > >   */
-> > > @@ -840,7 +841,7 @@ static int rpm_resume(struct device *dev, int rpmflags)
-> > >                */
-> > >               pm_runtime_mark_last_busy(dev);
-> > >               retval = 1;
-> > > -             goto out;
-> > > +             goto success;
-> > >       }
-> > >
-> > >       if (dev->power.runtime_status == RPM_RESUMING ||
-> > > @@ -971,8 +972,11 @@ static int rpm_resume(struct device *dev, int rpmflags)
-> > >       }
-> > >       wake_up_all(&dev->power.wait_queue);
-> > >
-> > > -     if (retval >= 0)
-> > > -             rpm_idle(dev, RPM_ASYNC);
-> > > +     if (retval < 0)
-> > > +             goto out;
-> > > +
-> > > +success:
-> > > +     rpm_idle(dev, RPM_ASYNC);
-> >
-> > It's super common for rpm_resume() to be called with a non-zero
-> > usage_count (e.g., all pm_runtime_get*(), pm_runtime_forbid()). Do we
-> > really want them all to turn into rpm_idle() (and predictably fail)? For
-> > one, it adds a lot more trace_event noise.
-> >
-> > Maybe we could check RPM_GET_PUT before doing this? Or check
-> > usage_count? I wouldn't want to go too far on re-implementing all the
-> > rpm_idle() pre-conditions though...
-> 
-> I'm not sure why this is an issue if the device is already active when
-> rpm_resume() is called and not when the device is resumed by
-> rpm_resume().  It doesn't look like this should be an issue only in
-> one of those cases.
-> 
+rcar_gen3_thermal_read_fuses() reads the THSCP register through the
+first TSC. If the device has no TSC resources, priv->tscs[0] is NULL,
+and the read causes a NULL pointer dereference.
 
-You're right, it's a bit spammy in existing cases too. (It's honestly
-pretty hard to read rpm trace_event logs without being an expert.)
+Before hardware calibration support was added, leaving the
+!priv->num_tscs check at the end of probe was safe because TSCs were
+only accessed inside loops over the discovered sensors.
+rcar_gen3_thermal_read_fuses() introduced an unconditional access to
+priv->tscs[0] before that check.
 
-This comment was made by inspection; I think I'd have to get a feel for
-how this looks on a real run to be sure. Feel free to ignore this if you
-don't think it's concerning (and I don't come back with anything more
-solid).
+Move the existing zero-TSC check right after discovering the sensors,
+before reading the calibration fuses.
 
-> > drivers/net/ethernet/intel/e1000e/netdev.c (no autosuspend; they use
-> > .runtime_idle() to re-implement autosuspend, more or less) might see a
-> > change in behavior.
-> 
-> Everybody may see a change in behavior, but it only applies to one of
-> the two cases which are handled differently now.
-> 
-> > For example, see its watchdog, which does:
-> >
-> >         /* Cancel scheduled suspend requests. */
-> >         pm_runtime_resume(netdev->dev.parent);
-> >
-> > For cases where the device stayed RPM_ACTIVE but usage_count == 0 (very
-> > common, I think), this does indeed cancel any pending suspend timers,
-> 
-> No, it doesn't cancel running autosuspend timers, for example.
+Fixes: c3131bd5586d ("thermal: rcar_gen3_thermal: Read calibration from hardware")
+Signed-off-by: Yaohan Li <shunsheng1218@gmail.com>
+---
+Changes since v4 (split out from the withdrawn 3-patch series):
+  - Split out as a standalone single patch per Niklas Söderlund's feedback
+    (<20261125060429.GK3898744@ragnatech.se>,
+     <20261125113106.GM3898744@ragnatech.se>).
+  - Rewrote the commit message and added the Fixes tag per Niklas's review.
+  - No functional code change relative to v4 patch 1/3.
 
-Well, this driver doesn't use autosuspend (yet).
+Testing:
+  Compile tested only (no Renesas R-Car Gen3 hardware): arm64
+  (aarch64-linux-gnu-gcc, CONFIG_ARCH_RENESAS=y, CONFIG_RCAR_GEN3_THERMAL=y,
+  W=1, 0 warnings) against 666539eecdf4.
 
-> > but then it immediately queues another idle request. (That idle request
-> > will end up failing anyway, so no functional issue. It just means the
-> > comments are a little confusing.)
-> 
-> So the comment is confusing regardless of the $subject patch.
+AI assistance:
+  AI tools assisted with initial static analysis and commit/patch drafting;
+  the author manually reviewed the probe/remove paths, verified commit
+  c3131bd5586d, ran the arm64 compile check, and takes full responsibility
+  for the patch.
 
-No, my point was that your patch changes that behavior from:
+ drivers/thermal/renesas/rcar_gen3_thermal.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
- "cancel scheduled [non-auto]suspend requests" (an accurate comment)
+diff --git a/drivers/thermal/renesas/rcar_gen3_thermal.c b/drivers/thermal/renesas/rcar_gen3_thermal.c
+index 9c64cbc2ee670..a96f02d4a8adf 100644
+--- a/drivers/thermal/renesas/rcar_gen3_thermal.c
++++ b/drivers/thermal/renesas/rcar_gen3_thermal.c
+@@ -557,6 +557,10 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+ 	}
+ 
+ 	priv->num_tscs = i;
++	if (!priv->num_tscs) {
++		ret = -ENODEV;
++		goto error_unregister;
++	}
+ 
+ 	if (!rcar_gen3_thermal_read_fuses(priv))
+ 		dev_info(dev, "No calibration values fused, fallback to driver values\n");
+@@ -588,11 +592,6 @@ static int rcar_gen3_thermal_probe(struct platform_device *pdev)
+ 		dev_info(dev, "Sensor %u: Loaded\n", i);
+ 	}
+ 
+-	if (!priv->num_tscs) {
+-		ret = -ENODEV;
+-		goto error_unregister;
+-	}
+-
+ 	return 0;
+ 
+ error_unregister:
+-- 
+2.34.1
 
-to
-
- "cancel scheduled [non-auto]suspend requests" and immediately run
- .runtime_idle() again (and fail)
- --> a somewhat misleading comment
-
-Or perhaps I'm misunderstanding the before/after behavior here.
-
-> > Do we really want that? Or maybe these drivers are just outliers, and
-> > should be rewritten anyway.
-> 
-> Probably.
-> 
-> If the device is RPM_ACTIVE to start with, all of the rpm_resume()
-> actions related to resuming it may be skipped, quite obviously, but
-> I'm not sure why any other rpm_resume() handling of the device should
-> be different in that case.  This only causes the behavior to be less
-> consistent and less predictable IMV.  In particular, if the device
-> uses autosuspend, an autosuspend timer should be started for it
-> regardless of whether or not it is RPM_ACTIVE to start with.  Failing
-> to do so may cause it to never suspend going forward in theory.
-
-Makes sense. Really, I was only pointing out changes (not necessarily
-problems) with a few quirky non-autosuspend drivers [1], and if these
-are expected, perhaps it's worth following up with the drivers in
-question that were describing (if not fully depending on) corner cases
-of behavior that we're changing here.
-
-But on second look, maybe there's not much to fix for these drivers.
-It's not really a "bug" to perform excess .runtime_idle() checks, even
-if it's wasteful, and I don't see great alternatives.
-
-Brian
-
-[1] drivers/net/ethernet/intel/e1000e/netdev.c
-    drivers/net/ethernet/intel/igb/igb_main.c
-    drivers/net/ethernet/intel/igc/igc_main.c
