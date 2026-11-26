@@ -1,111 +1,110 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795690830;
-	b=gqsR8Ahyt3kmyLO/FHSV+liY8gfd9xVx0nSFSAA/taWtumjtc8zMW8bC7y3PI6pj8j4m
-	 Hllf4PenuSzrFk+5dpMY4Dg9jIUVoawYdWxHShkBmuonzaEZSrNluSAq74IS5JsqzHXxn
-	 85PDooGhXFdG+xqYdWrTRx3AP48HTLXaoAJjyx+0bjYVVK0HbChfJQ5a9ODJz/ppFPNFr
-	 rMWUVQnDYWYFUke3oLzGB4TDF+MSWBDwel1TL/DtHtuGoVrKbVNjlO+WD8aafi8M5lzX2
-	 nvkO5CgUE+7zne8yNmUteRSEviC0hqDnwYMiRuMbO8Ju3oXgYEkF3vEcBoly8bSH2jA==
+	t=1795690837;
+	b=Mtcq4Nkvtbae3L4mnlJgjapao5bJdZRQF1NePvHghGdCmtsh1MyUAnmvWSi7UPX8SmLk
+	 oZh9MUuOBAJ+2IvxKscdCXdvtjHg0A0c32PsC5pg5ajh4E/ayGbga/umU3+4tnSt0YbHY
+	 x1JPfd7pYLOtU8X390v+C62lyTifuY5DddJiDwBZK9JOvxZNAsoAj+xmvuFF5Avd+Yghl
+	 6QU1d5pj3oyJwQhKxxQtk9p8OoxPbY+y2VTVoRxMgINkpQhpLxzlIV6x7iFrvD3+CFM9F
+	 yA26D49uD1wbJYEG+siuTnVhcz185yF3pPTRRtDHWxsMiEWl2UWr8Kcbc7aKjdZ1KEg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795690830;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795690837;
 	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
 	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
-	 X-Received:X-Received:Received:From:Subject:Date:Message-Id:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:X-B4-Tracking:
-	 X-Change-ID:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
-	 X-Proofpoint-GUID:X-Proofpoint-Spam-Info:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-ORIG-GUID:
-	 X-Authority-Analysis:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=l5SIfcklw084WTI/zcukrT5r8aWMbpdgCAh8jjCi+mA=;
-	b=XFTOm3/+1LO4Y0bNHjbx8KTQrGg4G2RxMrKe/EyIuGy2uzDMJE+xFsHixgPHR+h8dX6y
-	 oC9U5fZdOpvye3Z87bZXzDFYE6lHCKHizsYeiM5YCp0cAnYXT6UIEDo38pO9cbe375Bbv
-	 ySA+BhJWvhf95HNueKHbh/gffw94JkheECSbcGvwBTXoyT5ziaWPk+Bnd7wFL5fFZoH6c
-	 KuCWEEOAJtxf9DlMuHeSiig/9azgB7iTh20t6w3CHtsgh9saSMQqj8caAgRXxAicEgWo3
-	 pdOZCJ83iZW0VL0ueOrTqo307nlOdOUCIQO9qAjDUq/hUn28qClDrrVtavUzNwXEGMg==
+	 X-Received:X-Received:Received:From:Date:Subject:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
+	 In-Reply-To:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
+	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-GUID:
+	 X-Proofpoint-ORIG-GUID:X-Proofpoint-Spam-Info:X-Authority-Analysis:
+	 X-Proofpoint-Virus-Version:X-Proofpoint-Spam-Details;
+	bh=bAkpBnZvBiH/A2z/IDAE1d3gkLalf0A6Y5L46N6u7zA=;
+	b=CrrSkWhLs6pkgEeQKC20aOCCiH5VVvsHkjjUpH8/Y0fDnzKcPLmt7I09zMawa89/oS7K
+	 SNbwczEmBfs0nxPQNkC3R80wvqBjegy4/FdPS1GsvaF8sCxotFEo1Ke5E0tzdyMd+w2UD
+	 Eu5wcr2FhIpmtGGwwZ33g9MXKhewOz14oVJ8qvsLNeY3r4GLspCTcFPBtD+FHgCvKTUuG
+	 VL5OHqMFh/JljXE8s+kyIo1y6KwtxDVymSmShMj4jCgagrqlpuLbAbsUExXtlvARPc2Q1
+	 ggt+q4/xIDubelL0G9kNPprkR91jk3A9dqyJ6LqZfyeW/kUb98Y23QjZabuwcKj+SGw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=oss.qualcomm.com;
 	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b="b3/RGVBq";
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=TxfKRKL0;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=fwy80TtI;
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=dMoKvYcy;
 	arc=none smtp.remote-ip=205.220.168.131
 Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 2442C606A32A
-	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 11:00:30 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 2442C606A32A
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BB1CF606A321
+	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 11:00:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BB1CF606A321
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=b3/RGVBq;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=TxfKRKL0
-Received: from pps.filterd (m0279862.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AQAXLf82629933
-	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 11:00:29 GMT
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=fwy80TtI;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=dMoKvYcy
+Received: from pps.filterd (m0279865.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AQAXEnt3348333
+	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 11:00:36 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=qcppdkim1; bh=l5SIfcklw084WTI/zcukrT
-	5r8aWMbpdgCAh8jjCi+mA=; b=b3/RGVBqmwgkxG15ypLBBHxy1hidEDyQoxKEUo
-	62hFlQbhy8mk9SXv5I6vuOOCIEuX20A5Bob4HUvh6xBOF18t3NzKGADXASfRwBxy
-	wabRNUMOEyBXZunrm9TpDy4HzueBVx2Qx5SE7O2rWupQAVJhp2V0rqSL5c2Nx/yP
-	F8rv4n6gfnekZEQqy9yXML5nwbQTJFr+uxMm4Qh6U/f4c8XBGXVAaP5iSptdHZHd
-	0CTiyompt23prSSR3wMamgtIKGFcCJJtXkWhqa2vYlC46CzRsEk91AOk5Cqj1kZq
-	B1C8T9PnAiZAM3LJlKX1rsDuLyOHz8OVFvjvJcY41QTF7BOQ==
-Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j61ahv444-1
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	bAkpBnZvBiH/A2z/IDAE1d3gkLalf0A6Y5L46N6u7zA=; b=fwy80TtIGhc4VeSu
+	s/5RoI7VGxBPpvJuw6RovybbXd3p3ME60tnoxYEsaIxn/OHJAdLfGe2tw0Tj3XS0
+	PlbpSUwi+MXk38SwMQbT+17UXkmRCTsICtEMU5NZzfi9vv3kBGe/yodulrdEog0Z
+	m3hI2YCX+kE+7vTA8wPfPE587YfRxJy1u5qQ0zS+39gvqKjolCxE2SvnmScFwIv2
+	XKEToN3cFc7dRGVw/HyRhSbEnmlFQBSAiFcAzukFOx/9ezqYzABsAIgxIIXnvMGW
+	HvLSN6iEwt4mBn9zpePHYwwLCt5ueE2AC9ck4lqY19xc3rmaIZyugtx7T63HAjGl
+	zE1qvw==
+Received: from mail-pl1-f198.google.com (mail-pl1-f198.google.com [209.85.214.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j6f8rh3kc-1
 	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 11:00:28 +0000 (GMT)
-Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-2f022026e60so74629345ad.0
-        for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 03:00:28 -0800 (PST)
+	for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 11:00:36 +0000 (GMT)
+Received: by mail-pl1-f198.google.com with SMTP id d9443c01a7336-2ed05b3eaecso62859135ad.1
+        for <linux-pm@vger.kernel.org>; Thu, 26 Nov 2026 03:00:36 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1795690828; x=1796295628; darn=vger.kernel.org;
-        h=cc:to:content-transfer-encoding:content-type:mime-version
-         :message-id:date:subject:from:from:to:cc:subject:date:message-id
-         :reply-to:content-type;
-        bh=l5SIfcklw084WTI/zcukrT5r8aWMbpdgCAh8jjCi+mA=;
-        b=TxfKRKL06cCK4DuUQR2uhR/tSrcLCqkHLsPmgXeh9ihsB5EmI6ryeFZkVDJCUId2id
-         pPkdv03ncAz3qvVvFIqPjUOKh6XbKf+oYWe481gxGLdE47MnhXmahicz9J64BKQs46Kb
-         2zXBm4VJakC18u3ldaReW0EeclrZYozeJOXhA5wJnj7nrYMW1bvSX13N61+ABXtNC4HA
-         X6RA44Yhowtd6f+SADTo5OJ9QWusMu8/P7B2gODv0QQPwtxN+GwfM1pS5WIE79FaJqxq
-         hX28vwQbzBsaLUJMo5+ym0akuI9Cxe2KivEFzoT9kKYqXyhRteVxOXFwMXAg0YfJvbqd
-         pgGQ==
+        d=oss.qualcomm.com; s=google; t=1795690835; x=1796295635; darn=vger.kernel.org;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=bAkpBnZvBiH/A2z/IDAE1d3gkLalf0A6Y5L46N6u7zA=;
+        b=dMoKvYcyDcI8VXEvcYuLay5tHiLI9Ri+YHdxpPdm1hIdjefslUq5NYcuoCpBg6LGD4
+         RpGeDtoeX9rl3GpNLeYIm/rMsj3S5HfeVXJYzu4OgJY/rsF5V3bY6g9quUNLn7W5vXq/
+         PP0i6S9BkqAK2n5DIkvLhqs9cSi1p/WzD6VLlF4rD+lc8U4WdxwsSJlMznaOrcZnl1lF
+         u1U7BbpPNuCoF9q0mx7ELjG2CsQPstIDigGxGHIibixvQeuX6X2IqSWkROnos2XUa6ra
+         QUnuRI5INkWfKe+O+xzmyszQSmZaB1yjdHxMQ9HUtQx5acsw6aAHBCeZc407OHPs05Xv
+         hRAg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795690828; x=1796295628;
-        h=cc:to:content-transfer-encoding:content-type:mime-version
-         :message-id:date:subject:from:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to:content-type;
-        bh=l5SIfcklw084WTI/zcukrT5r8aWMbpdgCAh8jjCi+mA=;
-        b=MOcwknQzPOjeCbmVY8Droem6NPF47bSswfsDJe8a8iiSqjgmKsFCAMqizaoDWJMvkj
-         y1WHLXpEcYyKJ1yoS7QKPHAeVAgbtbvvaYwvoGIPaU1LJgailu3c4sC5em31Ol77kmIG
-         gDRFsDVsGedCvXD1qI7aROPVoa99xxmuyouR0BR085Th0LByXjDqRoaYIYCBVHi2HAMp
-         ztBdzGmb7LEn92mmsUZBSdyQqegWUpL6bZeJ/FSH3pZn78jB4yuzl6/3kcGiziFiZutp
-         BIKpvcoi11cpCkV0YrGAEi0A4SGQCblGxedl9Ni1gWr9S4hDgj9JFLofvDWm53TszgW5
-         ETPg==
-X-Gm-Message-State: APuU4Z/Vi+HrFSNAuKZ8MFck9Z4K7mhU+BhxS658wvoxLvqm0NahRc3r
-	9Qa24rBbeEvjnqhIhHrw66H4VPZJThhw32lml82NT7Hpfb56hUYTkIhG+Phq3SIue5drF1iX/Em
-	8R7xmahgVtgNmaDkfq/30KHlWlYoAV+mWCJpe50pj/9zxaykehxwCWWxib7WG/w==
-X-Gm-Gg: AZFdTZcLX2MJjGl73jaMhFPkT/JD2JOK602Zyp4z9ZMyrT4A3heuJvzqpktKq1gHmLo
-	cBMRRCMRleEi7hQBEBOl+Juu6k+3A9p7bv4nvl4O06NRPjaK9fSrdvqCWuFmvf/i9ujrRoKOfGz
-	/auClFRt/ZgZkyHmwaxrAShayiRMx90q4FfmkCc9RcfAn0BxYrU35vLbJH8fCzqzKofVwV2xeNG
-	4zRuaZnphGfRipiHqnjZcdUIW9TNucS8/J6miXKjlv85AOdyI0eMX9suRhadxFb+6OxuZSr4AkE
-	6KdL4VqAV8P2VqGKmAn08ncacc7RybYZLi+W1x2oDJXTHxcxh/JOWd6+kU8ChUfo0oCPXsKOVAo
-	HayOUifFld+nyrqyqBXclfTzbxCqTrQU/Z6Sw2D/F3d63HreoSJmeNi2eNyPqPqgzcgoXSF1pvS
-	I=
-X-Received: by 2002:a17:902:db01:b0:2e9:57bb:72df with SMTP id d9443c01a7336-2f031fc3478mr174815035ad.28.1795690828022;
-        Thu, 26 Nov 2026 03:00:28 -0800 (PST)
-X-Received: by 2002:a17:902:db01:b0:2e9:57bb:72df with SMTP id d9443c01a7336-2f031fc3478mr174814435ad.28.1795690827206;
-        Thu, 26 Nov 2026 03:00:27 -0800 (PST)
+        d=1e100.net; s=20260707; t=1795690835; x=1796295635;
+        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
+         :content-type:mime-version:subject:date:from:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=bAkpBnZvBiH/A2z/IDAE1d3gkLalf0A6Y5L46N6u7zA=;
+        b=oeuK2cT1anP5D890oCWSLzx9aZUW0iD5zt5reQ6fmDklQWgvG+ZVzAWyGxK+2LXnqX
+         8gM9N1H0sq9tTWhW9424uJZCcuuUaKzkd0nye8w54ap3D0+p/O+ZKaekLTfnIO7KHzkl
+         m07P2L1/qEhHs/ihyKp41nP7USObVbr2ZM/Arqp5871JevxX1V6Vo7Pq3cDNhLIs96W4
+         A8YPRlQZ0bH451KSK+hLUggwzygkKH1wU7zh6jGJf+/YvFXsyl3oH66EGKfC6W3ap2Yo
+         YWlfEIv4aS9BdP60qtK6GhSwEY3AJFqIeQDqumcpwT7HILycj5CgA18/ezuLFZp2i4yS
+         G+yg==
+X-Gm-Message-State: APuU4Z8rZpk7Ma4QjO3sK1KlEAo8KtNDz3AXJUGwRwdorni4FQnMZSTQ
+	fXhajtvm1EpyU1qjIXQK0eIvFaNGpcplS++ck7OGFnxIwdKvfo/Ytas2JdXLQOHKEJUgr15s5Cw
+	Hah6Pr1D0rvok6pmJTNvmswjuO9nEZzQ+bRAO6XZXE489HcA0gd5+roMcMrjvOQ==
+X-Gm-Gg: AZFdTZelvuLj4wgny9NZCSrmJRR6tA5KmQMDYIgRNoDqsgZbVsXVLfb8KTE2Woy5te8
+	MKmnU5W5BZ+EyG4yTSuCkCwXrSKsr3tDbbOS5u7gFMi70xu/vsCw7ggq0ad2NL/Ij1LxTzapFmx
+	FNynpO89mQDdXDHjzyTM8tNwCjMoabF1Sft9EuuNyYliPyy7WcpAFOK0Uz/7Wcrj8xr+zRF/tC6
+	W05wAatGOib2rkEVys8Jfsd9uNAoIFRvGof2Z8QJTtOKjAegC/E25so+KZw7MpQ6/Ej44vd3gSF
+	GsxkSSj56E8eaXFnGqi5x/ZHJRD/KsUdidyBY2LG7h7v63RnSmCZipnhRzymXb8Wufijs3sj4Mc
+	WTHaOQkuAoFEO/g2OE5YZcphO9fbi6yF9rHAYPgjsEfPybXH2hNEJgkhJ1KvS+8WOoKTh6uaUeZ
+	Y=
+X-Received: by 2002:a17:903:2c50:b0:2e9:64b9:a330 with SMTP id d9443c01a7336-2f03f17d2ccmr205395955ad.11.1795690834578;
+        Thu, 26 Nov 2026 03:00:34 -0800 (PST)
+X-Received: by 2002:a17:903:2c50:b0:2e9:64b9:a330 with SMTP id d9443c01a7336-2f03f17d2ccmr205395245ad.11.1795690833868;
+        Thu, 26 Nov 2026 03:00:33 -0800 (PST)
 Received: from hu-raryan-hyd.qualcomm.com ([202.46.23.25])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2f03f0c42b1sm101400615ad.17.2026.11.26.03.00.21
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2f03f0c42b1sm101400615ad.17.2026.11.26.03.00.27
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 26 Nov 2026 03:00:26 -0800 (PST)
+        Thu, 26 Nov 2026 03:00:33 -0800 (PST)
 From: Raj Aryan <raj.aryan@oss.qualcomm.com>
-Subject: [PATCH v2 0/2] power: supply: Add SMBLite charger support for
- PM4125
-Date: Thu, 26 Nov 2026 16:30:16 +0530
-Message-Id: <20261126-smblite-charger-for-pm4125-v2-0-20656509518b@oss.qualcomm.com>
+Date: Thu, 26 Nov 2026 16:30:17 +0530
+Subject: [PATCH v2 1/2] dt-bindings: power: supply: Add qcom,pm4125-charger
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -116,13 +115,10 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAEARCGsC/32OywrCMBBFf6XM2shk8mpd+R/iIrGJBqzRpBZF+
- u+mde9m4M6Fc88His/RF9g1H8h+iiWmWw20aeB0sbezZ7GvGQhJY0uGlcFd4+hZbfPZZxZSZvd
- BclKsF1y31qBShFAB9+xDfK3ww/GXs38868b4e4KzpZLSMMRx13RSGJS6U8JRcMIFpZzQqiWp0
- Nu6b/rQkjWwsC6xjCm/V++Jr7BFkXOS/xQnzpARF3TqAmrkYZ9K2T6e9rpYbOuB4zzPXwUgle0
- XAQAA
-X-Change-ID: 20260827-smblite-charger-for-pm4125-d3168a705520
+Content-Transfer-Encoding: 8bit
+Message-Id: <20261126-smblite-charger-for-pm4125-v2-1-20656509518b@oss.qualcomm.com>
+References: <20261126-smblite-charger-for-pm4125-v2-0-20656509518b@oss.qualcomm.com>
+In-Reply-To: <20261126-smblite-charger-for-pm4125-v2-0-20656509518b@oss.qualcomm.com>
 To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>,
         Krzysztof Kozlowski <krzk+dt@kernel.org>,
         Conor Dooley <conor+dt@kernel.org>,
@@ -134,104 +130,192 @@ Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org,
         mfd@lists.linux.dev, Rakesh Kota <rakesh.kota@oss.qualcomm.com>,
         Raj Aryan <raj.aryan@oss.qualcomm.com>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1795690821; l=3185;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1795690821; l=5273;
  i=raj.aryan@oss.qualcomm.com; s=20260507; h=from:subject:message-id;
- bh=Egbbn6MpPK4SfNFKa+uRss7dEExa4CDRxOxDLWL7XEk=;
- b=MJlKqNEhwCiPRU2v7OBEyMqj7RJreMUdouoo6UPR8Eh/K5j7FyEhbHlS4tEBFLc5v3RN1+1+V
- 0bPxMxOHkzcCeIGRFX/tuNQw4LarCCAdvCOVXP3m9mWhmPogIeNFpIE
+ bh=AUHf3tX4cjhQLgpG36hMqGc0GVm+wfhye03EyAkWlc0=;
+ b=ENRMrEvMGxV35m3XI8+xe//bvjIErvUP53yqd5vdBF8qQggrPqWUlKqu+8gSsymAdOVlKMjby
+ qxQCtBCkqdsBoMKf993R8wYV/QluSmaYt8E1qb3SO/jYCH4gZEr6i/5
 X-Developer-Key: i=raj.aryan@oss.qualcomm.com; a=ed25519;
  pk=NMkZ/eGFLSObYX6FfysQiuEElPoUYghk7+2Jtc4VEBQ=
-X-Proofpoint-GUID: 4WTF0TB5YX0bU5fYobYLWP9YniD5cGGR
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI2MDA0MiBTYWx0ZWRfXwmWvaFzv+GWt
- ZYvpPyomid063dv3njKsEAECA3F3P0iH7CwKi/2QRCedkX05GBmf6U8W9kSdliN+AahNo0KiY9W
- ZMVYvXjT/x+bn+xvFzmhnVV/f2jL8Ps=
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI2MDA0MiBTYWx0ZWRfX7HAKI3ABi1sH
- /bU4u3Pdi/XctRcmXfRlHO3pqUKHyPZWkHMmDAJQBOPToTYKIOHWWfh4FZM/lt/avuI4ZCVMxEJ
- ba+cy+pQD21o+9NjPF5n4SAfivSFYhkLKPQ5vCIB7OqcbkxTqRXp4q2fchLgaLpyp06pFuf1VLJ
- bfcaL+NJWgCmAF4/+8NRlEGyH9I9JqZxFhHcr1TSNiY++d9EV2p2Se+5S3URcW98jU67T+OABbI
- EyFz7LvVMQ6ca5mST+34QqajnAeiEo93bLmkWT5/OssitYlrxoXtb2fqLcNyymrudOROeLonSxL
- E7sF0Yf+WM7155cVoUa4DhYQwHG+MMKn4ye3z9k8xw6FOYM8Hv/737hPLl/El2WJ4yDsgz2/Fx9
- jBfFYa3o+LnHCaN9tE/wiXauNLutdoGMcev++n+CNQUKUlFCOAKWzoLfboifUj7ctaEvzoGddrv
- UdGiUchK55Q5yeqtvXg==
-X-Proofpoint-ORIG-GUID: 4WTF0TB5YX0bU5fYobYLWP9YniD5cGGR
-X-Authority-Analysis: v=2.4 cv=BbxNQbt2 c=1 sm=1 tr=0 ts=6b08114c cx=c_pps
- a=IZJwPbhc+fLeJZngyXXI0A==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI2MDA0MiBTYWx0ZWRfX2pGrmFd508AK
+ efKZ5aQ4Db9CyOcRmiPqYuqK/rZ6Q9UM2PeTQOBimKDJxeI/jM45mFAcYUgjC8gQOa0Kn0iY/ep
+ hmwKcX0+xWwCm/PVlaRBNDcx+gIrfwkTCKvteA6DSsZ6UZA7mYKA/FdebiWjEJXr3g7bkwyVe+H
+ ABFve8Yn2IsTMq2n+IP5STs7eLMMzpmMUVzR6TaypzEJG007y47L1e9OwsbrtqEwH5O25aqsOop
+ ISw/tapeVwFNHyH0dJz/CmHyQN+dFy7dVwwzbV91VgsLFTgYeeA9W0rIdI4BZbgNCodofSRpQZZ
+ XukieSJ7Ai0TG4tNWyyIol+VPI1GMPfkxhpvpkU14Dl1WDlxk8pGJVc8R4h0xu/oGeoMZ7a1J23
+ VQC2e8h2XJoBn3W4xogf9BhjrIbTqgu/TDVdpVCClwD5bJ7R+fsFmKwZvA4qj39BykGBnv8D5QO
+ tvxytuhdYxsU56eoZGg==
+X-Proofpoint-GUID: -4qNOCbAVEs8Wo3uIllEp3PHGiKI6ceg
+X-Proofpoint-ORIG-GUID: -4qNOCbAVEs8Wo3uIllEp3PHGiKI6ceg
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI2MDA0MiBTYWx0ZWRfX+V9EBOqTrZDm
+ 33pAIqQ7szhrBGBaVbdQHn3XmGuNlBOuutsOSR8acI2BUwBLpc1/vWbP0wjgCnJwfvx1I8xTVnd
+ WOeI6PROVLElpnrs8OR3YcQy+MTbXdY=
+X-Authority-Analysis: v=2.4 cv=FuOQbGrq c=1 sm=1 tr=0 ts=6b081154 cx=c_pps
+ a=MTSHoo12Qbhz2p7MsH1ifg==:117 a=ZePRamnt/+rB5gQjfz0u9A==:17
  a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=_K5XuSEh1TEqbUxoQ0s3:22
- a=VwQbUJbxAAAA:8 a=EUspDBNiAAAA:8 a=DxrESgKfosCQc-jqPugA:9 a=QEXdDO2ut3YA:10
- a=uG9DUKGECoFWVXl0Dc02:22
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=Um2Pa8k9VHT-vaBCBUpS:22
+ a=gEfo2CItAAAA:8 a=EUspDBNiAAAA:8 a=qXe9l9IMIpBVqIDzQAMA:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10 a=GvdueXVYPmCkWapjIL-Q:22 a=sptkURWiP4Gy88Gu7hUp:22
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
  definitions=2026-11-26_02,2026-11-26_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 bulkscore=0 adultscore=0 suspectscore=0 impostorscore=0
- priorityscore=1501 malwarescore=0 spamscore=0 phishscore=0 lowpriorityscore=0
+ clxscore=1015 priorityscore=1501 impostorscore=0 malwarescore=0 adultscore=0
+ suspectscore=0 phishscore=0 spamscore=0 lowpriorityscore=0 bulkscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611260042
 
-The PM4125 PMIC, used on the Qualcomm CQ2390 platform (cocos),
-integrates the SMBLite switch-mode battery charger IP. The existing
-qcom_smbx charger driver only supports the SMB2 charger IP found on
-PMI8998 and PM660, so PM4125 currently has no charger support at
-all.
+PM4125 integrates the SMBLite switch-mode battery charger IP, which
+differs enough from the SMB2 IP already supported on PMI8998/PM660
+(separate SPMI peripheral bases per block, a different interrupt
+set, raw ADC-based JEITA thresholds) that it has no existing binding
+to reuse. Add one to describe it.
 
-SMBLite is a reduced-feature variant of SMB2: it shares the same
-SPMI bus and overall driver model, but uses a different register base
-layout (five separate SPMI peripheral bases instead of a single base
-with fixed offsets), a different battery-overvoltage status
-register, SOC-based recharge instead of VBAT-based recharge, and a
-different JEITA configuration sequence.
-
-This series extends the existing qcom_smbx driver to support both chip
-types side by side, selecting the correct register bases and handling
-logic based on chip->type. This keeps a single driver and power-supply
-class device covering both SMB2 and SMBLite hardware.
-
-This series:
-
-- Adds the qcom,pm4125-charger devicetree binding, covering PM4125.
-- Extends qcom_smbx to add SMBLite register support, JEITA
-  threshold configuration, and SOC-based recharge, while preserving
-  all existing SMB2 (PMI8998/PM660) behavior
-
-Signed-off-by: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
 Signed-off-by: Raj Aryan <raj.aryan@oss.qualcomm.com>
+Signed-off-by: Rakesh Kota <rakesh.kota@oss.qualcomm.com>
 ---
-Changes in v2:
-- dt-bindings: add per-entry maximum bounds to the JEITA threshold
-  arrays, and a dependency requiring both or neither to be present.
-- driver: defer enabling SMBLite charging until after float voltage
-  is configured, and explicitly disable charging at probe start, so
-  the charger always comes up in a known disabled -> configured ->
-  enabled sequence; leave charging disabled on probe failure instead of
-  restoring the prior state.
-- driver: propagate JEITA threshold write failures, require both
-  soft and hard thresholds to be present together, and check the
-  other previously-ignored SMBLite init register writes.
-- driver: add watchdog-bark IRQ wake support for SMBLite.
-- driver: treat missing battery info as a probe failure for SMB2,
-  matching the existing monitored-battery binding requirement.
-- usbin_v is required, and channel lookup errors fail probe.
-- The USB-plugin handler checks the charger-status read and both
-  charging-enable writes.
-- Link to v1: https://lore.kernel.org/r/20261124-smblite-charger-for-pm4125-v1-0-2132c9f0601f@oss.qualcomm.com
-- It depends on charger type detection mentioned below.
-- Depends-on: https://lore.kernel.org/all/20261111-shikra-qusb2-charger-det-v1-0-5a9d919c66b5@oss.qualcomm.com/
+ .../devicetree/bindings/mfd/qcom,spmi-pmic.yaml    |   1 +
+ .../bindings/power/supply/qcom,pm4125-charger.yaml | 119 +++++++++++++++++++++
+ 2 files changed, 120 insertions(+)
 
----
-Raj Aryan (2):
-      dt-bindings: power: supply: Add qcom,pm4125-charger
-      power: supply: qcom_smbx: Add PM4125 SMBLite charger support
+diff --git a/Documentation/devicetree/bindings/mfd/qcom,spmi-pmic.yaml b/Documentation/devicetree/bindings/mfd/qcom,spmi-pmic.yaml
+index 7a889d888383..8c8eec87a765 100644
+--- a/Documentation/devicetree/bindings/mfd/qcom,spmi-pmic.yaml
++++ b/Documentation/devicetree/bindings/mfd/qcom,spmi-pmic.yaml
+@@ -160,6 +160,7 @@ patternProperties:
+   "^charger@[0-9a-f]+$":
+     type: object
+     oneOf:
++      - $ref: /schemas/power/supply/qcom,pm4125-charger.yaml#
+       - $ref: /schemas/power/supply/qcom,pm8916-lbc.yaml#
+       - $ref: /schemas/power/supply/qcom,pm8941-charger.yaml#
+       - $ref: /schemas/power/supply/qcom,pm8941-coincell.yaml#
+diff --git a/Documentation/devicetree/bindings/power/supply/qcom,pm4125-charger.yaml b/Documentation/devicetree/bindings/power/supply/qcom,pm4125-charger.yaml
+new file mode 100644
+index 000000000000..4c88d836355b
+--- /dev/null
++++ b/Documentation/devicetree/bindings/power/supply/qcom,pm4125-charger.yaml
+@@ -0,0 +1,119 @@
++# SPDX-License-Identifier: GPL-2.0 OR BSD-2-Clause
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/power/supply/qcom,pm4125-charger.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Qualcomm PM4125 SMBLite Switch-Mode Battery Charger
++
++maintainers:
++  - Raj Aryan <raj.aryan@oss.qualcomm.com>
++  - Rakesh Kota <rakesh.kota@oss.qualcomm.com>
++
++description: |
++  The Qualcomm SMBLite is a switch-mode battery charger IP found on
++  the entry-level Qualcomm PM4125 PMIC. It exposes five separate
++  SPMI peripheral bases for CHGR, DCDC, USB, MISC and BATIF blocks and
++  supports USB input current limiting, JEITA temperature protection,
++  battery overvoltage detection and a hardware watchdog.
++
++properties:
++  compatible:
++    const: qcom,pm4125-charger
++
++  reg:
++    maxItems: 1
++
++  interrupts:
++    maxItems: 4
++
++  interrupt-names:
++    items:
++      - const: usb-plugin
++      - const: bat-ov
++      - const: wdog-bark
++      - const: usbin-icl-change
++
++  io-channels:
++    maxItems: 1
++    description:
++      USB input voltage channel (ADC5_USB_IN_V_16).
++
++  io-channel-names:
++    items:
++      - const: usbin_v
++
++  monitored-battery: true
++
++  qcom,jeita-soft-thresholds:
++    $ref: /schemas/types.yaml#/definitions/uint32-array
++    items:
++      - description: COOL threshold as a raw ADC comparator value.
++        maximum: 0xffff
++      - description: WARM threshold as a raw ADC comparator value.
++        maximum: 0xffff
++    description: |
++      JEITA soft temperature thresholds (COOL, WARM) as raw 16-bit ADC
++      comparator values written to the BATIF ADC comparator registers.
++      Example: <0x5314 0x25e3> for COOL=15°C, WARM=45°C.
++
++  qcom,jeita-hard-thresholds:
++    $ref: /schemas/types.yaml#/definitions/uint32-array
++    items:
++      - description: COLD threshold as a raw ADC comparator value.
++        maximum: 0xffff
++      - description: HOT threshold as a raw ADC comparator value.
++        maximum: 0xffff
++    description: |
++      JEITA hard temperature thresholds (COLD, HOT) as raw 16-bit ADC
++      comparator values written to the BATIF ADC comparator registers.
++      Example: <0x58cd 0x20b8> for COLD=0°C, HOT=60°C.
++
++required:
++  - compatible
++  - reg
++  - interrupts
++  - interrupt-names
++  - io-channels
++  - io-channel-names
++
++dependencies:
++  qcom,jeita-soft-thresholds:
++    - qcom,jeita-hard-thresholds
++  qcom,jeita-hard-thresholds:
++    - qcom,jeita-soft-thresholds
++
++allOf:
++  - $ref: power-supply.yaml#
++
++additionalProperties: false
++
++examples:
++  - |
++    #include <dt-bindings/interrupt-controller/irq.h>
++    #include <dt-bindings/iio/qcom,spmi-vadc.h>
++
++    pmic {
++        #address-cells = <1>;
++        #size-cells = <0>;
++
++        charger@1000 {
++            compatible = "qcom,pm4125-charger";
++            reg = <0x1000>;
++
++            interrupts = <0x0 0x13 0x0 IRQ_TYPE_EDGE_BOTH>,
++                         <0x0 0x12 0x3 IRQ_TYPE_EDGE_BOTH>,
++                         <0x0 0x16 0x1 IRQ_TYPE_EDGE_RISING>,
++                         <0x0 0x13 0x6 IRQ_TYPE_EDGE_RISING>;
++            interrupt-names = "usb-plugin",
++                              "bat-ov",
++                              "wdog-bark",
++                              "usbin-icl-change";
++
++            io-channels = <&pm4125_vadc ADC5_USB_IN_V_16>;
++            io-channel-names = "usbin_v";
++
++            qcom,jeita-soft-thresholds = <0x5314 0x25e3>; /* COOL, WARM */
++            qcom,jeita-hard-thresholds = <0x58cd 0x20b8>; /* COLD, HOT  */
++        };
++    };
 
- .../devicetree/bindings/mfd/qcom,spmi-pmic.yaml    |    1 +
- .../bindings/power/supply/qcom,pm4125-charger.yaml |  119 +++
- drivers/power/supply/qcom_smbx.c                   | 1081 ++++++++++++++++++--
- 3 files changed, 1089 insertions(+), 112 deletions(-)
----
-base-commit: 9437046953b2fb3bf55b36582450ea0267df82a7
-change-id: 20260827-smblite-charger-for-pm4125-d3168a705520
-
-Best regards,
 -- 
-Raj Aryan <raj.aryan@oss.qualcomm.com>
+2.34.1
 
