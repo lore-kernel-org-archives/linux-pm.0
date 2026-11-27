@@ -1,53 +1,53 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795798587;
-	b=uejSh4PczkwNvrrQKM23cA86yEY8hPgTOdnT/34CV5AYIjK25ueTZLPXbGuffFDL3Q/v
-	 K+OJi022oa5aFBi+24v3mRCdbNQ13zfmCPs3CkLv8jrUGrmHCrcEd4JFRTmfFdlH5lB6x
-	 LF+ZWlprsoOrJaQKaZ5/Q7h0wE6XwZhMY+7lei5fItlnGRpyjcDEsHo/eWDtqB7cuQldI
-	 22ybthChAeaeBwsSprvKtbjuxTovYNqKBqDHrbmh340O5g+k7gKnGB0RuxSu67w+ETaFd
-	 sdfLJNs0NuBGlBCcUp6dLXEOkPs9gv3D9iq66sbQVx2Evki+ZpmxLnvpZhKsBWDBTEA==
+	t=1795798682;
+	b=kaqX2tWoR/X6++m8MRDXFsX1KCveyspcTLuU1xIgKgI3WRrWTDAEqs6jKfOnq0hZ5O/s
+	 H9iPQuZE98jMXA0uIE9PXWhZeGVTbpcx30foIEZPOmkwN2qyU2WqUFi4HHYxc5CADAg1x
+	 gH2CAdf91D+2o2E7aghYFs87vhxS87E7aQG6/54HzrnHkIChqi7DWaY6yDSY804LO8wMP
+	 b37gQtesMujKT7URIdh5tujhcs7dJ7IS0E7/7Yr+GHXaeFYJDjv7aws/XsXMe7j9J8NMK
+	 K/JWzvJSdolcO29Xxq9MyJLuqaqSrCfsXrdWYZnjNWcA5CSjFE4rpvpqom3gLdBQgkA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795798587;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795798682;
 	h=Received:DKIM-Signature:Received:X-Gm-Message-State:X-Received:
 	 MIME-Version:From:Date:X-Gmail-Original-Message-ID:X-Gm-Features:
 	 Message-ID:Subject:To:Cc:Content-Type;
-	bh=Nm5GsoRVqPZjF7NiFim3iyXJW+IHzow3RlWZbSCsnE0=;
-	b=EJEGolC7f87DqVtBiVvXt90iswSs1h8179uJX46JFXKKRL9PbCXD6zvFh6ywVEUVORJe
-	 79PmOlTTs7cj2K9pfuduHtCcwxTAJF5EXI8v+aejCf9V6QOFQdYtUhbgqCLbNVBkT2zvL
-	 42BnOvP9KE64LvvDu6khXC2nMwOBAZ/SfJoI0bSRx9WKD2NC+e+zvakmJzz8gRQ4RQigL
-	 dgu2CTmM91ebphIJuUML2Tt4PvLW3wkLR0Nvf6gcgtb1y7ycsFYZ9+IrNLcDcAm4wcZmG
-	 CE+B7KFE7V0o4annP2uBWoTBWHF1GBmbkHxiOlm7WgiQBp3t1zKCsHzOL2wnfz5dFSw==
+	bh=dDRUfH0o20Iw7H1ahxTXrk/aD+0O0X9e+lhbcvj0Hyc=;
+	b=UAJ63Sde1FsG6qOUPx/Gl5+NxkXwhdpMGqgTgkZLF5KvbSq52etbmODtw6mhhAjbliZ0
+	 haiKZtak1LMN52zKq3g0419gbfAN5yVI5rxMsXvd5tT+jYsUWDML3Xh18z//tNAGTbBNT
+	 BlylYa54tpmIooMHApmuiZiO+7FoYEE20mN0Vu5ES95MElU2GWGX4/XcEe/wPIAzRy2zi
+	 kztgiNOIq7irZx913l68zu5ATESi1MV5hRsRRm2lqeoOJEbbJU7aV7tFFtLhcdtBTD/gz
+	 msKVU5ax8ezRI/2LqHAPkr0Rtr+EHMXBLzFumolTrbxHkgyDTjRDwiAsNCZMm1iZSFw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mjskCGsz;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gZadOtZj;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 93BBD606A31C
-	for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 16:56:27 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9276F606A31F
+	for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 16:58:02 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=mjskCGsz
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1A0631F0089B
-	for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 16:56:27 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=gZadOtZj
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5E3001F00919
+	for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 16:58:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795798587;
-	bh=Nm5GsoRVqPZjF7NiFim3iyXJW+IHzow3RlWZbSCsnE0=;
+	s=k20260515; t=1795798682;
+	bh=dDRUfH0o20Iw7H1ahxTXrk/aD+0O0X9e+lhbcvj0Hyc=;
 	h=From:Date:Subject:To:Cc;
-	b=mjskCGsz2pDTrTgeONRGn+PMQABd/uH6PeN26AYNzWZhyYa64nEaGLZzdHprB93bG
-	 NnJoYAKbEpMpV8rVn5tOtyhrpqQ8yl3LKf1UVC26d1ZyOzlL1xkNw/4WA5fL4CIazj
-	 V2rerAfFPSROYqP7t1y2wEnbMCBh9w9qJIFfbh156bu82NADA7VOSwrBfIbXbzoBWo
-	 WP2QxC2phptBQxl80m+85MZ8tfAcbvO1MQA8ev9tqjtithDksiJLsxxYGtiB/LZchR
-	 XvTsP+2k3fWZdcrJlAb8q2J6jpnqZnmP/ZWO7esQewRUInDG7nHDKq7zoVtWVbhJrD
-	 1XFlgCaPTKpoQ==
-Received: by mail-lf1-f52.google.com with SMTP id 2adb3069b0e04-5c1479a959aso6403095e87.2
-        for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 08:56:27 -0800 (PST)
-X-Gm-Message-State: APuU4Z/X5lQGTy7alIhSQr97l+5f9r6YcEN+x2soTBsE+zZiYCg2rDaH
-	gbhXDa8jhxgPha3M/N6JlCpM5Wb+Vb5b/k+AL3NDp5J8HbqlgMVVZdXUGqb43OAeJBG5NN8ZJi3
-	XorrG6XAtf9JVksTUMuy4Z/0MUijJDSg=
-X-Received: by 2002:a05:6512:6695:10b0:5c0:bca:77cd with SMTP id
- 2adb3069b0e04-5c1bc803ecamr5353701e87.42.1795798585547; Fri, 27 Nov 2026
- 08:56:25 -0800 (PST)
+	b=gZadOtZju3oA0OnCDHSKPuPrmZ7fNiKc+qHVH9FLh9Lp3to5jZRGeZ4MCQjwW+cVj
+	 HRgB5jrlLlBwSW8LPfpKm0UAqPwQaDB91/uXA78xg8fRaXt4MkFI7oLDZs2IxLK2wa
+	 sr+5oRzcZMIEjQy+Jdd6yyLwm9QbRb0KmzSsOLgIXU4gZ3TjNoVimdrJVDvqAKS2uA
+	 0SvUxyWq+eul9PqsMtI7POu8HuqpHisSCrhEZZ0Eyipdalysxzt8t6nUDcyWubgVHT
+	 lgeX5s+6ZUjGbhZRNVDzppnGzdv0soX0rhygCSb7pp6Q5P32o+B09XMYVW7n37mzen
+	 LAAWh5Yt2FUAA==
+Received: by mail-lf1-f53.google.com with SMTP id 2adb3069b0e04-5bcdae234ecso3429097e87.3
+        for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 08:58:02 -0800 (PST)
+X-Gm-Message-State: APuU4Z/kr5ViWooy/pamSdVt1sl1ujVmx2y38MUCNlyIjTUbZAqE+L/5
+	kyGxU/J8IWDOVIutecTrtPXVz7Jz/XSS3uv5gOtv4FVWHiFPV9I/mwgjIDVl6k8P3oSC9zVnTNq
+	CMaG6kFitgyclztui15Jx7STPxkSs7bY=
+X-Received: by 2002:a05:6512:31c3:b0:5bf:dc95:3817 with SMTP id
+ 2adb3069b0e04-5c1bc7bcbe9mr7212492e87.15.1795798680797; Fri, 27 Nov 2026
+ 08:58:00 -0800 (PST)
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -58,14 +58,15 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 From: "Rafael J. Wysocki (Intel)" <rafael@kernel.org>
-Date: Fri, 27 Nov 2026 17:56:12 +0100
-X-Gmail-Original-Message-ID: <CAJZ5v0jwg0cGJgPnP2SaXdcHWpW_5FPq25McuQmh9794L5QWpQ@mail.gmail.com>
-X-Gm-Features: Aa3M54qnjPoJ8mF5BIzTgERRjtaFuU95ItH4SUcHBADTGze3jzpDHyS5YxxH9To
-Message-ID: <CAJZ5v0jwg0cGJgPnP2SaXdcHWpW_5FPq25McuQmh9794L5QWpQ@mail.gmail.com>
-Subject: [GIT PULL] Power management fixes for 7.4-rc5
+Date: Fri, 27 Nov 2026 17:57:48 +0100
+X-Gmail-Original-Message-ID: <CAJZ5v0goDeyB0c_g5YvKGGZZNKaSLqWKkei_9pb50BHseizSmw@mail.gmail.com>
+X-Gm-Features: Aa3M54oQ7BNHJy2Wa8RGUivkc57ynpI4AcAhusGbno5lGHN1hzrmMCxfQDeAJaY
+Message-ID: <CAJZ5v0goDeyB0c_g5YvKGGZZNKaSLqWKkei_9pb50BHseizSmw@mail.gmail.com>
+Subject: [GIT PULL] Thermal control fix for 7.4-rc5
 To: Linus Torvalds <torvalds@linux-foundation.org>
 Cc: Linux PM <linux-pm@vger.kernel.org>, 
-	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>
+	Linux Kernel Mailing List <linux-kernel@vger.kernel.org>, Lukasz Luba <lukasz.luba@arm.com>, 
+	Daniel Lezcano <daniel.lezcano@kernel.org>
 Content-Type: text/plain; charset="UTF-8"
 
 Hi Linus,
@@ -73,40 +74,31 @@ Hi Linus,
 Please pull from the tag
 
  git://git.kernel.org/pub/scm/linux/kernel/git/rafael/linux-pm.git \
- pm-7.4-rc5
+ thermal-7.4-rc5
 
-with top-most commit 569e1eb36b033f42a9c363ffe4bfbf50bdadae51
+with top-most commit 52424a7805a05286743a5e9cb2dfe6548480b4af
 
- cpufreq: intel_pstate: Use dedicated lock in set_power_ctl_ee_state()
+ thermal: sysfs: take the zone lock in the tzp attribute handlers
 
 on top of commit b6a9fa34ce4187cb69d3c588a4bbffc31ce5db8f
 
  Linux 7.4-rc4
 
-to receive power management fixes for 7.4-rc5.
+to receive a thermal control fix for 7.4-rc5.
 
-These fix two issues in the intel_pstate driver including one recent
-regression:
-
- - Prevent intel_pstate from triggering lockdep splats during system
-   resume due to suspicious ordering of locks that is a consequence
-   of a recent cpufreq core update (Rafael Wysocki)
-
- - Make intel_pstate refresh cpuinfo.max_freq when a CPU goes online
-   to avoid using a stale value of it (Hugo Sales)
+This addresses a possible NULL pointer dereference in the thermal
+sysfs interface by adding thermal zone locking to some show/store
+callbacks (Yu Zhang).
 
 Thanks!
 
 
 ---------------
 
-Hugo Sales (1):
-      cpufreq: intel_pstate: Refresh cpuinfo.max_freq when a CPU goes online
-
-Rafael J. Wysocki (1):
-      cpufreq: intel_pstate: Use dedicated lock in set_power_ctl_ee_state()
+Yu Zhang (1):
+      thermal: sysfs: take the zone lock in the tzp attribute handlers
 
 ---------------
 
- drivers/cpufreq/intel_pstate.c | 52 ++++++++++++++++++++++++++++++++++--------
- 1 file changed, 42 insertions(+), 10 deletions(-)
+ drivers/thermal/thermal_sysfs.c | 8 ++++++++
+ 1 file changed, 8 insertions(+)
