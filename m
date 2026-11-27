@@ -1,96 +1,79 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.47
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=168.119.26.116
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795775443;
-	b=DZNaZiAc6+03GteWoybbXcnsGTTmyFdLb2xas/BvmteGx44IQzFmIEKjZj/kSbRwOJQ/
-	 ShpRLzgaCyhJKvnn+ULM5tzkwLy4j4W2nSx6MkbYnCVrYgAmE/N7mANzu2qF7rGAqMSMG
-	 nC5tDK1w6H3wTHcxrJBT3GU5TY4w4+zQx9TIzqe6+/bxRRyM8n1ZuKShKH8afZ+EhhfXQ
-	 gF6MKnpik73qD5CsZrlgk7cZi84WFGNgjsoymKZxdOMYP8/M7VonVYBfqAr+wWzua2z4P
-	 YgHsyHcn7pdZb1KAgRRkUt8OCYDhhyApQ4r0AkZmTYkxnLp5FokfdiDDLF5ffTDI5Gg==
+	t=1795776545;
+	b=v7O48oMMPW5P33nPVKOitMp0ElantUe0vA7QZoLzwUyRaWxgTeB91BZyR6pDpqMN4C5I
+	 4Fm/LXMkn8H9BR5TbUyJFjrI2lTm2iGhp75Hc7nqgO4Y8gHVnr4GffdqS4X5mc0mI9eyf
+	 o0WYDqeAcQjg7JqkL/N/xYKotozHXez7tsfnIdp2U1jXQeJqYb/nSF1BT3q5XrOUavk8E
+	 Rbl1EvCfUCNDBDte8bSryvtnmC126+4vtlRLG1Jzr+mYUrqvM1RjwbmhN99kghhviFK4I
+	 2U9XDDgp8O/udn0BTcpRy/MHxnSCeYJFOgLU0TVWybtNFJfooNZ/1iitADCoOr7sDEg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795775443;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=wDNCT5dmOQWaRk4g039B7mVnjd1E54Q443a1ugSNbRY=;
-	b=tXnKID2umc8uzyLkTGu5ZpxabSZkTr8EwnjQzIBqadWy5b4X2ClZaWCKpaZZOVp421yU
-	 q0uqUCtzYddmq/8Gyha8RCy7BKAVln8b4bzpSVC+NzXFD8CrOllmgPM0J7jdCtSgE7jQ+
-	 /UQ6mcNAx0Z1Q4ENFkO8ghlUxwUOAowqjUNeG97QVf9bb4V6i4onHSRcmLnncEa21kzTO
-	 0PvAV1uRENR25TGbia4L3ZukoRy9S8OBOkKxLTX7jHYuNlZIhaypJ7PST9voZuiUqfrwq
-	 awbuxdlMbcNiBbe1rnMOtYkHscOEyizg12dHb4Puz3oudsnOtPizUHwo261QfoSZhww==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795776545;
+	h=DMARC-Filter:DKIM-Signature:Received:Received:From:To:Cc:Subject:
+	 Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:X-Virus-Scanned;
+	bh=Mz0uhk3OFWJ0FNh9q5bukOUzm++jVY5/KHluP5c0a2Q=;
+	b=aw5Wq7aLLNXxl7AzVXzxiAr2VXpP2VLzNfoB9utPILF/heZGTTLFHNdr+3OQZcyi7w3O
+	 m37HZ7+5DnKnzsnHSfpeMvsSFKtpT8jvsvU81KuZSICnhY/E72rD6t39a+v3RedhuEqFj
+	 K6DH7/bPOW6dZx7vBl8iKqaKQGEijkI3HMFEXEtZpcQsbF7WSiZFNp24fGOx+9b7HJxbM
+	 bArsML2R2r6KkZT5EHLtAGXXJ+Oaj12wbzDImYUUg/fxCEun4kYkoFQedhqETRqAQFsO0
+	 QDz9mItbvUJ2/48SE0F0Ku5s4CgOOEvyr986eLR2Mg7T6Pj9+QHE9TG2byM5u+2Cupg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yVSmZXRJ;
-	arc=none smtp.remote-ip=209.85.128.47
-Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+	dmarc=pass header.from=pc-heini.de;
+	spf=pass smtp.mailfrom=pc-heini.de;
+	dkim=pass header.d=pc-heini.de header.i=@pc-heini.de header.a=rsa-sha256 header.s=default2410 header.b=dFvqVOY1;
+	arc=none smtp.remote-ip=168.119.26.116
+Received: from www636.your-server.de (www636.your-server.de [168.119.26.116])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1831606A321
-	for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 10:30:42 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E1831606A321
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 82B94606A31C;
+	Fri, 27 Nov 2026 10:49:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 82B94606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=reject dis=none) header.from=pc-heini.de
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=pc-heini.de
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yVSmZXRJ
-Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-4a5177d78c7so80246255e9.2
-        for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 02:30:42 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795775441; x=1796380241; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=wDNCT5dmOQWaRk4g039B7mVnjd1E54Q443a1ugSNbRY=;
-        b=yVSmZXRJYx3E6v9UxQWskPzH8yjkZi2B4TVBRq4ks0OEuNtjjtwnLI+9Zk5LfuExQi
-         RiVych+svllJSThx5VcfSY5OVhFCF2BNWCLl5hhkA4NvjuZcexiDDVJNLQkHhs3CauNJ
-         keAgPD6I623K4zcUaUnWdGasPOZ00oqnV8/bBv2LPgz3+jFeXR8kxmBeav9u6dn7KlX6
-         qiiNlmLTPZpoBiWM9QJe7emXvwPhP2IYfUQO3jZaQjxFN/qdFxKFl9fIrp8q+OelE5+O
-         /ewA5wzfhSXz9WnUN9gDFirV1+qBycLZTQYLkfD/RHL5tRVrB90n/Wu7M8DYSsbkzY4h
-         3Fpw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795775441; x=1796380241;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=wDNCT5dmOQWaRk4g039B7mVnjd1E54Q443a1ugSNbRY=;
-        b=MbqZVyMZ/yRAypCSN2gSD+fsYClEfxMxvModh3zG02UY4hvjKH+KDB9VOuJRx54yY1
-         fyO0komaxsLSwII1LFy1FAwGmPEOVh3MR1uu0oDZfeVG6QMaBsWLqKJwX2GbVXvK/8Ka
-         VM7FSO+hc9yWV5CqAjEXYkLqqvZNTbYnwMRIaxNR0b/+rHuiq+HKIhPxYuOd3NTmDl5x
-         B/K+oBI9SeUt8UxMJr19fdXsd6WpzNtu8h/y6MNaZploiBE65P/3jMmHEuOjF7LrcID2
-         v3nRL9fiGaGvPV/vXLuh2zp1qSJMv8G0OTFkKpbvFuPKWzsglu6jW2iQo6lp5DS93GZN
-         ne/A==
-X-Forwarded-Encrypted: i=1; AL+hErE/CgzduwGBE0sBXn6LniqLuuoouhqgQqbwaBAUvF3gGBUvqaCUGTrKLl0KMhvP5vEQNelyB0n4Ew==@vger.kernel.org
-X-Gm-Message-State: APuU4Z/5BzEUgsUAQ24xviDQ18Vkj36sP+SAlCqr9x+nDOfE2pg7K29q
-	5kz5T2cm6iwoJ/MlwVl+0oUr6HcxWvjxwqrIgUX7L3GvvvbSVO0tnSed
-X-Gm-Gg: AZFdTZdMerPhVJgdG9g0ajXFainGnJeiJafz7lGp8PG5DzxN+CB+4hYujL6pYvoT9xo
-	ujayC8H/JUknEMhonTB7oF5+qP031UGHZnsVYYdOBw1ikiWoKR7w4qM6Oxbc5xFPPK74vKW+epn
-	DWuQF8zJG3Rjj0MAKQZAz1lq84YCbeRJlQDIrzSIJeqwPGANoqE3GcXOb6wDZMtcAhZiwLwupB1
-	btNlwZWl87OEAs7dp6LY8Y1WiJBWfZwWdjEdoQPJ/omFErWXaWZFqT4VD+992fYWIRP/yGhzui3
-	2hkIohGu7MklH6rQPCvfqHGNlpUt4EfKhS/3vFbDd9qTjOGwXd2Zx/RCPa0HANxQZk6L0XRaUTO
-	y+dlSTDWFm7rFRkg1vRmi0hPoDIFz+ts74iu+n8H8VQukonz1HDSMs8HG9KeDDzJl75JtmIRu/i
-	mKhBy6a2/EI5WP9AGm14I1/yr7ZjiaoF829b+Pp2aDeb+L9f+4BzpkES8WD2821Qj6oW/M7QrIo
-	YD+pYk80eWhMGbUYRw2zzPbzOz2gJZxFiAvWCMSPbumh1QTql3Q60FaukPjTU639YTBDaEiPUiv
-	t6mxjYcX3ys57LqPHxVqZd3XcCN53RZbFaNNfjsg20v2EYs1oYiWJXbO081lbWv6T1XS/iTL8qV
-	2pdBri/8ZGflkaA==
-X-Received: by 2002:a05:600c:6749:b0:4bb:5f95:c014 with SMTP id 5b1f17b1804b1-4bb8880f283mr486885245e9.19.1795775440820;
-        Fri, 27 Nov 2026 02:30:40 -0800 (PST)
-Received: from archlinux ([178.197.204.131])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb853a12acsm710882185e9.8.2026.11.27.02.30.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Nov 2026 02:30:40 -0800 (PST)
-From: Tobias Predel <tobias.predel@gmail.com>
-To: linux-acpi@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
-	Zhang Rui <rui.zhang@intel.com>
-Subject: Re: [BUG] HP Dragonfly G4: AML deadlock (ECMX vs. Serialized GBAP) between EC _Q08/_Q18 and int3400_notify() -> ODVP
-Date: Fri, 27 Nov 2026 11:30:39 +0100
-Message-ID: <20261127103039.5035-1-tobias.predel@gmail.com>
+	dkim=pass (2048-bit key, unprotected) header.d=pc-heini.de header.i=@pc-heini.de header.a=rsa-sha256 header.s=default2410 header.b=dFvqVOY1
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=pc-heini.de
+	; s=default2410; h=Content-Transfer-Encoding:Content-Type:MIME-Version:
+	References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:Sender:Reply-To:
+	Content-ID:Content-Description:Resent-Date:Resent-From:Resent-Sender:
+	Resent-To:Resent-Cc:Resent-Message-ID;
+	bh=Mz0uhk3OFWJ0FNh9q5bukOUzm++jVY5/KHluP5c0a2Q=; b=dFvqVOY1av0BLvIqCNUD8yPs/l
+	sJhmj9kgosEvNGJfRUua7o+XkJ6I2hPhWQCNM4TQZeWiQ8EshgaQzvSA61bwUXSqWogAeymhuvjoX
+	6EDR2P9VVInQmCZmMIGhSI9vYw7udHHFXUwKVcGv2OutwrnHwvcT1n/5mCtscV6UCOwR1Fejimc+t
+	LTW3R0mVPLerL2298OcFF+N06eXGzVWwUgYBVTnD0I6ESR8ul9Eu9uccV9r/zrGCHhpkZR2XJ2jzk
+	gr4CsLLjyH/5fdsf4KCZHleStmqqFzNQqbpvNS/FiFOkeh52D6E0mB6/gHoZ4Xpwzu8U6j0diiKoM
+	0p+kDg4g==;
+Received: from sslproxy06.your-server.de ([78.46.172.3])
+	by www636.your-server.de with esmtpsa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
+	(Exim 4.96.2)
+	(envelope-from <m.hiller@pc-heini.de>)
+	id 1xWtVg-0004Xw-1P;
+	Fri, 27 Nov 2026 11:48:56 +0100
+Received: from localhost ([127.0.0.1])
+	by sslproxy06.your-server.de with esmtpsa  (TLS1.3) tls TLS_AES_256_GCM_SHA384
+	(Exim 4.96)
+	(envelope-from <m.hiller@pc-heini.de>)
+	id 1xWtVg-0008AK-0A;
+	Fri, 27 Nov 2026 11:48:56 +0100
+From: Moritz Hiller <m.hiller@pc-heini.de>
+To: Keith Busch <kbusch@kernel.org>,
+	Jens Axboe <axboe@kernel.dk>,
+	Christoph Hellwig <hch@lst.de>,
+	Sagi Grimberg <sagi@grimberg.me>
+Cc: Moritz Hiller <m.hiller@pc-heini.de>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	linux-nvme@lists.infradead.org,
+	linux-pci@vger.kernel.org,
+	linux-pm@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] nvme-pci: wait for MMIO to come back after resume from suspend
+Date: Fri, 27 Nov 2026 11:46:21 +0100
+Message-ID: <20261127104637.219891-1-m.hiller@pc-heini.de>
 X-Mailer: git-send-email 2.56.1
-In-Reply-To: <20261121093708.5097-1-tobias.predel@gmail.com>
-References: <20261120191423.10876-1-tobias.predel@gmail.com> <20261121093708.5097-1-tobias.predel@gmail.com>
+In-Reply-To: <20261120180814.GB1810@lst.de>
+References: <598ee2b4-32aa-4ad3-99c7-db7f9a7e7736@pc-heini.de> <20261120180814.GB1810@lst.de>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -100,90 +83,132 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-Virus-Scanned: Clear (ClamAV 1.4.6/28194/Wed Nov 25 07:26:59 2026)
 
-Hi,
+On an ASUS ROG STRIX X570-F GAMING (BIOS 5044) with a Samsung 9100 PRO
+attached directly to a CPU root port, the root NVMe drive sporadically
+does not come back after resume from S3 (roughly 5-10% of resumes):
 
-A third occurrence today (2026-11-27), on 7.3.6-arch1-1 (not tainted),
-same BIOS 01.13.01, again with acpi.ec_max_queries=1. It started about
-33 minutes after boot.
+  nvme nvme0: Disabling device after reset failure: -19
 
-This time it was the original variant from my first mail again, not the
-EC-only one from 2026-11-21:
+The single readl() of CSTS in nvme_pci_enable() returns all-ones about
+200 ms after resume. At that point config space answers, the link is
+up, the device is in D0 and there are no AER errors. The controller is
+not dead, it just needs a few hundred milliseconds longer before its
+MMIO space responds.
 
-  - kworker/2:2 (kacpi_notify): int3400_notify() -> evaluate_odvp()
-    waits in acpi_ds_begin_method_execution(), i.e. on the sync mutex of
-    the Serialized GBAP, while ODVP already holds ECMX.
-  - kworker/2:1 (kec_query): waits in an explicit Acquire, matching
-    _Q08/_Q18 inside GBAP waiting for ECMX.
+The platform apparently removes power from the device during S3 while
+the PCI core still treats it as D3hot. pci_power_up() finds PMCSR
+already in D0 and does not wait, and pci_bridge_wait_for_secondary_bus()
+only runs after D3cold and only checks config space, so nothing waits
+for MMIO to come back.
 
-hung_task reports each as waiting on what the other holds (excerpt
-below). Behind them were four more kec_query workers (kworker/5:1,
-7:1, 10:1, 11:1) and thermald (int340x_thermal_get_zone_temp).
+Move the CSTS check into a helper. If CSTS reads all-ones and the
+controller was shut down for suspend (NVME_CC_SHN_NORMAL still set in
+ctrl_config, the same test nvme_reset_work() uses), poll CSTS every
+100 ms for up to 10 s while the device is still present. Controllers
+that answer on the first read, probe and other resets are not affected.
 
-Two observations:
+Without the patch, 4 of 39 automated S3 cycles on the machine above
+failed. With it, none of 45 failed (30 on a v7.3.4 based kernel, 15 on
+v7.4-rc2), and whenever the wait triggered the controller answered
+after 200-400 ms. This version has been running on the same machine
+for several days of normal use: 9 resumes from S3, none failed, and
+the wait triggered 4 times (200-400 ms).
 
-1. This correction concerns my question in the previous mail. Making
-   kec_query unbound or ordered would not have prevented this
-   variant, because the other side runs on kacpi_notify, not on
-   kec_query. Both workers were even on the same CPU. Fully serializing
-   EC queries only covers the EC-only variant (_Q09 vs. _Q08/_Q18).
+The failure analysis, the code reading and this patch were done with
+the help of an LLM assistant (Claude). I reviewed the change and ran
+all tests on my hardware.
 
-2. It does support the max_active observation, though: with
-   ec_max_queries=1 there were five kec_query work items inside
-   acpi_ec_event_processor() at the same time, on CPUs 2, 5, 7, 10
-   and 11.
+Link: https://lore.kernel.org/r/598ee2b4-32aa-4ad3-99c7-db7f9a7e7736@pc-heini.de
+Signed-off-by: Moritz Hiller <m.hiller@pc-heini.de>
+---
 
-The practical impact is that poweroff hangs. thermald and upowerd stay
-in D state, systemd's SIGKILL after the stop timeout has no effect, and
-the journal ends there. Only holding the power button turns the machine
-off.
+Notes:
+    Changes since the proof of concept in the bug report:
+    - Renamed the helper to nvme_pci_csts_readable() and moved the initial
+      CSTS read into it, so the whole check is in one place (Christoph)
+    - Rebased onto nvme-7.5, sorted the linux/delay.h include
+    
+    Open points from the report that I left as they were:
+    - The 10 s upper bound is arbitrary.
+    - The wait also triggers on thaw/restore after hibernation, because the
+      same bit is set there.
+    - The wait sleeps with shutdown_lock held, as nvme_wait_ready() already
+      does in the same call chain.
+    
+    Build-tested with W=1 on nvme-7.5, checkpatch --strict is clean.
 
-Since the firmware takes the two locks in opposite order on two kernel
-paths (EC query and Notify(IETM, 0x88)), is there a reasonable
-mitigation on the kernel side for this machine, for example a DMI
-quirk that runs EC query handlers and these notify handlers on one
-ordered workqueue? Or would you rather leave it to HP? I reported it to
-HP (case 5166872861) with the acpidump, but there's been no fix so far.
+ drivers/nvme/host/pci.c | 38 +++++++++++++++++++++++++++++++++++++-
+ 1 file changed, 37 insertions(+), 1 deletion(-)
 
-Excerpt (unreliable frames and scheduler frames removed):
+diff --git a/drivers/nvme/host/pci.c b/drivers/nvme/host/pci.c
+index f8088d5aa..342cd0609 100644
+--- a/drivers/nvme/host/pci.c
++++ b/drivers/nvme/host/pci.c
+@@ -9,6 +9,7 @@
+ #include <linux/blkdev.h>
+ #include <linux/blk-mq-dma.h>
+ #include <linux/blk-integrity.h>
++#include <linux/delay.h>
+ #include <linux/dmi.h>
+ #include <linux/init.h>
+ #include <linux/interrupt.h>
+@@ -3427,6 +3428,41 @@ static bool nvme_pci_update_nr_queues(struct nvme_dev *dev)
+ 	return true;
+ }
+ 
++/*
++ * A controller that was shut down for suspend may have lost power while the
++ * PCI core still treats it as D3hot, so nothing waited for it to come back.
++ * Config space can already answer while MMIO still reads all-ones. Give such
++ * a controller some time instead of declaring it dead on the first read.
++ */
++#define NVME_RESUME_MMIO_TIMEOUT_MS	10000
++#define NVME_RESUME_MMIO_POLL_MS	100
++
++static bool nvme_pci_csts_readable(struct nvme_dev *dev)
++{
++	struct pci_dev *pdev = to_pci_dev(dev->dev);
++	unsigned int waited = 0;
++
++	if (readl(dev->bar + NVME_REG_CSTS) != -1)
++		return true;
++
++	/* Same test nvme_reset_work() uses to detect a resume. */
++	if (!(dev->ctrl.ctrl_config & NVME_CC_SHN_NORMAL))
++		return false;
++
++	while (waited < NVME_RESUME_MMIO_TIMEOUT_MS &&
++	       pci_device_is_present(pdev)) {
++		msleep(NVME_RESUME_MMIO_POLL_MS);
++		waited += NVME_RESUME_MMIO_POLL_MS;
++		if (readl(dev->bar + NVME_REG_CSTS) != -1) {
++			dev_warn(dev->ctrl.device,
++				 "CSTS read all-ones after resume, controller ready after %u ms\n",
++				 waited);
++			return true;
++		}
++	}
++	return false;
++}
++
+ static int nvme_pci_enable(struct nvme_dev *dev)
+ {
+ 	int result = -ENOMEM;
+@@ -3438,7 +3474,7 @@ static int nvme_pci_enable(struct nvme_dev *dev)
+ 
+ 	pci_set_master(pdev);
+ 
+-	if (readl(dev->bar + NVME_REG_CSTS) == -1) {
++	if (!nvme_pci_csts_readable(dev)) {
+ 		dev_dbg(dev->ctrl.device, "reading CSTS register failed\n");
+ 		result = -ENODEV;
+ 		goto disable;
 
-  INFO: task kworker/2:2:247 blocked for more than 122 seconds.
-        Not tainted 7.3.6-arch1-1 #1
-  task:kworker/2:2     state:D stack:0     pid:247   tgid:247   ppid:2      task_flags:0x4208060 flags:0x00080000
-  Workqueue: kacpi_notify acpi_os_execute_deferred
-   acpi_os_wait_semaphore+0x76/0x1d0
-   acpi_ex_system_wait_mutex+0xb6/0x110
-   acpi_ds_begin_method_execution+0xb3/0x420
-   acpi_ds_call_control_method+0xae/0x4c0
-   acpi_ps_parse_aml+0x3f2/0x610
-   acpi_ps_execute_method+0x185/0x430
-   acpi_ns_evaluate+0x196/0x5d0
-   acpi_evaluate_object+0x1f4/0x470
-   evaluate_odvp.isra.0+0x4c/0x240 [int3400_thermal]
-   int3400_notify+0x192/0x1b0 [int3400_thermal]
-   acpi_ev_notify_dispatch+0x4e/0x70
-   acpi_os_execute_deferred+0x1a/0x30
-  INFO: task kworker/2:2:247 blocked on a semaphore likely last held by task kworker/2:1:33130
-  INFO: task kworker/2:1:33130 blocked for more than 122 seconds.
-        Not tainted 7.3.6-arch1-1 #1
-  task:kworker/2:1     state:D stack:0     pid:33130 tgid:33130 ppid:2      task_flags:0x4208060 flags:0x00080000
-  Workqueue: kec_query acpi_ec_event_processor
-   acpi_os_wait_semaphore+0x76/0x1d0
-   acpi_ex_system_wait_mutex+0xb6/0x110
-   acpi_ex_acquire_mutex_object+0x61/0x150
-   acpi_ex_acquire_mutex+0x8a/0x2a0
-   acpi_ex_opcode_2A_0T_1R+0x163/0x1e0
-   acpi_ds_exec_end_op+0x204/0x890
-   acpi_ps_parse_loop+0x13d/0xb80
-   acpi_ps_parse_aml+0x419/0x610
-   acpi_ps_execute_method+0x185/0x430
-   acpi_ns_evaluate+0x196/0x5d0
-   acpi_evaluate_object+0x1f4/0x470
-   acpi_ec_event_processor+0xe5/0x130
-  INFO: task kworker/2:1:33130 blocked on a semaphore likely last held by task kworker/2:2:247
+base-commit: 524994430562e49610802a2c0c0859ce316a72f0
+-- 
+2.47.3
 
-The full hung_task output and the acpidump are available on request.
-
-Thanks,
-Tobias Predel
