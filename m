@@ -1,44 +1,44 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=100.103.45.18
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795796870;
-	b=YrjGdLwH+TBLJrEb3OzesRtflWfIXIEJG1RBzIB0X8NofPgYqVMLG72Lgj4yPKxM2IyW
-	 bYhYYo4P/wBqKMBbuwAN1k2uZn+4CpM/dnTEDNYC30/wgF0f2PigFHleP0POqNyPknl8E
-	 mXRJfbsBQTSMPpoAbBAAbX3kMO6ShKTU9zVekfRCw3ZXFKphG/YoZSaszhbydT0zpQIMO
-	 izNI4Y0rNHxhvPlwkCdGiAo6mhBEdWFQXd1lp/jcJ/F0I+sLjB0qory3wroo4EZV9qtQ/
-	 Y9HSGhkx74vHJ/XD97iQo+AXLAC2lVJdvIIrFURsbtMkwdhHPqHMoW/126uTtyEd2DA==
+	t=1795796875;
+	b=VlILml+uSR9CI3RFGTz28PEEGX8uTZakEef81fwAFAZXZrW7zNdf8adz4xkWQ6CeJ5bg
+	 77QFi63epQ3QocCB5wdhQOwTS1+r5MZAZrKxecDK9LBvGZb5bLvgq2/hQ/MJiB1HXVsTW
+	 /VpUh4olFwdfBPp9Yrxc7ZYE39ZHYL++HzikNzDyWWlY38sYRR04dziU6VW2Qr0jxIjs/
+	 5E09eNfRrGnbOTATXbOFmbwZkUM+XnmdX7ExLoH0KT+Gs1y+O6pQ4MkELYphC09vhSOLf
+	 e+7c2NeLexoFyyhF9Nf7MpPtRNq7cbUdWjNFJv2+FPhTM7vcrWr303dx5gwd89kPmzw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795796870;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795796875;
 	h=Received:DKIM-Signature:From:To:Cc:Subject:Date:Message-ID:X-Mailer:
 	 In-Reply-To:References:MIME-Version:Content-Transfer-Encoding;
-	bh=ZbLOVBxW+TbmqdrtSMWDiPpH1JDX0i5iTnMkxU4NifE=;
-	b=DRt6PI0z+nIqlSVN6UuZESR4jOwkqWY+hqISsGnC5JM2KUZeTNOajadaK9dy4qWsyagW
-	 sEirXZt2dekBP+rlFN1+Zd0qVNMBpcuC5mXMQndoyVpqGrIA8fTBbkZhe+3ujC2MEwaZd
-	 4xPWzkvi356/HQBlgIxHxemlZSqX/cq+S59zqZbhxg+ALjOGbkO+JeH/QrcXDv/qNZ+v8
-	 LJSPfMGQw45+p12X6/nHQ51nve+sgKattz4Ju2J4MbsJ8qjBgcbQfkN0gZXT/4w0i/hbH
-	 FaHVIfv+LYFmk7Ys2utwAPqWXjKU+CjAWt3Dw/eNZYBw55Af5+EsmGyM160sE1Q0wdQ==
+	bh=gisVbaBWzS2DJvutQXrGbyA0kSo6MCGtMefGtDzFmWE=;
+	b=azRaIognI03IPLSURsvTfZX5Rwr29JySQzCJ6EJ4oaVkelo1UdtQuvGklhZU8yWNQoD/
+	 X+NSxKVLiY5pIb4aH9y1Gn1WrHP4k/0KN0XBxyXB6SvUQ4T2fiNEM94UM6fOqTKaXv0aa
+	 XWAT/Oa5WHjBdJ0EOFLPY46wTbZV0txjFQkJeijnm8aB1rhwTtulYvomZoFjNIQCniZtG
+	 k3U4CabOlmEcByITXKREmFI15w/pgCXgDcgfhGPLSjlZRDI5Hoo4ojak9aRcZr80Ft83m
+	 EqJ9pl418fugfwedhvbnXQikMD70n6gPIw8Yg6SKHizB07sPnFGWYq4sOs1sEEfZa4A==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DRiHoQtP;
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ljPX6cKa;
 	arc=none smtp.remote-ip=100.103.45.18
 Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1))
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 44669606A321;
-	Fri, 27 Nov 2026 16:27:50 +0000 (UTC)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id C6626606A31E;
+	Fri, 27 Nov 2026 16:27:55 +0000 (UTC)
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=DRiHoQtP
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BB7451F00893;
-	Fri, 27 Nov 2026 16:27:44 +0000 (UTC)
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=ljPX6cKa
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9D93C1F00A15;
+	Fri, 27 Nov 2026 16:27:50 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
-	s=k20260515; t=1795796869;
-	bh=ZbLOVBxW+TbmqdrtSMWDiPpH1JDX0i5iTnMkxU4NifE=;
+	s=k20260515; t=1795796875;
+	bh=gisVbaBWzS2DJvutQXrGbyA0kSo6MCGtMefGtDzFmWE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References;
-	b=DRiHoQtPRD7qCiFUCtBbeVhrtAQk5EjxAJ5I1xxaBeA51ybKlU4ABRQ4LyEyXyztc
-	 oiReKad1nvrfaZKloLRokDalQlpeDeXFtc2g4bMzMVSwWq+oePd3k5Z0/4krVI1/t8
-	 75NBSmtUPJM7/Jm1rdfjhZcisW3Y+yOnEiUyCOyd1QZUF/XWpwDcld94yr33K9W3Hs
-	 sHafcqA0VyYWxIjN4P3S+isxUA56xbdsOGlNohR1afnq0YJ8IOS86O6JygazaZz8Qp
-	 cii+N1WTfKpKbWM0sDZuQjt1cnQZaJty5Y2B995OY4iBop7UlY/kaAvHYiGNqiiL+k
-	 3uKBAkgqae6DA==
+	b=ljPX6cKaAwSota4iRpfXSgz3ixc7mnh30WhcMLZLGY4IDA5k3lWT7wh8EpLMlUitK
+	 cW1fURRnVv1OEK6n+1qeAu39T9TWlq+YdhGL8qy2/YYryK7gj1fFzbJkfaM6y2nAx2
+	 CiwDCMH95QyWl282uWeH6xcxngpER0fmm5UXYaRekMJRVxtLPs0+l5NTrO5MB8Fu42
+	 yW4H3Q4hbms8kj7LnsAK5RGluKxZ5d+bH4EwWAggcQbFh8DPWSYxHeI2rvlQH0fUgE
+	 0ijElmr+Rx+Gv/VZroY2vIj8ulU6hmtcCSryVUAfojS8Sq0I6gG/MwGNeVnNGkQspG
+	 8+o+EP4O7z7OA==
 From: Geert Uytterhoeven <geert@kernel.org>
 To: Rob Herring <robh@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -68,9 +68,9 @@ Cc: devicetree@vger.kernel.org,
 	arm-scmi@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	Geert Uytterhoeven <geert+renesas@glider.be>
-Subject: [PATCH v6 07/14] reset: Add reset_control_get_from_provider_exclusive()
-Date: Fri, 27 Nov 2026 17:26:52 +0100
-Message-ID: <6ba13f4ab5bf268259b60ae857e98c6be70f598a.1795796064.git.geert+renesas@glider.be>
+Subject: [PATCH v6 08/14] pmdomain: Make genpd_get_from_provider() return -EPROBE_DEFER
+Date: Fri, 27 Nov 2026 17:26:53 +0100
+Message-ID: <6247d25ea6cd21ce9223c7fdf2d2bd4c9f61772f.1795796064.git.geert+renesas@glider.be>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <cover.1795796064.git.geert+renesas@glider.be>
 References: <cover.1795796064.git.geert+renesas@glider.be>
@@ -87,147 +87,61 @@ Content-Transfer-Encoding: 8bit
 
 From: Geert Uytterhoeven <geert+renesas@glider.be>
 
-When stacking two reset controllers, the upper one should go through the
-proper channels: request exclusive reset controls and use them via the
-reset_control_*() APIs.  However, unlike the clock subsystem, which has
-of_clk_get_from_provider(), the reset subsystem does not offer a way to
-lookup and obtain a reset from a reset provider.
+Unlike provider-based look-up functions in other subsystems[1],
+genpd_get_from_provider() returns -ENOENT instead of -EPROBE_DEFER when
+the provider is not found, thus not supporting probe deferral.
+Currently this is worked around in of_genpd_add_subdomain() by remapping
+-ENOENT[2].
 
-Hence add a public helper reset_control_get_from_provider_exclusive()
-to lookup and obtain an exclusive reference to a reset controller, based
-on the recently introduced __reset_control_get_from_provider() helper.
-This will be used by the R-Car X5H Module Controller driver.
+Fix this for all current and future callers by returning -EPROBE_DEFER
+instead, and drop the no longer needed remapping code.
+
+Note that other callsites either don't care about the actual error code,
+or propagate it up.  The latter (e.g. of_genpd_add_child_ids()) thus may
+start returning -EPROBE_DEFER, which should be fine.
+
+[1] of_clk_get_hw_from_clkspec(), __fwnode_reset_control_get()),
+[2] Commit 18027d6f392ee8d8 ("PM: domains: Make of_genpd_add_subdomain()
+    return -EPROBE_DEFER").
 
 Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 Tested-by: Wolfram Sang <wsa+renesas@sang-engineering.com>
-Reviewed-by: Philipp Zabel <p.zabel@pengutronix.de>
 ---
 v6:
-  - Rebase,
+  - Add more clarification about other callsites,
 
 v5:
-  - Add Tested-by, Reviewed-by,
-  - Move of_node_get() after for-loop that may fail to fix device node
-    reference leak on failure,
+  - Add Tested-by,
+  - Clarify that all other callsites should be fine.
 
 v4:
-  - Check for overflow when converting (u64) fwnode args to (uint32_t)
-    OF args,
-  - Document that reset_control_get_from_provider_exclusive() must not
-    be given a reference to a GPIO provider,
-
-  - Let the dummy return ERR_PTR(-ENOTSUPP) instead of NULL,
-
-v3:
-  - Replace reset_controller_get_provider() by
-    reset_control_get_from_provider_exclusive(),
-  - Add kerneldoc,
-
-v2:
-  - No changes.
+  - New.
 ---
- drivers/reset/core.c  | 40 +++++++++++++++++++++++++++++++++++-----
- include/linux/reset.h |  8 ++++++++
- 2 files changed, 43 insertions(+), 5 deletions(-)
+ drivers/pmdomain/core.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/reset/core.c b/drivers/reset/core.c
-index 7679480644e7ecda..649c1dab543805d6 100644
---- a/drivers/reset/core.c
-+++ b/drivers/reset/core.c
-@@ -1233,6 +1233,7 @@ __reset_control_get_from_provider(const struct fwnode_reference_args *args,
- 				  bool gpio_fallback,
- 				  enum reset_control_flags flags)
+diff --git a/drivers/pmdomain/core.c b/drivers/pmdomain/core.c
+index 4e0a76f1f08fc64f..633a6e642b1ba50d 100644
+--- a/drivers/pmdomain/core.c
++++ b/drivers/pmdomain/core.c
+@@ -3037,7 +3037,7 @@ EXPORT_SYMBOL_GPL(of_genpd_del_provider);
+ static struct generic_pm_domain *genpd_get_from_provider(
+ 					const struct of_phandle_args *genpdspec)
  {
-+	struct fwnode_handle *fwnode = consumer ?: args->fwnode;
- 	struct reset_controller_dev *rcdev;
- 	int rstc_id = -EINVAL;
+-	struct generic_pm_domain *genpd = ERR_PTR(-ENOENT);
++	struct generic_pm_domain *genpd = ERR_PTR(-EPROBE_DEFER);
+ 	struct of_genpd_provider *provider;
  
-@@ -1245,18 +1246,29 @@ __reset_control_get_from_provider(const struct fwnode_reference_args *args,
- 	if (WARN_ON(args->nargs != rcdev->fwnode_reset_n_cells))
- 		return ERR_PTR(-EINVAL);
+ 	if (!genpdspec)
+@@ -3292,7 +3292,7 @@ int of_genpd_add_subdomain(const struct of_phandle_args *parent_spec,
+ out:
+ 	mutex_unlock(&gpd_list_lock);
  
--	if (rcdev->of_xlate && is_of_node(consumer)) {
--		struct device_node *np = to_of_node(consumer);
-+	if (rcdev->of_xlate && is_of_node(fwnode)) {
-+		struct device_node *np = to_of_node(fwnode);
- 		struct of_phandle_args of_args;
- 		int ret;
- 
--		ret = of_parse_phandle_with_args(np,
-+		if (consumer) {
-+			ret = of_parse_phandle_with_args(np,
- 					 gpio_fallback ? "reset-gpios" : "resets",
- 					 gpio_fallback ? "#gpio-cells" : "#reset-cells",
- 					 gpio_fallback ? 0 : index,
- 					 &of_args);
--		if (ret)
--			return ERR_PTR(ret);
-+			if (ret)
-+				return ERR_PTR(ret);
-+		} else {
-+			for (unsigned int i = 0; i < args->nargs; i++) {
-+				if (args->args[i] > U32_MAX)
-+					return ERR_PTR(-EINVAL);
-+
-+				of_args.args[i] = args->args[i];
-+			}
-+			of_args.np = of_node_get(np);
-+			of_args.args_count = args->nargs;
-+		}
- 
- 		rstc_id = rcdev->of_xlate(rcdev, &of_args);
- 		of_node_put(of_args.np);
-@@ -1348,6 +1360,24 @@ struct reset_control *__reset_control_get(struct device *dev, const char *id,
+-	return ret == -ENOENT ? -EPROBE_DEFER : ret;
++	return ret;
  }
- EXPORT_SYMBOL_GPL(__reset_control_get);
+ EXPORT_SYMBOL_GPL(of_genpd_add_subdomain);
  
-+/**
-+ * reset_control_get_from_provider_exclusive - Lookup and obtain an exclusive
-+ *					       reference to a reset controller.
-+ * @args: Reference to the reset controller provider with all the args like
-+ *	  reset number.  This must not be a reference to a GPIO provider.
-+ *
-+ * Returns a struct reset_control or IS_ERR() condition containing errno.
-+ * If this function is called more than once for the same reset control it will
-+ * return -EBUSY.
-+ */
-+struct reset_control *
-+reset_control_get_from_provider_exclusive(const struct fwnode_reference_args *args)
-+{
-+	return __reset_control_get_from_provider(args, NULL, 0, false,
-+						 RESET_CONTROL_EXCLUSIVE);
-+}
-+EXPORT_SYMBOL_GPL(reset_control_get_from_provider_exclusive);
-+
- int __reset_control_bulk_get(struct device *dev, int num_rstcs,
- 			     struct reset_control_bulk_data *rstcs,
- 			     enum reset_control_flags flags)
-diff --git a/include/linux/reset.h b/include/linux/reset.h
-index 9c391cf0c82298a0..384273ec0c7cbef7 100644
---- a/include/linux/reset.h
-+++ b/include/linux/reset.h
-@@ -90,6 +90,8 @@ struct reset_control *__fwnode_reset_control_get(struct fwnode_handle *fwnode,
- 				     const char *id, int index, enum reset_control_flags flags);
- struct reset_control *__reset_control_get(struct device *dev, const char *id,
- 					  int index, enum reset_control_flags flags);
-+struct reset_control *reset_control_get_from_provider_exclusive(
-+				const struct fwnode_reference_args *args);
- void reset_control_put(struct reset_control *rstc);
- int __reset_control_bulk_get(struct device *dev, int num_rstcs,
- 			     struct reset_control_bulk_data *rstcs,
-@@ -173,6 +175,12 @@ static inline struct reset_control *__reset_control_get(
- 	return optional ? NULL : ERR_PTR(-ENOTSUPP);
- }
- 
-+static inline struct reset_control *reset_control_get_from_provider_exclusive(
-+				const struct fwnode_reference_args *args)
-+{
-+	return ERR_PTR(-ENOTSUPP);
-+}
-+
- static inline int
- reset_control_bulk_reset(int num_rstcs, struct reset_control_bulk_data *rstcs)
- {
 -- 
 2.43.0
 
