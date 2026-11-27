@@ -1,50 +1,111 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=213.167.242.64
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.180.131
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795770427;
-	b=ImfD0mFy9qyoxBF6wYf2yFSzmU8ja6ZXyQ4ZfZMM7MB+xgVnhHbtj5hgCUgi8ubuKDCg
-	 GDzXD+lYV+QZWAaGzz/gginCD3jRLNqX7+UIkF8ZRJqTH2MDhe8iQMksStDYCj8hhAzSk
-	 8vU0yCzb/r/R9Q+Ao49972wH9FevaHgePIxrT5GO2cCZ9lLZuegit3+/JL1gluXqPelmn
-	 sJQa4po/1XgTVmXeY46qtYOacYfefFOWN2x8XjgRmVp93pidEXwu9FYvo+LgbAGtrE8MD
-	 LnRKXHK5IvmdsbTH5nM8wEGlEv6LvbJyF2CGh3mi5JS8l0WCS/MMgQ9i4RtcSwKSihw==
+	t=1795770986;
+	b=mwhqQiCYvLW3RpKJi96yPBxgWzRN09jJscEy8gtBQEyFiYWETXtt4wpEJNi1r2uFXklQ
+	 jznjv0T/ukUCLs0pw1uAg+vcLZ0TQMXVCPwk4cO5AS/P46kQS5Dk5jhC8iYWQuvWA+LOH
+	 L1dcgmA/cOYwl1tTECiFaZSzr9Q1+KRHD2Bimkb7gpm6knlHgeNGnjwJM5AKmLU9JhtYV
+	 toL1CK1jjcdCvJYSuJw8uc9vxBh1cG9eD4R+/8bnhus2Oqe+y9EX6NF+2pktUqdi5sf3Z
+	 YsRwj0cwPOEgV5ky61ESc6X+UhGkO91xEl1X8sMhMie/KwfNXgEjqx9NMiz/yiFskKg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795770427;
-	h=DMARC-Filter:Received:DKIM-Signature:Message-ID:Date:MIME-Version:
-	 User-Agent:Subject:To:Cc:References:From:Content-Language:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding;
-	bh=NXCYAJxsQbgh2UjiFPTabP51WfJqGvz/GwVf98o9QN8=;
-	b=OKELE/fRqW4qZkCZd91FT+jfijEX/aAagUFoL0G5ZVY8Kq4U9AfPx+LQdGEbwEaQsrNQ
-	 sg8lpGyhFKudpQz9v8/Hd4AJQyj0sI/thc5S/6Q2f0+XFm8CQSqcGYDb8Pc816fmaZz8S
-	 WTasGUrs1K65Xi6KDoywk6UnaS/+CFhXyKDFsfrVSOBwlkSA/cB/XY1nP/5Hm8L2A5r/8
-	 8fUNjWzX5C4bpDvMhTCCYED4uDsNwC2u8FauNNwunWhaeISNHCMXgSmB11tlF2g9wvfwA
-	 9RSpF6od1oGhu637eiXkUOgsoDBP/K/BwfxENulHjMC/fz5wS0Ndqce08MIwMGVOXKw==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795770986;
+	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
+	 DKIM-Signature:X-Google-DKIM-Signature:X-Forwarded-Encrypted:
+	 X-Gm-Message-State:X-Gm-Gg:X-Received:X-Received:Received:Message-ID:
+	 Date:MIME-Version:User-Agent:Subject:To:Cc:References:
+	 Content-Language:From:In-Reply-To:Content-Type:
+	 Content-Transfer-Encoding:X-Proofpoint-Spam-Info:
+	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-ORIG-GUID:
+	 X-Authority-Analysis:X-Proofpoint-GUID:X-Proofpoint-Virus-Version:
+	 X-Proofpoint-Spam-Details;
+	bh=Fcf04Jxl6fK6hJQpv7NF6ewyNk/t7CcRJRXoJj/gHYs=;
+	b=DdUNtAfJ4xeQNV5e7QBnbKQU1ZlKxQBJI+ddm+0DGLQSUbZThs/L1FzmQYzLApiL5yko
+	 QOSUH1wgsQCXvnhp490ow4d9X+iKNOvmiKEbh1nHytxhadggrotqtrn3e3/UbGL3IngZD
+	 f/eMkixvCTZY0+rjxZo6EF1oAmaMvMhIUYk59GGSSSLKYBQ/rIQIvsM4NdAX3I/LOWeaA
+	 FtYHC+wJc2NPxKICVVJdRyP7WKW+aJGUZxOKuljUh49iL0rOunihyojgbMtwuVNsAG5uT
+	 hNe49tujjxD9q+Xms5dBNp2b8dmodL0nPaiutjNc3rlChp0rh+PKbKid8AJI/oki5SA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=ideasonboard.com;
-	spf=pass smtp.mailfrom=ideasonboard.com;
-	dkim=pass header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=qHBhc1Qm;
-	arc=none smtp.remote-ip=213.167.242.64
-Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
+	dmarc=pass header.from=oss.qualcomm.com;
+	spf=pass smtp.mailfrom=oss.qualcomm.com;
+	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b="h7a/XazE";
+	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=b0G9n9y1;
+	arc=none smtp.remote-ip=205.220.180.131
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 291C6606A31C;
-	Fri, 27 Nov 2026 09:07:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 291C6606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 55C08606A324
+	for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 09:16:25 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 55C08606A324
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=qHBhc1Qm
-Received: from [192.168.88.20] (91-158-153-178.elisa-laajakaista.fi [91.158.153.178])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 18C44BA;
-	Fri, 27 Nov 2026 10:04:22 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1795770262;
-	bh=IyB6MEpvfevxD6X3VEaRcGsC0fCwQLyTFTNTgaTGi2g=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=qHBhc1QmMoT+YmmTHHfMT6i4l8vyhVWqeEC6VaYsQO6HWvMXNrOcknztWaeW9dGPc
-	 lCrFaU8/LsGOWNYkJSlkIumBGiDkf9a1YpHYcXJ+NHpkNvHMvmhgWboUldrodQJl+i
-	 lPpTpNMEaYGqNL7f2jWIb/C/Z9+u77QC35+EhA/I=
-Message-ID: <4fbeef8c-1dc8-4cac-a4af-835037c3dc4b@ideasonboard.com>
-Date: Fri, 27 Nov 2026 11:06:53 +0200
+	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=h7a/XazE;
+	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=b0G9n9y1
+Received: from pps.filterd (m0279872.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AR7H3qF1076532
+	for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 09:16:24 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	Fcf04Jxl6fK6hJQpv7NF6ewyNk/t7CcRJRXoJj/gHYs=; b=h7a/XazE8FBb/WvA
+	r64lseyDJH4D0lvjddy9criGTAeCYGSLTQ1WRdXiwTrF5gHCks9C78apUYIfzEYI
+	NvrNAtNOmHrSjjk4Lba4Ch6TLI7ejt3ojPT0VMTOMQs5KmrH1ZMljmd/eYAFj4h+
+	53QZ0j1aObEa2LX+HY4kul5TlGhGlBVpIFe2ubsuJjyICCoqtvk15TrciJOwdzdR
+	SJYDeWZMPqkipA65SjHB5bx9FFSoiAtDrJ+/2eSn9GwJSmN9wWZxLKCkF5NQACfv
+	T+kfAAdnprT3N6Ds3v8KikW4ZRSGWoK6orS9IpNjwmNcGAuqTrNXp1ttw9AETekK
+	EWyPCg==
+Received: from mail-vk1-f198.google.com (mail-vk1-f198.google.com [209.85.221.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j6u55t5pr-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 09:16:24 +0000 (GMT)
+Received: by mail-vk1-f198.google.com with SMTP id 71dfb90a1353d-5ecba171914so361826e0c.3
+        for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 01:16:24 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1795770983; x=1796375783; darn=vger.kernel.org;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:from:to:cc:subject:date:message-id:reply-to
+         :content-type;
+        bh=Fcf04Jxl6fK6hJQpv7NF6ewyNk/t7CcRJRXoJj/gHYs=;
+        b=b0G9n9y16S4voYKJv/uzktEeyyCupLwFwg5SfcPI/RIHqBXvEJlkToP6Ud6FMAdlhl
+         rf58YOdmS3imahF00HkKr3FPkqXYvhElHWkNgUIn/gJMEnOzan5LhgMgpc9eWGGvVDeR
+         3/X6UPI//UobCTUEMzobMdaizh4+TDm33U+tYMe5FLoUnGU82COZ1yFZcvPjgwHXF3bA
+         x+kI9RqMxla8E+W72pdasAgh+Ma4SJR4MjGZN3w+tBl9Y8yD+M4xHWtVv0nrmG3dXu6Z
+         zOEZ4yyeagZ9n4zH2Kv2Ik3DVqJ929sXB3+sjiW991b3S5g4or2egNvoobDIqjo5tVwt
+         g4YQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795770983; x=1796375783;
+        h=content-transfer-encoding:content-type:in-reply-to:from
+         :content-language:references:cc:to:subject:user-agent:mime-version
+         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to:content-type;
+        bh=Fcf04Jxl6fK6hJQpv7NF6ewyNk/t7CcRJRXoJj/gHYs=;
+        b=nKh+s1ClW2MUt3bvZgevxx97WwK01yQpiZvj2zG1yj7E+tMYsoseo8nltSEShYZisr
+         TELbzs59yq6ejtN2YmzppdMNocarYJbaTdvvKz2aMD/tCCaZCwXR2f5Ve5eGLPmFKWDb
+         ndOFnfLFnxY5gvPyNuZ0U3iGREe6CweDV63242j3q0E3cACVlhTl1/rvtskZkHYgebjN
+         Hx97rb1rkSz/+rJWxObgqBMKwKa00ck2levU0VRnlge00mCWKTRQErgwYsBG+HdchzeF
+         45R+eeoxPxyqEF4xYiSQUdAJmcj/1NdXmv2M3LH+Xq2tj10TVY59CLK5t/bd8sFprpuj
+         TOYQ==
+X-Forwarded-Encrypted: i=1; AL+hErFxXCGmbmZQ5VNms1pk3ZzvHog6pjU7ZK4oSDtNuALOZO/kCtZI5P6XAsJCk36Ze35EB+ysA1krFA==@vger.kernel.org
+X-Gm-Message-State: APuU4Z++fkDgRfQeaDJKNqkTxdmVtdi8mRmHdiUbkHcGP3egnHEpGBpE
+	X2/YGdACPVaUkj96P6r0jRlMOkoE2ETtqZlo4ia4OnY/vz6pHCMmXiPZq9lRDrlFxAr88MlPlZ8
+	+ZzqZe91FEk2WczKYpoDiJA7jcRSJQRqjh9vQDTXL9hUUNVZSSZoyIOn/oXMg+g==
+X-Gm-Gg: AZFdTZdx4FCC1USuGUpkx4uiwoltQ6pfxq8DovMgHorSI2EcBk2bNJmKiHnTEdbHZyl
+	qi8VpcACw1UADLuxC49HLsjOmREiUbTFiCtAkstCbEqB76ynVoJxxeAw5J5C0VKtIyS03rwKbic
+	GINImTqKFamjuRPsrLMqEMZI0E93YvADMnR3/q39gSib3I2JUvu1DZLPW+kzV8h7XP7WIzkcJ4k
+	sBuSOwSNP8ba2vVI+3NiwvfBHERCx+HQoVWH1UqDrF+3oKkjGACBU5LI6fz5tYwILnaqDCyF2yA
+	iXkGFMhdFQy4YdN0bu+HXrzZTNbKtgWAuIjrnR34uelSqjYZ90+MZMy8dC9jMCyIF4PY8GiQ0M4
+	M9Z1znpCI0sdD6AjOinNbBf1QFadTv6U4jwStE6QCqoYYvseYjiLQZXSR9vw+hbLKtj+DO5s=
+X-Received: by 2002:ac5:c00a:0:20b0:5ec:afc2:c0f6 with SMTP id 71dfb90a1353d-5ee8ae00500mr17415358e0c.2.1795770982646;
+        Fri, 27 Nov 2026 01:16:22 -0800 (PST)
+X-Received: by 2002:ac5:c00a:0:20b0:5ec:afc2:c0f6 with SMTP id 71dfb90a1353d-5ee8ae00500mr17415338e0c.2.1795770982220;
+        Fri, 27 Nov 2026 01:16:22 -0800 (PST)
+Received: from [192.168.226.72] ([178.235.128.140])
+        by smtp.gmail.com with ESMTPSA id 4fb4d7f45d1cf-6bb11ff543fsm3852235a12.2.2026.11.27.01.16.19
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 27 Nov 2026 01:16:20 -0800 (PST)
+Message-ID: <483774ef-1125-44dc-8712-73c0850386f1@oss.qualcomm.com>
+Date: Fri, 27 Nov 2026 10:16:18 +0100
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -55,152 +116,89 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] pmdomain: core: Add genpd_dev_pm_attach_by_node()
-To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
-Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>,
- Len Brown <lenb@kernel.org>, Greg Kroah-Hartman
- <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>,
- Ulf Hansson <ulfh@kernel.org>, Devarsh Thakkar <devarsht@ti.com>,
- linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
- linux-kernel@vger.kernel.org
-References: <20261023-pm_attach_by_node-v1-1-4dbaccdf8b0e@ideasonboard.com>
- <CAPx+jO_FC1t_UaDfQDPOCy+V-Zdc1b5h5krrppGvYiW-LsD3LQ@mail.gmail.com>
-From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Subject: Re: [PATCH v3 2/2] interconnect: qcom: Add Netrani RPMh interconnect
+ support
+To: SignKirigami <prcups@krgm.moe>, Georgi Djakov <djakov@kernel.org>,
+        Rob Herring <robh@kernel.org>,
+        Krzysztof Kozlowski <krzk+dt@kernel.org>,
+        Conor Dooley <conor+dt@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org, linux-pm@vger.kernel.org,
+        devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20261125-netrani-interconnect-v2-v3-0-1136e2cc6e3e@krgm.moe>
+ <20261125-netrani-interconnect-v2-v3-2-1136e2cc6e3e@krgm.moe>
 Content-Language: en-US
-In-Reply-To: <CAPx+jO_FC1t_UaDfQDPOCy+V-Zdc1b5h5krrppGvYiW-LsD3LQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+In-Reply-To: <20261125-netrani-interconnect-v2-v3-2-1136e2cc6e3e@krgm.moe>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI3MDAzNiBTYWx0ZWRfXwMSTBWXAskN1
+ hquMHXCIR5lkyLuADSEpDCcpLvbbWyQIT6C4iBg+e9SLzxIsvZZegXiF8gR7HUQtagZvzmjl99o
+ DqPUR3JlyBeRgrDa2a4AFW2ZeZA0oYE=
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI3MDAzNiBTYWx0ZWRfXycGHAtN3MpS0
+ r1cBGp0nGCQ79MXfEmk/aeLhMcqyqBp7wJtGWm65N9PQWLS4v9zHvPgnljwgIA0CHmvkiFea9d/
+ Su9eBubf5x+yzVZ8qgCEmLRYgYXcvQ7dAMPzPcXx1oUf80uE5ApFfVn5oNaQ0bPqw7l/2qLs1no
+ U1R1NzPqESdvWjE+T9cjbXwo2MGctUO05nMCzoyAUiS9Ro2lC8NGXzeyrDvcArarF43/jeAQyQE
+ Sr8ZfmJBCuGmG/dp8VczpKOaVCqGSwE5CbH3rztF2WlmR+Py+0ULfMNPTGT1/Aiov8P3ihkjGnB
+ NfqMjcEt3MSVDf7ZUABD5swj273iv2X/AWFz+KiSctXyAd49NpLnBonIk2seyPlJoMx7x6l0DVS
+ R1b54X3giqNntHjRQ/u2W0lioXzlYm1VC7btcRCfzPfo+hcULm8z1XHCUUq3khGyWAh9nX0N/aF
+ mdrFOuRbBzur4jQcAyA==
+X-Proofpoint-ORIG-GUID: qpxqV4iv4LBKkuIZl8oKiyQfk6rApZny
+X-Authority-Analysis: v=2.4 cv=Z795j3RA c=1 sm=1 tr=0 ts=6b094a68 cx=c_pps
+ a=1Os3MKEOqt8YzSjcPV0cFA==:117 a=PRfkaYvzSr8QmIIGAkY2Sg==:17
+ a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yx91gb_oNiZeI1HMLzn7:22
+ a=HlFBRxzNr9Pio0NObxYA:9 a=QEXdDO2ut3YA:10 a=hhpmQAJR8DioWGSBphRh:22
+X-Proofpoint-GUID: qpxqV4iv4LBKkuIZl8oKiyQfk6rApZny
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
+ definitions=2026-11-27_01,2026-11-26_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 suspectscore=0 malwarescore=0 clxscore=1015 priorityscore=1501
+ adultscore=0 spamscore=0 bulkscore=0 lowpriorityscore=0 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611270036
 
-Hi,
-
-On 25/11/2026 14:50, Ulf Hansson wrote:
-> On Fri, Oct 23, 2026 at 8:17 PM Tomi Valkeinen
-> <tomi.valkeinen@ideasonboard.com> wrote:
->>
->> genpd_dev_pm_attach_by_id() and genpd_dev_pm_attach_by_name() attach a
->> virtual device to a PM domain listed in the OF node of the passed
->> device.
->>
->> Some hardware blocks are described in a child node of a main device.
->> They have no device of their own, but they do have a PM domain of their
->> own. Neither function can attach that domain, as both parse only the OF
->> node of the device.
->>
->> An example case is TI's display subsystem and its OLDI (LVDS)
->> transmitters:
->>
->> dss@30200000 {
->>      power-domains = <...>;
->>
->>      oldi-transmitters {
->>          oldi@0 {
->>              power-domains = <...>;
->>          };
->>
->>          oldi@1 {
->>              power-domains = <...>;
->>          };
->>      };
->> };
->>
->> The OLDI TX blocks are not part of the DSS IP, but they are not quite
->> real devices either as they don't have registers of their own, and are
->> instead controlled via DSS registers.
->>
->> Add genpd_dev_pm_attach_by_node(), which is similar to
->> genpd_dev_pm_attach_by_id() but instead of looking for the power-domains
->> from the passed device's DT node, the DT node is passed explicitly. Also
->> add a matching wrapper function dev_pm_domain_attach_by_node().
->>
->> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
->> ---
->> This is a new try for managing the OLDI power domains. Previously I
->> tried using auxiliary device/driver for OLDIs, and handling the PDs the
->> normal way:
->>
->> https://lore.kernel.org/all/20260529-beagley-ai-display-v3-12-7fefdc5d1adf%40ideasonboard.com/
->>
->> Then I realized an issue, mentioned in
->> Documentation/driver-api/driver-model/driver.rst: "-EPROBE_DEFER must
->> not be returned if probe() has already created child devices".
+On 11/25/26 4:45 PM, SignKirigami wrote:
+> Add a driver for the twelve Netrani RPMh interconnect providers
+> described by the previous binding patch. The provider tables define
+> the bus topology and BCM mappings used to send aggregate bandwidth
+> votes through the applications RSC.
 > 
-> I don't follow. How is this a problem? Why not create the child
-> devices at a later point?
+> Signed-off-by: SignKirigami <prcups@krgm.moe>
+> ---
 
-The problem the above text refers to is (as far as I understand):
+[...]
 
-The main driver probes, and creates a child device, which probes 
-successfully. That causes the flag for "run deferred probes again" to be 
-set. The main driver then continues its probe, but, for some reason, 
-must return -EPROBE_DEFER. But as the above-mentioned flag is set, so 
-probes are ran again, resulting in the same sequence, again and again.
+> +static struct qcom_icc_node qhm_qspi;
+> +static struct qcom_icc_node qhm_qup0;
+> +static struct qcom_icc_node qnm_a1noc_cfg;
+> +static struct qcom_icc_node xm_sdc1;
+> +static struct qcom_icc_node xm_ufs_mem;
+> +static struct qcom_icc_node xm_usb3_0;
+> +static struct qcom_icc_node qhm_qdss_bam;
+> +static struct qcom_icc_node qhm_qup1;
+> +static struct qcom_icc_node qnm_a2noc_cfg;
 
-Creating the child device later is difficult. We have display pipelines 
-which contain multiple independent devices. All those devices must have 
-probed and their bridges/panels registered to the DRM framework so that 
-the main DRM driver can finish its probe. If parts of the pipeline are 
-missing, we return -EPROBE_DEFER and wait for the missing parts to appear.
+You don't need these forward-declarations, check newer files in
+this directory.
 
-And the OLDIs here are not really independent devices. They don't have 
-register space, and OLDI configuration is done via DSS registers. Yet 
-they don't fit very well inside the DSS either, as they are clearly an 
-outside IP, an external encoder. So the aim has been to represent them 
-as separates child DT nodes, which allows setting OLDI properties and 
-the media graph, but there's no compatible string and it's the tidss 
-driver that fully manages the creation/cleanup.
+[...]
 
-Here a simple pipeline could be:
+> +static struct qcom_icc_bcm * const lpass_ag_noc_bcms[] = {
+> +};
 
-DSS -> OLDI -> panel
+Please drop the empty BCM lists
 
-If the panel hasn't been registered, tidss will defer. But tidss needs 
-OLDI to be there too, when it binds the display pipeline, otherwise it 
-could never finish.
+[...]
 
-It is possible to create the DRM bridge entity for the OLDI without any 
-OLDI device/driver, which allows creating the display pipeline. But the 
-OLDI bridge code has to be able to enable the OLDI power domain, and I 
-think the only way to use PDs currently is via devices.
+> +static const struct of_device_id qnoc_of_match[] = {
+> +	{ .compatible = "qcom,netrani-aggre1-noc",
+> +	  .data = &netrani_aggre1_noc },
 
-So if we created the OLDI DRM bridge as mentioned above, then later in 
-tidss probe we could create a device for OLDI, which probes and binds. 
-That can then be used to control the PD, but there would be no other use 
-for it. And the sequence feels like doing it backwards.
+And unroll these lines 
 
->> The PD virtual devices used in this patch's approach do not hit the
->> issue as they don't get a driver, so they are not probed. The tidss
->> driver's OLDI part can then use normal pm_runtime_get/put functions to
->> manage the OLDI PDs.
-> 
-> Sorry, but this makes no sense to me. Considering the above statement
-> about -EPROBE_DEFER and child devices, it sounds like we need to
-> manage some kind of cleanup in both solutions, right?
+You're also missing QoS settings, please add that (along with their
+clock dependencies + please make sure the platform boots succesfully
+with clk_ignore_unused)
 
-Yes, but with PD virtual devices there's no probe, so they don't cause 
-the "do deferred probes again" flag to be set. It's not the cleanup as 
-such that causes the problem.
-
-In some ways this does feel a bit like a work-around to the framework 
-limitation. Representing OLDI with the aux-bus feels quite correct, I 
-think. But then, all that plumbing just to enable/disable the PD...
-
-So, what I'm basically trying to do in this patch is to provide an API 
-that allows enabling/disabling a PD that's not in a DT node managed by a 
-Linux device.
-
-> Perhaps if you provide a user of dev_pm_domain_attach_by_node() this
-> becomes more clear.
-I have pushed my branch to korg:
-
-https://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git/log/?h=b4/beagley-ai-display
-
-The commit that uses this patch is:
-
-"drm/tidss: oldi: Add power domain support"
-
-And the dts file that has the OLDI nodes is:
-
-"arm64: dts: ti: k3-am62p-j722s-common-main: Add support for DSS"
-
-  Tomi
-
+Konrad
