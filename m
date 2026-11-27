@@ -1,135 +1,79 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.49
-ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795821307;
-	b=Y0UTA2Z95pYxLQp5iUya/ucc/LXWPZ3zezY9wFAUpKytK7XEzr0+hZpzlPOfOc3FSdb0
-	 T+bIp9Lms+A7AoPau2rxTHEUWVrVY7ELgI5uo49ohPc4kS0CsFB/s1vUbc/CuJki2APUC
-	 BTQ/0QtoDOUix4JGnx6AcwT8qfZgBrERuiPzOkKSfXg12xnDgI77zNNcNZsMpxAi8sqIK
-	 1cxET7DrLfOBem3X+53qBpxQAQF6tbvtDP8wR46iU22VMKv2HU/S0TXKzxhEL71+1FyK2
-	 qKtFFSwIsY6uyJ5OWw+j7lSR0V1dL5kw7nRvMb8tFjJREHgeNnuq4gnMB8QEf1ky3kw==
-ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795821307;
-	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
-	 MIME-Version:Content-Transfer-Encoding;
-	bh=U1M+MDeqlkODjZ50qKjXMO75f40J30DxxF3l7NYSGEM=;
-	b=qLlUxWg4vZ46llOEdG6+O3xjEbWpq2wdcYdhUZQ72B1TJuRgt1wCqGPcXiFDW1cxEPfG
-	 cXhZCleClZB8zaibEgWKEbPHkV5HAczhnxy5vAB1EgiZ89QKrsPapQmM1G9H3/Y8x1MF/
-	 DxIuEsONbAFmimkmkxqXj4X/sIkAgBlSAtQInf0GCn/ROHBTR1e4zYNc7aWq1XvQomBso
-	 MnEye6MbupDW1EAJ/1Tle2yZMh3/28ufp5ccHCh0menM5epZLaqhrpAywPbLzEPP6ELdb
-	 iCl1uowAf8CDfdky/USuCWLoefv2FlDHRUc6oU+Dmli5OuIFe4LXhZ6s05l1zRh2vQQ==
-ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=gmail.com;
-	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=WDrBk4z3;
-	arc=none smtp.remote-ip=209.85.221.49
-Received: from mail-wr1-f49.google.com (mail-wr1-f49.google.com [209.85.221.49])
-	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
+Authentication-Results: smtp.subspace.kernel.org; arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+ARC-Seal: i=2; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=pass;
+	t=1795823087;
+	b=AbWs+s5p5qcDLNftGA4zVsVssXwwR4O7jtC5I0ettMe+Jt5dDkmQlzSJ9xvT/t6jWobV
+	 T65dMMyg9XlcLaDmdqm4JMfOBKuvQ8s6L8LuNekhUGnWtzWOYE97Q25qOOLF8Hl3GxAU1
+	 UngUzu8FCvC8Eh1jPkT+djoTziAnnyPQZSqjFhSccgaWiFopatUxHqFB2jQ8/7BPDLutz
+	 jKLzqkD0KlWNixm3Khj6FSXGDkQ1ZY/7UB5nfcFW++vuN/GbZYOKElluiS47hA6rD2pr0
+	 RwCLcwrHydli314QAKZtpYrBiW++jR0Ifs/N988NbXXGvaxVe5MNkiZttaXXjgtxtWA==
+ARC-Message-Signature: i=2; d=subspace.kernel.org; s=arc20261015;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795823087;
+	h=Received:DKIM-Signature:Received:From:Date:Subject:MIME-Version:
+	 Content-Type:Content-Transfer-Encoding:Message-Id:References:
+	 In-Reply-To:To:Cc:X-Mailer:X-Developer-Signature:X-Developer-Key:
+	 X-Endpoint-Received:X-Original-From:Reply-To;
+	bh=NyFa5+QRGdiGBA7vzS8aDyP7lR2va9y9iB0GSwTVIec=;
+	b=wxJ4/3aDJrpBUfAEsqqJG6s8/Pyrbxyt+cBeXYDZ7sgmbkzK8jBFea+qQuHi7GXpTN97
+	 gHCyKNwNJkp5kJUYslrUT/C4H1xT2lVqQyZTQLA2N/ljxho1tb/PYDSFvbGLPsHq+mpgI
+	 b5bJBCQ1HQ3UCff4qNg1MKTeA6OECdHfT9VRd/tZ9qO6aRAEqg5MKvZBo38uxgm3Wgw6D
+	 cEDCRJfVY3sQxya6mk8fffBMlrw+nEeUZdzUKZl4ML7GRVHMgS2x1/yA0yTqmNtj+aikQ
+	 mZO0bRPeZ7+t8InWFq2WswgRglacKdciLQiVjcrkx/ENsEKqLZcpkc2HlYY0wWhok0g==
+ARC-Authentication-Results: i=2; smtp.subspace.kernel.org; 
+	dkim=pass header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=niSETPpG;
+	arc=pass header.oldest-pass=0 smtp.remote-ip=100.103.45.18
+Received: from smtp.kernel.org (quasi.space.kernel.org [100.103.45.18])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature ECDSA (prime256v1))
+	(No client certificate requested)
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AA6CC606A31C;
+	Fri, 27 Nov 2026 23:44:47 +0000 (UTC)
+Authentication-Results: smtp.subspace.kernel.org;
+	dkim=pass (2048-bit key) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20260515 header.b=niSETPpG
+Authentication-Results: smtp.kernel.org; arc=none smtp.remote-ip=100.80.115.77
+ARC-Seal: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256; cv=none;
+	t=1795823087;
+	b=TF1PNK2ea/XuB35zXA8eAW2g9SsyJz09gzY6d2mKRXwmwWFR7BJrhiNHFxaaTyLLQEV7
+	 mlVSq8bmYZDW15KOAm/8O1uXCSMmlwwtFPJr+y/qrBSc7r1FNsbQHe5fkTQl9jkFkn6ss
+	 p0K2auFXQadnWpZIaj263416zQ3+oWcXAkIMPm4avsZaLSID1DhmDJOpFKkyRPosflIm3
+	 y4X1EHsJd9EvUxrZcnkGSPVRW/rf/F9O3k/n6hQXPqBUNYnwEVT+O6KRJa90lA0JFRoaN
+	 T1NuYgFC2M1IcAJPFLrAQ7GXgGDxiz8YH3sammsORQa7bBQMRPDW0J0Ju7d9SiwOhdQ==
+ARC-Message-Signature: i=1; d=kernel.org; s=arc20260519; a=rsa-sha256;
+	c=relaxed/relaxed; t=1795823087;
+	h=DKIM-Signature:Received:From:Date:Subject:MIME-Version:Content-Type:
+	 Content-Transfer-Encoding:Message-Id:References:In-Reply-To:To:Cc:
+	 X-Mailer:X-Developer-Signature:X-Developer-Key:X-Endpoint-Received:
+	 X-Original-From:Reply-To;
+	bh=NyFa5+QRGdiGBA7vzS8aDyP7lR2va9y9iB0GSwTVIec=;
+	b=Gphd5qGNbw2sowCrkAiPzKx9DD18Utr5TGBBmufzgI3AfBX6CbCvdJzJgl7jzH/G64FS
+	 jNuT2Jp2XBQcnylIEzyILHlpl2oASgT26dIcdhwhgZn+8vcU3Ln149P5cXecjLOmUR6K6
+	 YQCMGKZ3s2iJc7Vwn1oys2nvu6G0qH+e/9E0oSvfAS6FlsnrbO8EX/rGVME2TZB2anxzp
+	 mknndOWFeTJ2CmjVv1bOHSqF8rKpxFuDBdzXrvW8cVLsKvtoMeKQPjD5lXDoKqwzqKDeU
+	 Gv1Ioj1PHGxW/2te919htzyGUG02RqQBcHFmdTNn23a32JC9qHdO6NrvEw4NdFduWhQ==
+ARC-Authentication-Results: i=1; smtp.kernel.org; 
+	arc=none smtp.remote-ip=100.80.115.77
+Received: from lkml.kernel.org (nexus.subspace.kernel.org [100.80.115.77])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6AC87606A33B
-	for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 23:15:07 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6AC87606A33B
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
-Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=WDrBk4z3
-Received: by mail-wr1-f49.google.com with SMTP id ffacd0b85a97d-48dfc0421d9so7810218f8f.1
-        for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 15:15:07 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795821306; x=1796426106; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to:content-type;
-        bh=U1M+MDeqlkODjZ50qKjXMO75f40J30DxxF3l7NYSGEM=;
-        b=WDrBk4z39jTSJg7fP1LZv5pSAmcolbmVo4wwWMjjlFQboYBu3wN5rJ9GYnYJV50K3+
-         tkw+jwH1lJXR7gVV/OBT9/yk7tTAiZrdu2ajb+eYT+UVhWfUsEfp6iR0FSExSHMDzvsZ
-         3fpjMgMby8qPK4rdWEnPxtHr3jKM0uthso6MfAww0lrr5k/+C3OtKtXfdvcLi7gHPltW
-         qCeMSaWpCWUuLbQVELMCkcXgultuZ6nRhj58FRGzZaFMWHaLx3Tjc30C/hZ5vAlCSiMn
-         7dF5c687gdpqCnnInSFJs2GpiUdsUfdCYGv9dUppGS+08fFr1MS5RebwLf1K2w2KKf8y
-         FyPg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795821306; x=1796426106;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to:content-type;
-        bh=U1M+MDeqlkODjZ50qKjXMO75f40J30DxxF3l7NYSGEM=;
-        b=CPb9xuvMlSqyw/dWiZeKtwWBbxRstRP2+8uWhXBUi5U79RLhqIeC9zXQNslf/K0Ix7
-         iD87NSqqEcyCkYos9X/neuC0onriQaOHdwtjqxwhNJcR+Wf02NZoloa6D+3o1+gqUkDB
-         fTPEjlxNEqbsOMfvFFJNehJLH5ld959qqkrYmcKil/e6WMzzscgm84o0OeyK/1c8nCqY
-         Es7EuOU6gnJjUSLGAK6IwT2bYLCa5f+KPAYtCONHlyf66tiePPXt4iRSTmsCfWhywz8U
-         GK7u2FYcpJxbNcYgxAdkXdY3bQ5S/9ACC6u0mHiVEgF7TwTAzDc+ZRl2hMIECx6w+qr3
-         jqPA==
-X-Forwarded-Encrypted: i=1; AL+hErFBOIM1J1of6EB/qMlbMHjWby1kUZd/dNdgtAFx8VVDzq+86UHfdUUV3ZBx++sh21DXo4thJq6OcQ==@vger.kernel.org
-X-Gm-Message-State: APuU4Z9TSkAkZjbiH+xKU7cBVL2aSmr4Jyit1CE7RcyyvkXY3gvJZWbi
-	OXHq9cd1l3ldSQeSKd8WDKW2WeRv3D+YdrGzZtTv0E30+n2kjflbuxWo
-X-Gm-Gg: AZFdTZfWBSGY9qqr/2GTMbz34HTjA98FDge8NSDl488jT16zosnNmnsXXHbGel1ESJp
-	QgnCPmMs+kK5fiCrYJ49781NpN80Kjqy084kDVKbUI0nsdg8V/g53uIBwSfmqX4S+SpLvMvo32v
-	lAflfXC6/0375qGb2uurP9sF6XckIXoMzkxFV37ko5mVMCR/cp4DBkZjumHZDruvYeW9etSAlwN
-	q4bB5+u7LjbeG+PPFSyttLUbVd5DrqaYi7e1EGj37erco8rh8cLqsWefD4GCncArRYpha+LJ0zG
-	gMa9sWTQCyfMTS6++RJ9nUE1VKt159TOdkQmCxzM4ezl3mJTroXa+wXuXIZXaT3/k1hGQVHP7A7
-	vG+WvXKhQIn1oo9kSmBuySbUYenpLdCPb6iSrQoILWr5YkRapqWJ4dLl+NjOLNxSzIb1siDHOiz
-	A/SONTQh4AYeFKdQdLJKFhoDzy5Ez10OqppibDJ7Qc0fEk92bJKdMNDNyyyzci47apRypWy7xay
-	c4+Dp3jHXnPIVI8H6WH619BpIZUPW+EceIL/Idi71hpbJtXUiYgD2eKLm37UdNf+AolcaIrJto2
-	qkoxbQstIt1q6Sp33M+9oxEj9hs=
-X-Received: by 2002:a05:6000:178f:b0:4bb:c85e:d565 with SMTP id ffacd0b85a97d-4bbc86e17b5mr14733028f8f.55.1795821305534;
-        Fri, 27 Nov 2026 15:15:05 -0800 (PST)
-Received: from flare5 ([212.58.121.92])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4ab6a67fe48sm45269880f8f.23.2026.11.27.15.14.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Nov 2026 15:15:03 -0800 (PST)
-From: Stanislav Aleksandrov <lightofmysoul@gmail.com>
-To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
-	Bjorn Andersson <andersson@kernel.org>,
-	Konrad Dybcio <konradybcio@kernel.org>,
-	Abel Vesa <abelvesa@kernel.org>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Robert Marko <robimarko@gmail.com>,
-	Guru Das Srinagesh <linux@gurudas.dev>,
-	Thomas Gleixner <tglx@kernel.org>,
-	Radu Rendec <radu@rendec.net>,
-	Will Deacon <will@kernel.org>,
-	Robin Murphy <robin.murphy@arm.com>,
-	"Joerg Roedel (AMD)" <joro@8bytes.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Wesley Cheng <wesley.cheng@oss.qualcomm.com>,
-	Vinod Koul <vkoul@kernel.org>,
-	Neil Armstrong <neil.armstrong@linaro.org>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Alim Akhtar <alim.akhtar@samsung.com>,
-	Bart Van Assche <bvanassche@acm.org>,
-	Bean Huo <beanhuo@micron.com>,
-	Stanley Jhu <stanleyjhu@google.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	"David S. Miller" <davem@davemloft.net>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
-	Amit Kucheria <amitk@kernel.org>,
-	Thara Gopinath <thara.gopinath@gmail.com>,
-	Daniel Lezcano <daniel.lezcano@kernel.org>,
-	Zhang Rui <rui.zhang@intel.com>,
-	Lukasz Luba <lukasz.luba@arm.com>,
-	Georgi Djakov <djakov@kernel.org>,
-	Sibi Sankar <sibi.sankar@oss.qualcomm.com>,
-	Ulf Hansson <ulfh@kernel.org>
-Cc: linux-arm-msm@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	iommu@lists.linux.dev,
-	linux-usb@vger.kernel.org,
-	linux-phy@lists.infradead.org,
-	linux-scsi@vger.kernel.org,
-	linux-crypto@vger.kernel.org,
-	linux-pm@vger.kernel.org
-Subject: Re: [PATCH v3 14/14] arm64: dts: qcom: Add Samsung Galaxy XR
-Date: Fri, 27 Nov 2026 23:14:45 +0000
-Message-ID: <20261127231445.3623202-1-lightofmysoul@gmail.com>
-X-Mailer: git-send-email 2.55.0
-In-Reply-To: <87280d80-9047-405b-8dcc-11276d34d2dd@oss.qualcomm.com>
-References: <20261125-halliday-dts-v3-0-5c8311c0b70b@gmail.com> <20261125-halliday-dts-v3-14-5c8311c0b70b@gmail.com> <87280d80-9047-405b-8dcc-11276d34d2dd@oss.qualcomm.com>
+	by smtp.kernel.org (Postfix) with ESMTPS id B58DC1F00898;
+	Fri, 27 Nov 2026 23:44:44 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=kernel.org;
+	s=k20260515; t=1795823087;
+	bh=NyFa5+QRGdiGBA7vzS8aDyP7lR2va9y9iB0GSwTVIec=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To;
+	b=niSETPpGN8HUgBTzUnazdJM9gLA9btDIZGirmV8G5QWmV/wNWTGd3PFax+6S+nHKA
+	 fEWUgohc8iHKmqhSj0JNrSzdxp0eggY7e6iEFZkTy9g7d71LyUtcB3ek4pMT3N+FPH
+	 lIrfS8W7tG/mgviJt83rPs3VykTAmJTVO5T0IWpCCwsp+rNwJDOcClHYqmaPzU3w/I
+	 isJAhN83G7VNHcZJGDoulrB0GhQ0VTTjFG1lhC7zldhZkxLT/kmGTt8erdPizFPGZ1
+	 5l3HVpkMOzkAGzt6yweIAZyNouBy4MqfMwbpGfKCS1xAIPTYq4iME7H+MaJsujuenq
+	 zOHinfKOakEGw==
+Received: from nexus.subspace.kernel.org (localhost [IPv6:::1])
+	by lkml.kernel.org (Postfix) with ESMTP id 4125E4DE96;
+	Fri, 27 Nov 2026 23:44:44 +0000 (UTC)
+From: Patrick Fischer via B4 Relay <devnull+admin.tsv-stahl-riesa.de@kernel.org>
+Date: Sat, 28 Nov 2026 00:44:38 +0100
+Subject: [PATCH v2 1/2] thermal: tegra: soctherm-fuse: Fix shifted_cp
+ extension
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -139,30 +83,68 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20261128-upstream-soctherm-t114-v2-1-abba0b143037@tsv-stahl-riesa.de>
+References: <20261128-upstream-soctherm-t114-v2-0-abba0b143037@tsv-stahl-riesa.de>
+In-Reply-To: <20261128-upstream-soctherm-t114-v2-0-abba0b143037@tsv-stahl-riesa.de>
+To: "Rafael J. Wysocki" <rafael@kernel.org>, 
+ Daniel Lezcano <daniel.lezcano@kernel.org>, Zhang Rui <rui.zhang@intel.com>, 
+ Lukasz Luba <lukasz.luba@arm.com>, 
+ Thierry Reding <thierry.reding@kernel.org>, 
+ Jonathan Hunter <jonathanh@nvidia.com>
+Cc: Svyatoslav Ryhel <clamor95@gmail.com>, 
+ Mikko Perttunen <mperttunen@nvidia.com>, linux-pm@vger.kernel.org, 
+ linux-tegra@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ stable@vger.kernel.org, Patrick Fischer <admin@tsv-stahl-riesa.de>
+X-Mailer: b4 0.15.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1795823083; l=1488;
+ i=admin@tsv-stahl-riesa.de; s=20261020; h=from:subject:message-id;
+ bh=IcjQLi3EWU6uv5WDPVnI7H+1UDXjOHTlhu+GBJlQqns=;
+ b=PgIHvzOtSW3OLtcWYAoN4ygEWEv/nJyAbtlhH6pa0gTNCPLy+U1zvXYZZwcGageMbNMYQlO8u
+ 0JhS/246hv/CTm7TdNmTUGdL2OxuIp7B8e+EgZmYlUhDG78kgtkD1kj
+X-Developer-Key: i=admin@tsv-stahl-riesa.de; a=ed25519;
+ pk=D+v6EloYcEY9PIUHFyTM5sqcGIU/fIXzLUdkR8vjAtk=
+X-Endpoint-Received: by B4 Relay for admin@tsv-stahl-riesa.de/20261020 with
+ auth_id=1251
+X-Original-From: Patrick Fischer <admin@tsv-stahl-riesa.de>
+Reply-To: admin@tsv-stahl-riesa.de
 
-On Fri, Nov 27, 2026 at 02:58:40PM +0100, Konrad Dybcio wrote:
-> Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+From: Svyatoslav Ryhel <clamor95@gmail.com>
 
-Thanks for the review.
+The shifted_cp value in tegra_calc_shared_calib() should be passed to
+sign_extend32() similarly to how shifted_ft is handled. This omission
+caused malfunctions in the GPU and memory thermal zones, which was
+observed on the Tegratab.
 
-I've implemented support for almost all of the hardware in my
-local branch and I have found that the headset exists in multiple
-revisions.
+Tegra124, Tegra132 and Tegra210 are not affected: SHIFT_CP is in the
+low six bits of their fuse word, so sign-extending the whole word gives
+the same result. Only Tegra114 has SHIFT_CP in bits [15:10].
 
-So, I'd like to make a split:
+Fixes: 48fc33b95159 ("thermal/drivers/tegra/soctherm-fuse: Prepare calibration for Tegra114 support")
+Cc: stable@vger.kernel.org
+Signed-off-by: Svyatoslav Ryhel <clamor95@gmail.com>
+Reviewed-by: Mikko Perttunen <mperttunen@nvidia.com>
+Signed-off-by: Patrick Fischer <admin@tsv-stahl-riesa.de>
+---
+ drivers/thermal/tegra/soctherm-fuse.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-rename: halliday-samsung-xrvst2.dts -> halliday-samsung-xrvst2.dtsi
-add: halliday-samsung-xrvst2-rev22.dts
-add: halliday-samsung-xrvst2-rev25.dts
+diff --git a/drivers/thermal/tegra/soctherm-fuse.c b/drivers/thermal/tegra/soctherm-fuse.c
+index 8d37cd8c9122..2de1d0cb676e 100644
+--- a/drivers/thermal/tegra/soctherm-fuse.c
++++ b/drivers/thermal/tegra/soctherm-fuse.c
+@@ -102,7 +102,7 @@ int tegra_calc_shared_calib(const struct tegra_soctherm_fuse *tfuse,
+ 
+ 	shifted_cp = (val & tfuse->fuse_shift_cp_mask) >>
+ 		     tfuse->fuse_shift_cp_shift;
+-	shifted_cp = sign_extend32(val, 5);
++	shifted_cp = sign_extend32(shifted_cp, 5);
+ 
+ 	shared->actual_temp_cp = 2 * NOMINAL_CALIB_CP + shifted_cp;
+ 	shared->actual_temp_ft = 2 * tfuse->nominal_calib_ft + shifted_ft;
 
-The .dts files will initially contain only compatibles.
-The real differences between the revisions are the DMIC drive
-strength, the display panels and their supply voltage, so the files
-will be 'empty' until I send my sound and display series.
+-- 
+2.56.1
 
-Is it OK if I send the split in a v4, or is it better
-to do it in a follow-up?
 
-Best regards,
-Stanislav
