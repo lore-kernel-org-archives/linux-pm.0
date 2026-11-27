@@ -1,83 +1,84 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.54
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.51
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
 	t=1795791277;
-	b=aKibPqVbBjk1qNj3h8IErtRT+vH0ZLYA8ETSI8d6/nESai7xBqhnnwon/gHaq6+Uy37G
-	 q0iRZlSKBrkE+MVR+L1m3vXloP89Sn+nSbO5mfrygMmW1ykMtnrQ6USPtFTklyz6hQcQI
-	 kKs2bwH7pGK2KPCElItz376fpn04jZI1YLKeP0PGgGIXZ0hvMKDBK1W8RFu1MyZVp86e6
-	 c/tqedV6SIYHjwLwv9AYbpBDinJQqzNgv5vquL+KLJAE1SVsUpX+foRuEiUQehOL/zGSD
-	 TMQHIDvzn00SFxphHrmw+XUvc9yrJxYCpcbRGKgymsQst7m98nkq5l0VEum42FekteQ==
+	b=J9egqqS9FBHFg1hC0m0mV0azjbEArBKB1VBcyFVWJjbZ51croxqo8PthpPXfe+tybneW
+	 lhMWMR1LKWz1n9Cs+W71EZ+V08UPjwvHVIMk0CtmZ8dkz19Pn2HtgnCIFJUOL9J5lo8+r
+	 S/c5cLvytnyU09oJGml/VdA5q8NrpaE6Dfs9ZEj2i5FZMrXcB29XzgnJ6yOibr0OqLFED
+	 snK9HvJ5PT2aGvGHfikUEMbhTQn65r1At1N/FBmPYbTcF3aOWP0oP28ARHB14EybqeirQ
+	 8SA5LwDO6joOHzisDb+I28dgvP14Efg7fCuIenVmhKg+oNAf2hUcJ7VcX0GqmkQ+kCg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1795791277;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
 	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
-	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=SXH1zIVRj+Q3VwOmk7BHfXhp1QrzFmDJnc3rVMFxfIc=;
-	b=cjblsIGLv8bzKjWodJMJm+meRC3EGYAbxr8NXNFGiKolwa2bHAq3Inn1372zdWFN+Dq1
-	 +t3M4BshYX9wliHtZfRpBRr/jcsExqPgwcyV7FHqtW2IpEllq/Jb7lnNQs7SS1oPu3Qih
-	 EloQ/xJkgx8l4cZceHm+z5u7yR0aJ31HpcDqJzPpuGjeHgEYcc3MzzPk/y3pzzAHz4IVX
-	 1gmSW/RdbRz0aEOgCrQB5UEYS/BOD4F75MVPQESt5TLKGeZhnCvZLHh8Faagy1iB/3wJv
-	 kV943B1VdLsR1BuigW3IDFvIc93elsjc76+qj9knX8hk9MDQcO79u0s+AT70Ypd+jyg==
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=B2E3iVg+Y53ku5x5pyq2TwGurqaRpRcncBnG/OPEoGE=;
+	b=OehkQ9R1jAvjdRdEDZjaODoUQ6A943a6zSaMPfe1ULmuOaF4gm1FjsTOpgfPUXAqr0u7
+	 tsqbvy+TJB/oH1fCtZQyFwusWO41TNvTTLvEXcxDOaucIMkW0pyIdFqu9kn2hucw08Hlk
+	 xDLXWR/zY4hV3lUt0TSglG2w37vNh/++XukyoetGiXzD04gDNLV80+uk0nb9L7B52ligb
+	 r5Sg/wgrv+e2zklsxp7OXy2UpjYGDU3eHGACwmOTUBay92Bzx1juljh1ItES77VUla0JX
+	 PMPTjZg+AuZVrkYymfYYVz6MxYUWyJZoqHwlcv4mAYXINY+XqHdw6W//8svvUTkUhAw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=fOjGfMnF;
-	arc=none smtp.remote-ip=209.85.221.54
-Received: from mail-wr1-f54.google.com (mail-wr1-f54.google.com [209.85.221.54])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=iixHA0sv;
+	arc=none smtp.remote-ip=209.85.128.51
+Received: from mail-wm1-f51.google.com (mail-wm1-f51.google.com [209.85.128.51])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id DA210606A31C
-	for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 14:54:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org DA210606A31C
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 91F89606A31E
+	for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 14:54:37 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 91F89606A31E
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=fOjGfMnF
-Received: by mail-wr1-f54.google.com with SMTP id ffacd0b85a97d-491971ac844so7242950f8f.2
-        for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 06:54:36 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=iixHA0sv
+Received: by mail-wm1-f51.google.com with SMTP id 5b1f17b1804b1-4a5b2be99a8so67038505e9.2
+        for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 06:54:37 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795791275; x=1796396075; darn=vger.kernel.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to:content-type;
-        bh=SXH1zIVRj+Q3VwOmk7BHfXhp1QrzFmDJnc3rVMFxfIc=;
-        b=fOjGfMnFaW36gM86CXslowU1BzK/v4A+WDcBbTjfhZ+rNc72cdan4L4cfify1+1saF
-         DBHCatuJmKztS6vCn4E1yTcWKWoExE1dRi1DFsueQ4VYUNkqJyCxRVd+SvZDxDQKq8Rs
-         4UQu6StiJokIcbadYqyyxNKMMJ5SEqd2LI+1ZfM6CwViCTVm+LjXvVoqeo275KkFJfM7
-         e8CW6QTpKsNceMfaphZjXDbjhZFtDLSxNlbjn8D2XBFcphdV4ozlL74UfjvqMNED2yTz
-         tPkH088xEFLatv8lS4Gsm6dyKMmrq4s814RuxU6L33x1WdxbV8ZEXOCczqDs7k7U9pQ5
-         BkSw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795791275; x=1796396075;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20260707; t=1795791276; x=1796396076; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=SXH1zIVRj+Q3VwOmk7BHfXhp1QrzFmDJnc3rVMFxfIc=;
-        b=BL76+33QH62po6pPvTJhaOiFkAHRPDaX15BHfe2/nTzMppUc2/Vy28o0G1swARrOWA
-         judcDXKtRAiw7QSvaBd2dvPaln+mjrcNI17XH442hcogCC+0DyHiO5XVo9AumGlHtHRF
-         daL3p9t7hAWPO2kAsjHa+Eym+hth3gd9kjwFDzs1K1QQ9Nyb4DijJbCTvOMh893DtW3S
-         NiXVyePKw7JnxIz9EOdhUV7e4VBLAE/TpIGnRxguAztHzNPDXeapwB10BMpqpmZ11ABR
-         qGeF8zzXZ5/ahjy46jL4Vg0vuix/rQh2DGSeIc1hAywymlbM5WHrJkPKLWqyjjurtQ4C
-         UhDA==
-X-Forwarded-Encrypted: i=1; AL+hErEGFhlQqKf5gQQoJOfpCjjmt5TYwg5osTuXzPlFSgv214dIy6jkU7vT40xiAFNY7VMOdEUgauXLQw==@vger.kernel.org
-X-Gm-Message-State: APuU4Z+8DkPL7iJUIaDGtgmnoEbs9ZH1GJr/NAc83BVpfLVLMZzHwQjW
-	i0erClS+qy0UFodOULWx6yJYzIJDYp9xBFQEiGhW/ZYRs4eW5iIqHyd0
-X-Gm-Gg: AZFdTZfGAFbbr60NMGXt1GDGhZxyjaMxw+hqZif+Ks8l0mD3ih/39GkWly/KZVNJPei
-	lbRclEFxiayItP9IXyte7xrwrz0Vz1j6E/ZtHHBlD2MCKUILvB2n1R0uZoyiKyqiRxH/1jf5Khr
-	gYUGf3pSbyIabc2FtqqBPfdpHyavGgcHXFN+PKWQ2HOWWngrqDhq4lAvvg0txYwoU6IUs2uFtSF
-	Zzzl+SkQiz5Cv2+XmWeyTT0YkyTRwqsf67VVuckg8iLCsPucoHkQ6TSektCtri1c8JLMQ0VuNrt
-	EOGx2tML6oFrKtmCuDwR67TIEByQd7EIWs4V1/mlSrnauyVn/w7zZa2wdminXQq1ZElUxU/+p2k
-	EVNPk9znf9v8TMxBo1mV2fvEvQ5BtDKZor5L627ftY+lO31GBDeuyZ5y3sAA3wcbRxF4jbyhPl4
-	Nt6jvum5MJ2ESCu7mfRz7Mo65xRnYa2Q5qNanDWUXlamPzg7IgS6oHMCuExp8SyyQb9p7Ns/PqQ
-	toOoqq+IkvXmTvzFj/FuHnilY5Dd+onsrK/E6KW5IO6wt1Vo0ocGf4YR9VvJXGY9oWtX5ERdISQ
-	+wlsPp+rApO586uYGg7QGWaMTjqKF3bAKRTBNUwDAaCqXYg9kgdpA8OiaV/fueHU++Ubz0V0sr2
-	jAHI=
-X-Received: by 2002:a05:600d:a:b0:4bb:aa4f:c01d with SMTP id 5b1f17b1804b1-4bbaa4fc151mr122964855e9.1.1795791275057;
+        bh=B2E3iVg+Y53ku5x5pyq2TwGurqaRpRcncBnG/OPEoGE=;
+        b=iixHA0sv88U6GlWaq8WJ6u6F6OD+2Ul2IEc5X29nvNhQV0advhEpIETTKTjyWEOjsZ
+         f2rTwAZ70xSLu1rCUSuvra2ZMU1HigrRRj0ail5JxftmZ0v8V5gsNaOgMh7tAymaPg91
+         VUKwJPq4/7LeCQf2qcYIo5HtfHMp37YhEqVpRRQSVTQEmfOuaRBPZhagVH418I9AZ+UQ
+         2zOANZnGrnPBOpCHr+Rb+gaTtfyMYLAQhwwSzlfzoIQ6oxawUxpqaA3l5ai67yk7c27d
+         rR3pmEIriHL1iiy8iLokZ/z4Kn39q3lVDOOA+kYKrkKsVmt+zvm/yiycK3L36PG5dVG0
+         X8AQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795791276; x=1796396076;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=B2E3iVg+Y53ku5x5pyq2TwGurqaRpRcncBnG/OPEoGE=;
+        b=AvITtoWZapPAFcqM461KxgND0OFYmftOR+GYY/Aw0RLjdrsl6a+DlDI0HWnA+tj+9n
+         i5MSre2atApTfyxv79hyzhN1nXo2bGzPaPZrU7alndUqRnRjNWXlMtV3B37cbpRCMnh9
+         s3OH+jGQnovLw1kBH2qCsqFr4m8RawpWfl9ubYg9THrtPyZXrgJA7SfgCR6mCSXzavd/
+         sEMFHzIDdFdUkP1WCBW+dzfYBxoCAQB1kKdxwYSSdeU5CMRVpCejw8jw5wUV15QUa8G/
+         BV76HZ7Z1nZG4udzJah0GXHXRYBJWNHB39L0f1u8Fe799roSSdoGm59YUMd8eBy05tCJ
+         Rs7w==
+X-Forwarded-Encrypted: i=1; AL+hErFq5/EUFoYuXeHg8TjXKz9JlMVrdVBmlR6ktU8YpoBZo3rtmyiHXjE8uiuCaSFKDx2hqR+CmeMHVw==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9bMIrNIpAbt2/JdhZFJjH26/j8WuFxtXXWLH9kU4di7wUf23qY
+	cjzLNW+fH/Zxj7RyRHCYnhwaw+TIoVLV+BZKcXCuJ+qa/GXg14nvC35v
+X-Gm-Gg: AZFdTZd2WtfC8LgVCKX5HZfofj6GRIZMxTXekvcwtpaJjVuhIz4gDYEpmKZdh5qWl5x
+	MfsfJztp/nQGEzfG9UEKyvwA27XGR/eAx+LwbGT9byCt2ILc+R8bziumSTjsd77LNF/A8U4e/vw
+	JtyLTWtcfJqtdeFi8i8h+iFIFclTPnKjEUvlNjXFZQuZi1R4Wa27ljlAj25V28DaaJ4S5G1/VPU
+	mP3gki0LcgmYBSkTQb1wOoZQ1ZLDFOmTa02vmmnJTzgoV30Ci99+mRpn97SXOMLelNLb1/4ymuu
+	awcfCGZcYfFPzds/RkFrrM4VTZNrWB1eJqmnuO9Br5WmeRmXrI45hvs5fKZAvmEcVaCEfm3dxLA
+	y5t8E+WkOUb5Ld6jVN1Z4+cm/m7YSOAxGxJoMjETacxrfqSJssqLa2B3ZISrnxPUdQs0mjnFrN9
+	6y+RZq33PJ/wLuLW+hD5+7E4Gyfbys4H+eZBzzd/JhfpNYY/A+XPHmNP0NN0nEmEVlXfBJn4+0h
+	uy9SeeXi5leueZ9rxVwkMpgWK+kSc8MRqB630HgH3FpCHpZk9/CeKB4lM2eYP+batDgqPe5diCk
+	XnnFhwRpO1V3oyMeY9MN8/N+Sz1e6c0RclICdpv6K4rgyf+B138L/Nlm1qx2GQ4W135W9J+AHR/
+	1d2Y=
+X-Received: by 2002:a05:600c:4584:b0:4a7:c366:d791 with SMTP id 5b1f17b1804b1-4bb887e266amr485218485e9.1.1795791275934;
         Fri, 27 Nov 2026 06:54:35 -0800 (PST)
 Received: from emanueleg-nb (host-87-4-46-207.retail.telecomitalia.it. [87.4.46.207])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb88442693sm633589105e9.1.2026.11.27.06.54.34
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb88442693sm633589105e9.1.2026.11.27.06.54.35
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Nov 2026 06:54:34 -0800 (PST)
+        Fri, 27 Nov 2026 06:54:35 -0800 (PST)
 From: Emanuele Ghidoli <ghidoliemanuele@gmail.com>
 To: Sebastian Reichel <sre@kernel.org>,
 	Krzysztof Kozlowski <krzk+dt@kernel.org>,
@@ -89,10 +90,12 @@ To: Sebastian Reichel <sre@kernel.org>,
 Cc: Emanuele Ghidoli <emanuele.ghidoli@toradex.com>,
 	linux-pm@vger.kernel.org,
 	devicetree@vger.kernel.org
-Subject: [PATCH v1 0/2] power: reset: tdx-ec-poweroff: Add Aquila IQ8 support
-Date: Fri, 27 Nov 2026 15:54:22 +0100
-Message-ID: <20261127145429.2060162-1-ghidoliemanuele@gmail.com>
+Subject: [PATCH v1 1/2] dt-bindings: power: reset: Document the Toradex Aquila IQ8 EC
+Date: Fri, 27 Nov 2026 15:54:23 +0100
+Message-ID: <20261127145429.2060162-2-ghidoliemanuele@gmail.com>
 X-Mailer: git-send-email 2.53.0
+In-Reply-To: <20261127145429.2060162-1-ghidoliemanuele@gmail.com>
+References: <20261127145429.2060162-1-ghidoliemanuele@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -106,27 +109,51 @@ Content-Transfer-Encoding: 8bit
 
 From: Emanuele Ghidoli <emanuele.ghidoli@toradex.com>
 
-The Toradex Aquila IQ8 module has an Embedded Controller from the same
-family as the one on the SMARC iMX8MP and SMARC iMX95 modules. It
+The Aquila IQ8 EC belongs to the same family as the SMARC ECs and
 implements the same I2C programming interface, with the same power-off
-and reset commands, so the existing driver works unchanged through the
-toradex,smarc-ec fallback compatible.
+and reset commands. The module signals it controls differ, since Aquila
+and SMARC define different connector interfaces, but this is not
+visible to software.
 
-Patch 1 adds the toradex,aquila-iq8-ec compatible and updates the
-description.
+Add a dedicated compatible with toradex,smarc-ec as fallback and make
+the description generic, so that it is not tied to a specific module
+family.
 
-Patch 2 allows the driver to be built on Qualcomm platforms and updates
-module description.
-
-Emanuele Ghidoli (2):
-  dt-bindings: power: reset: Document the Toradex Aquila IQ8 EC
-  power: reset: tdx-ec-poweroff: Allow building on Qualcomm platforms
-
+Signed-off-by: Emanuele Ghidoli <emanuele.ghidoli@toradex.com>
+---
  .../bindings/power/reset/toradex,smarc-ec.yaml        | 11 +++++------
- drivers/power/reset/Kconfig                           |  9 ++++-----
- drivers/power/reset/tdx-ec-poweroff.c                 |  2 +-
- 3 files changed, 10 insertions(+), 12 deletions(-)
+ 1 file changed, 5 insertions(+), 6 deletions(-)
 
+diff --git a/Documentation/devicetree/bindings/power/reset/toradex,smarc-ec.yaml b/Documentation/devicetree/bindings/power/reset/toradex,smarc-ec.yaml
+index ffcd5f2c2bf6..d59d08c0250f 100644
+--- a/Documentation/devicetree/bindings/power/reset/toradex,smarc-ec.yaml
++++ b/Documentation/devicetree/bindings/power/reset/toradex,smarc-ec.yaml
+@@ -11,13 +11,11 @@ maintainers:
+   - Francesco Dolcini <francesco.dolcini@toradex.com>
+ 
+ description: |
+-  The Toradex Embedded Controller (EC) is used on Toradex SMARC modules,
+-  primarily to manage power and reset functionalities.
++  The Toradex Embedded Controller (EC) is used on Toradex modules to manage
++  power sequencing and reset.
+ 
+-  The EC provides the following functions:
+-    - Reads the SMARC POWER_BTN# and RESET_IN# signals and controls the PMIC accordingly.
+-    - Controls the SoC boot mode signals based on the SMARC BOOT_SEL# and FORCE_RECOV# inputs.
+-    - Manages the CARRIER_STDBY# signal in response to relevant SoC signals.
++  It handles the power, reset and boot mode signals of the module connector
++  and controls the PMIC and the SoC accordingly.
+ 
+   The EC runs a small firmware, factory programmed into its internal flash, and communicates over I2C.
+   It allows software to control power-off and reset functionalities of the module.
+@@ -26,6 +24,7 @@ properties:
+   compatible:
+     items:
+       - enum:
++          - toradex,aquila-iq8-ec
+           - toradex,smarc-imx95-ec
+           - toradex,smarc-imx8mp-ec
+       - const: toradex,smarc-ec
 -- 
 2.53.0
 
