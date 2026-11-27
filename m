@@ -1,63 +1,50 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=115.124.30.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=213.167.242.64
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795770330;
-	b=zrhGF0gJTvcYz2IE/LIpUibaLz3vQJDSg5OvQdKiV1rgHs/7VC2TWLmFp5/bOUjj0A4G
-	 wJOPvyLH5HCf3NQ4/ItRWcuM46PPLKRBAS/zTL8/wBQOm8iyrnILwXUGZ+oQ9pHvCHudu
-	 SGB52L941Xlezn1uCFR/s4iYxi0Ioac7hNRcWzbU0tCHM0QxGVFui8stv+5iwLyii0SFC
-	 gXXXEk51vEaI3Xv/ePYXbjME0qEGCOlTW/2CyFfM2NS5K9FlzW9Ezw6RPUiTSkkW1HUv1
-	 xSQeO7c/khJJG5BbL73TPvETJu43oRLqqQTTPQPVVf0yUmdYNLdvvlVkp6MvwucK9OQ==
+	t=1795770427;
+	b=ImfD0mFy9qyoxBF6wYf2yFSzmU8ja6ZXyQ4ZfZMM7MB+xgVnhHbtj5hgCUgi8ubuKDCg
+	 GDzXD+lYV+QZWAaGzz/gginCD3jRLNqX7+UIkF8ZRJqTH2MDhe8iQMksStDYCj8hhAzSk
+	 8vU0yCzb/r/R9Q+Ao49972wH9FevaHgePIxrT5GO2cCZ9lLZuegit3+/JL1gluXqPelmn
+	 sJQa4po/1XgTVmXeY46qtYOacYfefFOWN2x8XjgRmVp93pidEXwu9FYvo+LgbAGtrE8MD
+	 LnRKXHK5IvmdsbTH5nM8wEGlEv6LvbJyF2CGh3mi5JS8l0WCS/MMgQ9i4RtcSwKSihw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795770330;
-	h=DMARC-Filter:DKIM-Signature:X-Alimail-AntiSpam:Received:From:To:Cc:
-	 Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:MIME-Version:
-	 Content-Transfer-Encoding;
-	bh=F5twJYjlisCkSUmE0ZthgE9nV7AeZ+LTI2ZMvBz5Ygg=;
-	b=Hpguf4JY65fYvLmAcq1+C2jDTEhM78lnXYPD3KQE3mYuis1jX3N6mnLdEhxTY4iLNser
-	 TrRwPJzb+nvjf0lELLsD2iSafEd0sNclCtzI7MYsZLH/FXyqUutbQmTz6YxoTtUyKKE8M
-	 Vm4B8rQT5WhIutW12ZK5MN6EDCaTLvs4AG1qPns6y8hnOoD/gd8GsFwgqpOcf5wDvmNks
-	 bfDJrxn0k/1/EH8BGyaxl8iTduEeJ3ss79xovjBoJtkWOiq4iqk7VCV0JCaOLL5JK2083
-	 zaULceUaJ0FOOrw0htUA4W2t7p1MB4RkJMt93hvm6uXmpLQ/YKxYfWqp9yCEBDohdyg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795770427;
+	h=DMARC-Filter:Received:DKIM-Signature:Message-ID:Date:MIME-Version:
+	 User-Agent:Subject:To:Cc:References:From:Content-Language:In-Reply-To:
+	 Content-Type:Content-Transfer-Encoding;
+	bh=NXCYAJxsQbgh2UjiFPTabP51WfJqGvz/GwVf98o9QN8=;
+	b=OKELE/fRqW4qZkCZd91FT+jfijEX/aAagUFoL0G5ZVY8Kq4U9AfPx+LQdGEbwEaQsrNQ
+	 sg8lpGyhFKudpQz9v8/Hd4AJQyj0sI/thc5S/6Q2f0+XFm8CQSqcGYDb8Pc816fmaZz8S
+	 WTasGUrs1K65Xi6KDoywk6UnaS/+CFhXyKDFsfrVSOBwlkSA/cB/XY1nP/5Hm8L2A5r/8
+	 8fUNjWzX5C4bpDvMhTCCYED4uDsNwC2u8FauNNwunWhaeISNHCMXgSmB11tlF2g9wvfwA
+	 9RSpF6od1oGhu637eiXkUOgsoDBP/K/BwfxENulHjMC/fz5wS0Ndqce08MIwMGVOXKw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=linux.alibaba.com;
-	spf=pass smtp.mailfrom=linux.alibaba.com;
-	dkim=pass header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=cu13HkOr;
-	arc=none smtp.remote-ip=115.124.30.131
-Received: from out30-131.freemail.mail.aliyun.com (out30-131.freemail.mail.aliyun.com [115.124.30.131])
+	dmarc=pass header.from=ideasonboard.com;
+	spf=pass smtp.mailfrom=ideasonboard.com;
+	dkim=pass header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=qHBhc1Qm;
+	arc=none smtp.remote-ip=213.167.242.64
+Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [213.167.242.64])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 3825F606A336;
-	Fri, 27 Nov 2026 09:05:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 3825F606A336
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=linux.alibaba.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 291C6606A31C;
+	Fri, 27 Nov 2026 09:07:04 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 291C6606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=ideasonboard.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=ideasonboard.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=cu13HkOr
-DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1795770324; h=From:To:Subject:Date:Message-ID:MIME-Version;
-	bh=F5twJYjlisCkSUmE0ZthgE9nV7AeZ+LTI2ZMvBz5Ygg=;
-	b=cu13HkOrDr+BNCAPeQeZ18bOlltbKY65gNPqSEzP6E5YyQfCrMEOeKVCBHzzRiZVH6bHcfm15mcJvEYr0zNB4jsJ3sGJVWkmMeyDBW4osmmaFQQdZuE07joYB7ahJm8JJePfu+aGewDigsgdczPVyiZ/YprBdH3AUHRtdoDMqsg=
-X-Alimail-AntiSpam:AC=PASS;BC=-1|-1;BR=01201311R171e4;CH=green;DM=||false|;DS=||;FP=0|-1|-1|-1|0|-1|-1|-1;HT=maildocker-contentspam033045133197;MF=jiangtianfeng@linux.alibaba.com;NM=1;PH=DS;RN=9;SR=0;TI=SMTPD_---0XFXaSeI_1795770314;
-Received: from h68d07384.sqa.eu95.tbsite.net(mailfrom:jiangtianfeng@linux.alibaba.com fp:SMTPD_---0XFXaSeI_1795770314 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Fri, 27 Nov 2026 17:05:24 +0800
-From: Jiangtian Feng <jiangtianfeng@linux.alibaba.com>
-To: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>
-Cc: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>,
-	Christian Loehle <christian.loehle@arm.com>,
-	Ananthu C V <ananthu.cv@oss.qualcomm.com>,
-	Pierre Gondois <pierre.gondois@arm.com>,
-	linux-pm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Jiangtian Feng <jiangtianfeng@linux.alibaba.com>
-Subject: [PATCH v4] cpufreq: Keep global boost enabled after partial enable
-Date: Fri, 27 Nov 2026 17:05:08 +0800
-Message-ID: <20261127090513.910723-1-jiangtianfeng@linux.alibaba.com>
-X-Mailer: git-send-email 2.47.3
-In-Reply-To: <20261127060407.732709-1-jiangtianfeng@linux.alibaba.com>
-References: <20261127060407.732709-1-jiangtianfeng@linux.alibaba.com>
+	dkim=pass (1024-bit key) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=qHBhc1Qm
+Received: from [192.168.88.20] (91-158-153-178.elisa-laajakaista.fi [91.158.153.178])
+	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 18C44BA;
+	Fri, 27 Nov 2026 10:04:22 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
+	s=mail; t=1795770262;
+	bh=IyB6MEpvfevxD6X3VEaRcGsC0fCwQLyTFTNTgaTGi2g=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=qHBhc1QmMoT+YmmTHHfMT6i4l8vyhVWqeEC6VaYsQO6HWvMXNrOcknztWaeW9dGPc
+	 lCrFaU8/LsGOWNYkJSlkIumBGiDkf9a1YpHYcXJ+NHpkNvHMvmhgWboUldrodQJl+i
+	 lPpTpNMEaYGqNL7f2jWIb/C/Z9+u77QC35+EhA/I=
+Message-ID: <4fbeef8c-1dc8-4cac-a4af-835037c3dc4b@ideasonboard.com>
+Date: Fri, 27 Nov 2026 11:06:53 +0200
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -67,111 +54,153 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] pmdomain: core: Add genpd_dev_pm_attach_by_node()
+To: Ulf Hansson <ulf.hansson@oss.qualcomm.com>
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>, Pavel Machek <pavel@kernel.org>,
+ Len Brown <lenb@kernel.org>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Danilo Krummrich <dakr@kernel.org>,
+ Ulf Hansson <ulfh@kernel.org>, Devarsh Thakkar <devarsht@ti.com>,
+ linux-pm@vger.kernel.org, driver-core@lists.linux.dev,
+ linux-kernel@vger.kernel.org
+References: <20261023-pm_attach_by_node-v1-1-4dbaccdf8b0e@ideasonboard.com>
+ <CAPx+jO_FC1t_UaDfQDPOCy+V-Zdc1b5h5krrppGvYiW-LsD3LQ@mail.gmail.com>
+From: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+Content-Language: en-US
+In-Reply-To: <CAPx+jO_FC1t_UaDfQDPOCy+V-Zdc1b5h5krrppGvYiW-LsD3LQ@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-When global boost is enabled from the disabled state, a failure after
-one or more policies have been updated successfully currently restores
-the global flag to 0 without rolling back those policies. This leaves
-them locally enabled, with their boost-related driver/QoS updates
-retained, while the global flag rejects per-policy sysfs writes.
+Hi,
 
-Keep the global flag enabled if at least one policy_set_boost() call
-succeeded, while preserving the existing error return path. Global
-boost = 1 grants permission to boost; it does not require every policy
-to have boost enabled. The mixed per-policy state is therefore valid
-and individual policies remain accessible through per-policy sysfs.
+On 25/11/2026 14:50, Ulf Hansson wrote:
+> On Fri, Oct 23, 2026 at 8:17 PM Tomi Valkeinen
+> <tomi.valkeinen@ideasonboard.com> wrote:
+>>
+>> genpd_dev_pm_attach_by_id() and genpd_dev_pm_attach_by_name() attach a
+>> virtual device to a PM domain listed in the OF node of the passed
+>> device.
+>>
+>> Some hardware blocks are described in a child node of a main device.
+>> They have no device of their own, but they do have a PM domain of their
+>> own. Neither function can attach that domain, as both parse only the OF
+>> node of the device.
+>>
+>> An example case is TI's display subsystem and its OLDI (LVDS)
+>> transmitters:
+>>
+>> dss@30200000 {
+>>      power-domains = <...>;
+>>
+>>      oldi-transmitters {
+>>          oldi@0 {
+>>              power-domains = <...>;
+>>          };
+>>
+>>          oldi@1 {
+>>              power-domains = <...>;
+>>          };
+>>      };
+>> };
+>>
+>> The OLDI TX blocks are not part of the DSS IP, but they are not quite
+>> real devices either as they don't have registers of their own, and are
+>> instead controlled via DSS registers.
+>>
+>> Add genpd_dev_pm_attach_by_node(), which is similar to
+>> genpd_dev_pm_attach_by_id() but instead of looking for the power-domains
+>> from the passed device's DT node, the DT node is passed explicitly. Also
+>> add a matching wrapper function dev_pm_domain_attach_by_node().
+>>
+>> Signed-off-by: Tomi Valkeinen <tomi.valkeinen@ideasonboard.com>
+>> ---
+>> This is a new try for managing the OLDI power domains. Previously I
+>> tried using auxiliary device/driver for OLDIs, and handling the PDs the
+>> normal way:
+>>
+>> https://lore.kernel.org/all/20260529-beagley-ai-display-v3-12-7fefdc5d1adf%40ideasonboard.com/
+>>
+>> Then I realized an issue, mentioned in
+>> Documentation/driver-api/driver-model/driver.rst: "-EPROBE_DEFER must
+>> not be returned if probe() has already created child devices".
+> 
+> I don't follow. How is this a problem? Why not create the child
+> devices at a later point?
 
-Restore the previous global state on disable and when no policy was
-enabled successfully. After a partial enable, keep global boost enabled
-so users can repair individual policies through sysfs. Do not roll back
-earlier policy updates.
+The problem the above text refers to is (as far as I understand):
 
-Qoder, an AI coding assistant, helped analyze the issue, develop the fix
-and state matrix, and draft this description.
+The main driver probes, and creates a child device, which probes 
+successfully. That causes the flag for "run deferred probes again" to be 
+set. The main driver then continues its probe, but, for some reason, 
+must return -EPROBE_DEFER. But as the above-mentioned flag is set, so 
+probes are ran again, resulting in the same sequence, again and again.
 
-Fixes: 218a06a79d9a ("cpufreq: Support per-policy performance boost")
-Reviewed-by: Zhongqiu Han <zhongqiu.han@oss.qualcomm.com>
-Signed-off-by: Jiangtian Feng <jiangtianfeng@linux.alibaba.com>
----
-A failed write of 1 can leave the global flag readable as 1 when at
-least one policy was enabled successfully. The write still returns an
-error, and the resulting mixed per-policy state remains valid and locally
-repairable.
+Creating the child device later is difficult. We have display pipelines 
+which contain multiple independent devices. All those devices must have 
+probed and their bridges/panels registered to the DRM framework so that 
+the main DRM driver can finish its probe. If parts of the pipeline are 
+missing, we return -EPROBE_DEFER and wait for the missing parts to appear.
 
-Changes in v4:
-- Drop the RFC prefix after review and add Zhongqiu's Reviewed-by.
-- Remove the human-review/DCO-process note from the posting.
-- No code changes from v3.
-- Link: https://lore.kernel.org/linux-pm/20261127060407.732709-1-jiangtianfeng@linux.alibaba.com/
+And the OLDIs here are not really independent devices. They don't have 
+register space, and OLDI configuration is done via DSS registers. Yet 
+they don't fit very well inside the DSS either, as they are clearly an 
+outside IP, an external encoder. So the aim has been to represent them 
+as separates child DT nodes, which allows setting OLDI properties and 
+the media graph, but there's no compatible string and it's the tidss 
+driver that fully manages the creation/cleanup.
 
-Changes in v3:
-- Correct the changelog and comment to describe restoration on disable
-  or when no policy was enabled successfully, and local repair after a
-  partial enable.
-- No code-logic change from v2.
-- Link: https://lore.kernel.org/linux-pm/20261127014937.413500-1-jiangtianfeng@linux.alibaba.com/
+Here a simple pipeline could be:
 
-Changes in v2:
-- Remove goto/out_err from the function using cleanup guards.
-- Simplify the restoration condition to !state || !policy_success.
-- Link: https://lore.kernel.org/linux-pm/20261126110903.3747240-1-jiangtianfeng@linux.alibaba.com/
+DSS -> OLDI -> panel
 
-No normal in-tree trigger for the partial-enable sequence has been
-identified. Same-state global writes already provide a resynchronization
-mechanism. The same-state disable/resync failure noted by Zhongqiu is
-left for separate discussion instead of expanding this patch.
+If the panel hasn't been registered, tidss will defer. But tidss needs 
+OLDI to be there too, when it binds the display pipeline, otherwise it 
+could never finish.
 
-Validation (unchanged code from v3):
-- mainline ARM64 defconfig build of the complete Image
-- checkpatch.pl
-- eight-case old-global/request/success state matrix
-- independent static control-flow and locking review
+It is possible to create the DRM bridge entity for the OLDI without any 
+OLDI device/driver, which allows creating the display pipeline. But the 
+OLDI bridge code has to be able to enable the OLDI power domain, and I 
+think the only way to use PDs currently is via devices.
 
-NOT_RUN:
-- runtime fault injection or reproduction with multiple policies
-- global/local concurrency, hotplug, lockdep or KCSAN testing
-- CPPC, SW frequency-table, ACPI or AMD hardware frequency/QoS testing
+So if we created the OLDI DRM bridge as mentioned above, then later in 
+tidss probe we could create a device for OLDI, which probes and binds. 
+That can then be used to control the PD, but there would be no other use 
+for it. And the sequence feels like doing it backwards.
 
- drivers/cpufreq/cpufreq.c | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+>> The PD virtual devices used in this patch's approach do not hit the
+>> issue as they don't get a driver, so they are not probed. The tidss
+>> driver's OLDI part can then use normal pm_runtime_get/put functions to
+>> manage the OLDI PDs.
+> 
+> Sorry, but this makes no sense to me. Considering the above statement
+> about -EPROBE_DEFER and child devices, it sounds like we need to
+> manage some kind of cleanup in both solutions, right?
 
-diff --git a/drivers/cpufreq/cpufreq.c b/drivers/cpufreq/cpufreq.c
-index 4332cb114070..57f1874e087a 100644
---- a/drivers/cpufreq/cpufreq.c
-+++ b/drivers/cpufreq/cpufreq.c
-@@ -2887,6 +2887,7 @@ static int cpufreq_boost_trigger_state(int state)
- 	struct cpufreq_policy *policy;
- 	unsigned long flags;
- 	bool boost_enabled;
-+	bool policy_success = false;
- 	int ret = -EOPNOTSUPP;
- 
- 	guard(mutex)(&cpufreq_boost_mutex);
-@@ -2911,6 +2912,8 @@ static int cpufreq_boost_trigger_state(int state)
- 		ret = policy_set_boost(policy, state);
- 		if (unlikely(ret))
- 			break;
-+
-+		policy_success = true;
- 	}
- 
- 	cpus_read_unlock();
-@@ -2918,9 +2921,12 @@ static int cpufreq_boost_trigger_state(int state)
- 	if (likely(!ret))
- 		return 0;
- 
--	write_lock_irqsave(&cpufreq_driver_lock, flags);
--	cpufreq_driver->boost_enabled = boost_enabled;
--	write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	/* On failure, restore old state unless partial enable needs local repair. */
-+	if (!state || !policy_success) {
-+		write_lock_irqsave(&cpufreq_driver_lock, flags);
-+		cpufreq_driver->boost_enabled = boost_enabled;
-+		write_unlock_irqrestore(&cpufreq_driver_lock, flags);
-+	}
- 
- 	pr_err("%s: Cannot %s BOOST\n",
- 	       __func__, str_enable_disable(state));
--- 
-2.47.3
+Yes, but with PD virtual devices there's no probe, so they don't cause 
+the "do deferred probes again" flag to be set. It's not the cleanup as 
+such that causes the problem.
+
+In some ways this does feel a bit like a work-around to the framework 
+limitation. Representing OLDI with the aux-bus feels quite correct, I 
+think. But then, all that plumbing just to enable/disable the PD...
+
+So, what I'm basically trying to do in this patch is to provide an API 
+that allows enabling/disabling a PD that's not in a DT node managed by a 
+Linux device.
+
+> Perhaps if you provide a user of dev_pm_domain_attach_by_node() this
+> becomes more clear.
+I have pushed my branch to korg:
+
+https://git.kernel.org/pub/scm/linux/kernel/git/tomba/linux.git/log/?h=b4/beagley-ai-display
+
+The commit that uses this patch is:
+
+"drm/tidss: oldi: Add power domain support"
+
+And the dts file that has the OLDI nodes is:
+
+"arm64: dts: ti: k3-am62p-j722s-common-main: Add support for DSS"
+
+  Tomi
 
