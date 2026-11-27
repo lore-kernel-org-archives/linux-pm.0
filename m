@@ -1,86 +1,135 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.45
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.221.49
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795818786;
-	b=g9/i4ok7s5ikzHFzf7jwAwSL9Qw555Bm8ZlvpoR7g9ozeQGR2nuGITojR5cNcQsZtRA9
-	 E4eCqakM0XjBT/AW9UR3jNlCADqvjcwEFnOrNoeTsdWpWPfLkk0+PkxehUA1jnPuT6S/p
-	 CE/i4914M482fmZpw160SGdPI4oLrZZAwGM353v1BAZtPj/2Ypq9Zi7IkBDAEwFd2zth0
-	 rrYB2JOHheeB5znvFGC0Y0eqCr/mVucfFAP1DyXxeYgBihLclhjTqKTXK0lJoAczmuXhh
-	 Zflc4kl2zeVow+P1Dp7KmBgubuGCMKxwuh6PCEFyOqQYLOJfYaXLyTDXR/5i7MkySEQ==
+	t=1795821307;
+	b=Y0UTA2Z95pYxLQp5iUya/ucc/LXWPZ3zezY9wFAUpKytK7XEzr0+hZpzlPOfOc3FSdb0
+	 T+bIp9Lms+A7AoPau2rxTHEUWVrVY7ELgI5uo49ohPc4kS0CsFB/s1vUbc/CuJki2APUC
+	 BTQ/0QtoDOUix4JGnx6AcwT8qfZgBrERuiPzOkKSfXg12xnDgI77zNNcNZsMpxAi8sqIK
+	 1cxET7DrLfOBem3X+53qBpxQAQF6tbvtDP8wR46iU22VMKv2HU/S0TXKzxhEL71+1FyK2
+	 qKtFFSwIsY6uyJ5OWw+j7lSR0V1dL5kw7nRvMb8tFjJREHgeNnuq4gnMB8QEf1ky3kw==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795818786;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795821307;
 	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
-	 X-Gm-Message-State:X-Gm-Gg:X-Received:Received:From:Date:Subject:
-	 MIME-Version:Content-Type:Content-Transfer-Encoding:Message-Id:
-	 References:In-Reply-To:To:Cc:X-Mailer;
-	bh=CrQD3lwMnz0z6petJkG+bLaq3UykExl4nKzRKQ7m+nQ=;
-	b=kfmR27aLj/vrIQwv9n6dbKydDEIkF+aQ7GwDPxoQmyN64Ru6rd9pmbkhw1JsdgIMxyby
-	 Hk0L50bDjaaAUYlgOfo2AwIbDKF0gEMSEqoCPuF/PCbCuQSqOqK7dEx9FQBBwfr2dGt4U
-	 aKoiUNXUJeM0qf0PQI70AGAopdikrLbwoBqfZzBBQWPp29rZBfBYPtfa3I9dNHfBdNhbJ
-	 cS4e32V+K+fMoVOB/1PQwExCn6WEMFFFLV3wkm3oY12z0tMVPC6yyDFHlKrhrKCj1IT0p
-	 suLo28qEvYcgJDb7wf0NuSo+0dd/rnQzkOK7/+IvBcbTmLX/ts/NJhuD6dG1x2BoZVQ==
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=U1M+MDeqlkODjZ50qKjXMO75f40J30DxxF3l7NYSGEM=;
+	b=qLlUxWg4vZ46llOEdG6+O3xjEbWpq2wdcYdhUZQ72B1TJuRgt1wCqGPcXiFDW1cxEPfG
+	 cXhZCleClZB8zaibEgWKEbPHkV5HAczhnxy5vAB1EgiZ89QKrsPapQmM1G9H3/Y8x1MF/
+	 DxIuEsONbAFmimkmkxqXj4X/sIkAgBlSAtQInf0GCn/ROHBTR1e4zYNc7aWq1XvQomBso
+	 MnEye6MbupDW1EAJ/1Tle2yZMh3/28ufp5ccHCh0menM5epZLaqhrpAywPbLzEPP6ELdb
+	 iCl1uowAf8CDfdky/USuCWLoefv2FlDHRUc6oU+Dmli5OuIFe4LXhZ6s05l1zRh2vQQ==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=gmail.com;
 	spf=pass smtp.mailfrom=gmail.com;
-	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=U0fb5O4q;
-	arc=none smtp.remote-ip=209.85.221.45
-Received: from mail-wr1-f45.google.com (mail-wr1-f45.google.com [209.85.221.45])
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=WDrBk4z3;
+	arc=none smtp.remote-ip=209.85.221.49
+Received: from mail-wr1-f49.google.com (mail-wr1-f49.google.com [209.85.221.49])
 	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D1C68606A31F
-	for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 22:33:05 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D1C68606A31F
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 6AC87606A33B
+	for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 23:15:07 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 6AC87606A33B
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=U0fb5O4q
-Received: by mail-wr1-f45.google.com with SMTP id ffacd0b85a97d-4a34ffd3e39so4700924f8f.0
-        for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 14:33:05 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=WDrBk4z3
+Received: by mail-wr1-f49.google.com with SMTP id ffacd0b85a97d-48dfc0421d9so7810218f8f.1
+        for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 15:15:07 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20260707; t=1795818784; x=1796423584; darn=vger.kernel.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:from:to:cc:subject:date
+        d=gmail.com; s=20260707; t=1795821306; x=1796426106; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=CrQD3lwMnz0z6petJkG+bLaq3UykExl4nKzRKQ7m+nQ=;
-        b=U0fb5O4qfhP5SKYTzf5w5qGHB3hYCAD52OjrDQL6AnWRhWfdPFC8RGiWWi61e9sToq
-         OnU3km4yk54UTQ7i5Rlb+Wz6V1U4o+BJW7uIFEUMNvd3RNIm1nz5TZL5HmMM88IceXjA
-         zsvs+ruwKAXsDA6HrHpEKcuZvoBaKP9oKde6hRTGfndf+XEF5j7nIw9QJfHHktW6Y4yj
-         V1kEE/XPUIQtfKp37qRlBGrVk8eWrS9Oh73W/0ly3ur/KHuebuKj0rovP8+09wIdV2Xd
-         SCw6MjdRpc074SRXu6K1pBH9IBxHCe7eIcAjbcgxn44zWAJsxA2fI3Ztn02erjR41uST
-         ZJpg==
+        bh=U1M+MDeqlkODjZ50qKjXMO75f40J30DxxF3l7NYSGEM=;
+        b=WDrBk4z39jTSJg7fP1LZv5pSAmcolbmVo4wwWMjjlFQboYBu3wN5rJ9GYnYJV50K3+
+         tkw+jwH1lJXR7gVV/OBT9/yk7tTAiZrdu2ajb+eYT+UVhWfUsEfp6iR0FSExSHMDzvsZ
+         3fpjMgMby8qPK4rdWEnPxtHr3jKM0uthso6MfAww0lrr5k/+C3OtKtXfdvcLi7gHPltW
+         qCeMSaWpCWUuLbQVELMCkcXgultuZ6nRhj58FRGzZaFMWHaLx3Tjc30C/hZ5vAlCSiMn
+         7dF5c687gdpqCnnInSFJs2GpiUdsUfdCYGv9dUppGS+08fFr1MS5RebwLf1K2w2KKf8y
+         FyPg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795818784; x=1796423584;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :content-type:mime-version:subject:date:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=CrQD3lwMnz0z6petJkG+bLaq3UykExl4nKzRKQ7m+nQ=;
-        b=vVUwgfWpKOZyATJfwrP3dGd281zqOQG8EX1AINEksnfya2Uv4KlqE0xk/HOreZb1JS
-         nW0NLuWtPpoavsxYIaAOlQ2UqyBC5NVneuGdlY3n4G+qrcoQAnDXDp2mbx83L1VKhcPl
-         8NcJBAmSBbJ7q7hd7TeEnYJ5hNyJOkWN+Q91kwFtVgzDCf4wkqBlNKMb5aJ7PM/GufLm
-         cMFrZ8OgAvmaneV+yUeDP0fR6p0bhuBLqvzTCagG+4lDiAcQKkY9t3ZHHfRjiFjzdtzb
-         ovYc4SKySDwCrbjoKDFKHZq7yS0iQB9Hvjgz4pMAfDdGuUVIoqk0tJ1ltUxYdKfZ9nzy
-         vjpQ==
-X-Gm-Message-State: APuU4Z/1CDOF47YJXcfScdG0H8GwBRdsrAGUolNMZo49y9GprZsokfkr
-	9eXfiBi5yUfJ1qgDeXoUTIBXTP5KSFRvD1mkJ0DZxzHG7bX6m2Bie2ne
-X-Gm-Gg: AZFdTZcRELNyxAdeDfmDXSFYseF5uE3hyc1NvRi8SYn7gH2Bjxaw79hizMA7U6jkAHP
-	zQ/HB5pLyfUl26lE/g3KqHgWOuVAbP71+SDHLEkmWG0sPmMY1em7FjvOo2j5vz0ToMYs+ywuhVb
-	IcL7PPbFuXasosfCa5iP7TGP9C+1AWoRY3f+YyMUBWqskbGdmJyrOxljnhtRnIo2/CF6B+QzXQJ
-	eeOVoyjyEqk9DGlGZteerq0HkD3Ra0bIT1eOD6weon6MxlwHvwzX5rm2wJpW346C60igSmqp1so
-	8pbDNW7wzsABgqoU436qg9V5RMnUyoAgForReb8bLcRsp6cLy/msex42aGrlZBjzy4wizsr0Quj
-	LmlH4uROcPnfp9/Xl4slOFk5+JAU3jIs/vYEOXKwdnnBjFAAdEDo3wyyp93CROw/tdjOhAyR9ju
-	C63r/zwevwQjwoD3iEIo6+m2Po+Fbjc8D5L7NUxkImuAtlf0ofU8kh1R3t0CUdpmCzncC1N7cFV
-	tCsAJXpsXt768KIvUfrRF6lGCoNc+V6tr0TLHZthV+Fw6xm7ybCs0n5DmN9oGWZZ/zUUTbEUvrP
-	b9IZLJo/IbIKg4m8+++P2Qks6hvR8n4Z
-X-Received: by 2002:a05:6000:3107:b0:4aa:1ae2:ff2a with SMTP id ffacd0b85a97d-4abaa977260mr61370948f8f.2.1795818784066;
-        Fri, 27 Nov 2026 14:33:04 -0800 (PST)
-Received: from [127.0.1.1] ([130.61.107.245])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4ab69bf685asm50430285f8f.20.2026.11.27.14.33.01
+        d=1e100.net; s=20260707; t=1795821306; x=1796426106;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=U1M+MDeqlkODjZ50qKjXMO75f40J30DxxF3l7NYSGEM=;
+        b=CPb9xuvMlSqyw/dWiZeKtwWBbxRstRP2+8uWhXBUi5U79RLhqIeC9zXQNslf/K0Ix7
+         iD87NSqqEcyCkYos9X/neuC0onriQaOHdwtjqxwhNJcR+Wf02NZoloa6D+3o1+gqUkDB
+         fTPEjlxNEqbsOMfvFFJNehJLH5ld959qqkrYmcKil/e6WMzzscgm84o0OeyK/1c8nCqY
+         Es7EuOU6gnJjUSLGAK6IwT2bYLCa5f+KPAYtCONHlyf66tiePPXt4iRSTmsCfWhywz8U
+         GK7u2FYcpJxbNcYgxAdkXdY3bQ5S/9ACC6u0mHiVEgF7TwTAzDc+ZRl2hMIECx6w+qr3
+         jqPA==
+X-Forwarded-Encrypted: i=1; AL+hErFBOIM1J1of6EB/qMlbMHjWby1kUZd/dNdgtAFx8VVDzq+86UHfdUUV3ZBx++sh21DXo4thJq6OcQ==@vger.kernel.org
+X-Gm-Message-State: APuU4Z9TSkAkZjbiH+xKU7cBVL2aSmr4Jyit1CE7RcyyvkXY3gvJZWbi
+	OXHq9cd1l3ldSQeSKd8WDKW2WeRv3D+YdrGzZtTv0E30+n2kjflbuxWo
+X-Gm-Gg: AZFdTZfWBSGY9qqr/2GTMbz34HTjA98FDge8NSDl488jT16zosnNmnsXXHbGel1ESJp
+	QgnCPmMs+kK5fiCrYJ49781NpN80Kjqy084kDVKbUI0nsdg8V/g53uIBwSfmqX4S+SpLvMvo32v
+	lAflfXC6/0375qGb2uurP9sF6XckIXoMzkxFV37ko5mVMCR/cp4DBkZjumHZDruvYeW9etSAlwN
+	q4bB5+u7LjbeG+PPFSyttLUbVd5DrqaYi7e1EGj37erco8rh8cLqsWefD4GCncArRYpha+LJ0zG
+	gMa9sWTQCyfMTS6++RJ9nUE1VKt159TOdkQmCxzM4ezl3mJTroXa+wXuXIZXaT3/k1hGQVHP7A7
+	vG+WvXKhQIn1oo9kSmBuySbUYenpLdCPb6iSrQoILWr5YkRapqWJ4dLl+NjOLNxSzIb1siDHOiz
+	A/SONTQh4AYeFKdQdLJKFhoDzy5Ez10OqppibDJ7Qc0fEk92bJKdMNDNyyyzci47apRypWy7xay
+	c4+Dp3jHXnPIVI8H6WH619BpIZUPW+EceIL/Idi71hpbJtXUiYgD2eKLm37UdNf+AolcaIrJto2
+	qkoxbQstIt1q6Sp33M+9oxEj9hs=
+X-Received: by 2002:a05:6000:178f:b0:4bb:c85e:d565 with SMTP id ffacd0b85a97d-4bbc86e17b5mr14733028f8f.55.1795821305534;
+        Fri, 27 Nov 2026 15:15:05 -0800 (PST)
+Received: from flare5 ([212.58.121.92])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4ab6a67fe48sm45269880f8f.23.2026.11.27.15.14.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 27 Nov 2026 14:33:03 -0800 (PST)
-From: =?utf-8?q?Adil_H=C3=BCsrev_Tepe?= <tadilhusrev@gmail.com>
-Date: Sat, 28 Nov 2026 01:32:55 +0300
-Subject: [PATCH v2 3/3] power: supply: s2mu005-battery: add S2MU106 support
+        Fri, 27 Nov 2026 15:15:03 -0800 (PST)
+From: Stanislav Aleksandrov <lightofmysoul@gmail.com>
+To: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	Abel Vesa <abelvesa@kernel.org>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Robert Marko <robimarko@gmail.com>,
+	Guru Das Srinagesh <linux@gurudas.dev>,
+	Thomas Gleixner <tglx@kernel.org>,
+	Radu Rendec <radu@rendec.net>,
+	Will Deacon <will@kernel.org>,
+	Robin Murphy <robin.murphy@arm.com>,
+	"Joerg Roedel (AMD)" <joro@8bytes.org>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Wesley Cheng <wesley.cheng@oss.qualcomm.com>,
+	Vinod Koul <vkoul@kernel.org>,
+	Neil Armstrong <neil.armstrong@linaro.org>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Alim Akhtar <alim.akhtar@samsung.com>,
+	Bart Van Assche <bvanassche@acm.org>,
+	Bean Huo <beanhuo@micron.com>,
+	Stanley Jhu <stanleyjhu@google.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	"David S. Miller" <davem@davemloft.net>,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Viresh Kumar <viresh.kumar@linaro.org>,
+	Amit Kucheria <amitk@kernel.org>,
+	Thara Gopinath <thara.gopinath@gmail.com>,
+	Daniel Lezcano <daniel.lezcano@kernel.org>,
+	Zhang Rui <rui.zhang@intel.com>,
+	Lukasz Luba <lukasz.luba@arm.com>,
+	Georgi Djakov <djakov@kernel.org>,
+	Sibi Sankar <sibi.sankar@oss.qualcomm.com>,
+	Ulf Hansson <ulfh@kernel.org>
+Cc: linux-arm-msm@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	iommu@lists.linux.dev,
+	linux-usb@vger.kernel.org,
+	linux-phy@lists.infradead.org,
+	linux-scsi@vger.kernel.org,
+	linux-crypto@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH v3 14/14] arm64: dts: qcom: Add Samsung Galaxy XR
+Date: Fri, 27 Nov 2026 23:14:45 +0000
+Message-ID: <20261127231445.3623202-1-lightofmysoul@gmail.com>
+X-Mailer: git-send-email 2.55.0
+In-Reply-To: <87280d80-9047-405b-8dcc-11276d34d2dd@oss.qualcomm.com>
+References: <20261125-halliday-dts-v3-0-5c8311c0b70b@gmail.com> <20261125-halliday-dts-v3-14-5c8311c0b70b@gmail.com> <87280d80-9047-405b-8dcc-11276d34d2dd@oss.qualcomm.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -90,155 +139,30 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20261128-s2mu106-fg-v2-3-2c3142e05aaf@gmail.com>
-References: <20261128-s2mu106-fg-v2-0-2c3142e05aaf@gmail.com>
-In-Reply-To: <20261128-s2mu106-fg-v2-0-2c3142e05aaf@gmail.com>
-To: Sebastian Reichel <sre@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- Kaustabh Chakraborty <kauschluss@disroot.org>
-Cc: linux-pm@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Krzysztof Kozlowski <krzk@kernel.org>, 
- Yassine Oudjana <y.oudjana@protonmail.com>, 
- =?utf-8?q?Adil_H=C3=BCsrev_Tepe?= <tadilhusrev@gmail.com>
-X-Mailer: b4 0.16.0
 
-The S2MU106 fuel gauge uses the same STATUS/RVBAT/RCURCC/RSOC registers
-and scaling as the S2MU005, but has no MONOUT averaging path; reading the
-averaged voltage and current through it returns bogus values. Add a
-per-variant descriptor so the S2MU106 exposes only the instantaneous
-voltage, current, capacity and status, and derive the status from the
-instantaneous current when no average is available.
+On Fri, Nov 27, 2026 at 02:58:40PM +0100, Konrad Dybcio wrote:
+> Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
 
-Signed-off-by: Adil Hüsrev Tepe <tadilhusrev@gmail.com>
----
- drivers/power/supply/s2mu005-battery.c | 61 +++++++++++++++++++++++++++++-----
- 1 file changed, 52 insertions(+), 9 deletions(-)
+Thanks for the review.
 
-diff --git a/drivers/power/supply/s2mu005-battery.c b/drivers/power/supply/s2mu005-battery.c
-index 9798a62ffec..a1bd9ffdd61 100644
---- a/drivers/power/supply/s2mu005-battery.c
-+++ b/drivers/power/supply/s2mu005-battery.c
-@@ -38,6 +38,7 @@ struct s2mu005_fg {
- 	struct regmap *regmap;
- 	struct power_supply *psy;
- 	struct mutex monout_mutex;
-+	bool has_monout;
- };
- 
- static const struct regmap_config s2mu005_fg_regmap_config = {
-@@ -168,16 +169,18 @@ static int s2mu005_fg_get_capacity(struct s2mu005_fg *priv, int *value)
- 
- static int s2mu005_fg_get_status(struct s2mu005_fg *priv, int *value)
- {
--	int current_now, current_avg, capacity;
-+	int current_now, current_avg = -1, capacity;
- 	int ret;
- 
- 	ret = s2mu005_fg_get_current_now(priv, &current_now);
- 	if (ret < 0)
- 		return ret;
- 
--	ret = s2mu005_fg_get_current_avg(priv, &current_avg);
--	if (ret < 0)
--		return ret;
-+	if (priv->has_monout) {
-+		ret = s2mu005_fg_get_current_avg(priv, &current_avg);
-+		if (ret < 0)
-+			return ret;
-+	}
- 
- 	/*
- 	 * Verify both current values reported to reduce inaccuracies due to
-@@ -240,12 +243,47 @@ static const struct power_supply_desc s2mu005_fg_desc = {
- 	.get_property = s2mu005_fg_get_property,
- };
- 
-+/*
-+ * The S2MU106 fuel gauge shares the direct STATUS/RVBAT/RCURCC/RSOC
-+ * registers and their scaling, but not the MONOUT average-monitoring path,
-+ * so the averaged voltage and current are not exposed on it.
-+ */
-+static const enum power_supply_property s2mu106_fg_properties[] = {
-+	POWER_SUPPLY_PROP_VOLTAGE_NOW,
-+	POWER_SUPPLY_PROP_CURRENT_NOW,
-+	POWER_SUPPLY_PROP_CAPACITY,
-+	POWER_SUPPLY_PROP_STATUS,
-+};
-+
-+static const struct power_supply_desc s2mu106_fg_desc = {
-+	.name = "s2mu106-fuel-gauge",
-+	.type = POWER_SUPPLY_TYPE_BATTERY,
-+	.properties = s2mu106_fg_properties,
-+	.num_properties = ARRAY_SIZE(s2mu106_fg_properties),
-+	.get_property = s2mu005_fg_get_property,
-+};
-+
-+struct s2mu005_fg_variant {
-+	const struct power_supply_desc *desc;
-+	bool has_monout;
-+};
-+
-+static const struct s2mu005_fg_variant s2mu005_fg_variant = {
-+	.desc = &s2mu005_fg_desc,
-+	.has_monout = true,
-+};
-+
-+static const struct s2mu005_fg_variant s2mu106_fg_variant = {
-+	.desc = &s2mu106_fg_desc,
-+	.has_monout = false,
-+};
-+
- static int s2mu005_fg_i2c_probe(struct i2c_client *client)
- {
- 	struct device *dev = &client->dev;
- 	struct s2mu005_fg *priv;
- 	struct power_supply_config psy_cfg = {};
--	const struct power_supply_desc *psy_desc;
-+	const struct s2mu005_fg_variant *variant;
- 	int ret;
- 
- 	priv = devm_kzalloc(dev, sizeof(*priv), GFP_KERNEL);
-@@ -264,11 +302,12 @@ static int s2mu005_fg_i2c_probe(struct i2c_client *client)
- 	if (ret)
- 		return dev_err_probe(dev, ret, "failed to initialize MONOUT mutex\n");
- 
--	psy_desc = device_get_match_data(dev);
-+	variant = device_get_match_data(dev);
-+	priv->has_monout = variant->has_monout;
- 
- 	psy_cfg.drv_data = priv;
- 	psy_cfg.fwnode = dev_fwnode(dev);
--	priv->psy = devm_power_supply_register(priv->dev, psy_desc, &psy_cfg);
-+	priv->psy = devm_power_supply_register(priv->dev, variant->desc, &psy_cfg);
- 	if (IS_ERR(priv->psy))
- 		return dev_err_probe(dev, PTR_ERR(priv->psy),
- 				     "failed to register power supply subsystem\n");
-@@ -276,7 +315,7 @@ static int s2mu005_fg_i2c_probe(struct i2c_client *client)
- 	if (client->irq > 0) {
- 		ret = devm_request_threaded_irq(priv->dev, client->irq, NULL,
- 						s2mu005_handle_irq, IRQF_ONESHOT,
--						psy_desc->name, priv);
-+						variant->desc->name, priv);
- 		if (ret)
- 			return dev_err_probe(dev, ret, "failed to request IRQ\n");
- 	}
-@@ -287,7 +326,11 @@ static int s2mu005_fg_i2c_probe(struct i2c_client *client)
- static const struct of_device_id s2mu005_fg_of_match_table[] = {
- 	{
- 		.compatible = "samsung,s2mu005-fuel-gauge",
--		.data = &s2mu005_fg_desc,
-+		.data = &s2mu005_fg_variant,
-+	},
-+	{
-+		.compatible = "samsung,s2mu106-fuel-gauge",
-+		.data = &s2mu106_fg_variant,
- 	},
- 	{ }
- };
+I've implemented support for almost all of the hardware in my
+local branch and I have found that the headset exists in multiple
+revisions.
 
--- 
-2.53.0
+So, I'd like to make a split:
 
+rename: halliday-samsung-xrvst2.dts -> halliday-samsung-xrvst2.dtsi
+add: halliday-samsung-xrvst2-rev22.dts
+add: halliday-samsung-xrvst2-rev25.dts
+
+The .dts files will initially contain only compatibles.
+The real differences between the revisions are the DMIC drive
+strength, the display panels and their supply voltage, so the files
+will be 'empty' until I send my sound and display series.
+
+Is it OK if I send the split in a v4, or is it better
+to do it in a follow-up?
+
+Best regards,
+Stanislav
