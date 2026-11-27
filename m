@@ -1,109 +1,96 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=205.220.168.131
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=209.85.128.47
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795772465;
-	b=e6qC8c0+1xHBkMxXR1FlserNc4fUBov5XvB1lFqqWqCLDjcIT2XeoZIcT0RJVbmiora3
-	 4IkK1qwf8vn38gmbjC4M01Q68XAqqMVPjpzwvqPemGJtiimcFB6aOc/mnKsz9k4bDMYNg
-	 azGrP0ECaGSK6rlxYR/q24dxEDoYCJw/xhMZhvF6nLhisiDjDNkhxtCbR4f5nXT5NPPfy
-	 mG0O+FlPPjcEze/36NUMbbGRy7zKPtsSm49rdr2NutZuSzX1jq0rftCrV38fyTPcCBEKp
-	 zsXj1oquN0JPK5rMcve2X4xSXs673l+pRBVELRrP3A8Lvui9N1+GNA7t0+CfAh1qLuw==
+	t=1795775443;
+	b=DZNaZiAc6+03GteWoybbXcnsGTTmyFdLb2xas/BvmteGx44IQzFmIEKjZj/kSbRwOJQ/
+	 ShpRLzgaCyhJKvnn+ULM5tzkwLy4j4W2nSx6MkbYnCVrYgAmE/N7mANzu2qF7rGAqMSMG
+	 nC5tDK1w6H3wTHcxrJBT3GU5TY4w4+zQx9TIzqe6+/bxRRyM8n1ZuKShKH8afZ+EhhfXQ
+	 gF6MKnpik73qD5CsZrlgk7cZi84WFGNgjsoymKZxdOMYP8/M7VonVYBfqAr+wWzua2z4P
+	 YgHsyHcn7pdZb1KAgRRkUt8OCYDhhyApQ4r0AkZmTYkxnLp5FokfdiDDLF5ffTDI5Gg==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795772465;
-	h=DMARC-Filter:Received:DKIM-Signature:Received:Received:
-	 DKIM-Signature:X-Google-DKIM-Signature:X-Gm-Message-State:X-Gm-Gg:
-	 X-Received:X-Received:Received:Message-ID:Date:MIME-Version:
-	 User-Agent:Subject:To:Cc:References:Content-Language:From:In-Reply-To:
-	 Content-Type:Content-Transfer-Encoding:X-Proofpoint-Spam-Info:
-	 X-Proofpoint-GUID:X-Proofpoint-ORIG-GUID:X-Authority-Analysis:
-	 X-Proofpoint-Spam-Details-Enc:X-Proofpoint-Virus-Version:
-	 X-Proofpoint-Spam-Details;
-	bh=o3HiB2vJRWEBxUo+fvEqRZTvriSNZji2BGGHNXkYQ8Y=;
-	b=Rjd+SU0W3jTK9iPDTYK1+IevfFcDupnFq0rLOgdHzYCq1tQL0MsZZTX6HuQex8qk2nQW
-	 7ZGgViQ/mm+r8iBiE9cr4sF4Z406kxZe3fhe6XBSA2Dz/Pmyz4ZXGqX1+rbaScjV5144r
-	 3Jfs4NjT8OxxDskn5PC7mHArBmdk3tH7Fj+P9mxOc2+9KnB+VeavbhYHQ131rxn4cW6C+
-	 dsFXN+sfrUBkx9NmdziWvkLwJ3dA0m9oTcY2mHPPCm2y27w8gpWcHmEFEaJVipdm6GrrE
-	 QgFiaCoXBIK8TJ/T5cSH7xg4xuLOu5n7ySWHXmvYdPniLf9fDz8HEvK8a3TlLsczmJA==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795775443;
+	h=DMARC-Filter:Received:DKIM-Signature:X-Google-DKIM-Signature:
+	 X-Forwarded-Encrypted:X-Gm-Message-State:X-Gm-Gg:X-Received:Received:
+	 From:To:Cc:Subject:Date:Message-ID:X-Mailer:In-Reply-To:References:
+	 MIME-Version:Content-Transfer-Encoding;
+	bh=wDNCT5dmOQWaRk4g039B7mVnjd1E54Q443a1ugSNbRY=;
+	b=tXnKID2umc8uzyLkTGu5ZpxabSZkTr8EwnjQzIBqadWy5b4X2ClZaWCKpaZZOVp421yU
+	 q0uqUCtzYddmq/8Gyha8RCy7BKAVln8b4bzpSVC+NzXFD8CrOllmgPM0J7jdCtSgE7jQ+
+	 /UQ6mcNAx0Z1Q4ENFkO8ghlUxwUOAowqjUNeG97QVf9bb4V6i4onHSRcmLnncEa21kzTO
+	 0PvAV1uRENR25TGbia4L3ZukoRy9S8OBOkKxLTX7jHYuNlZIhaypJ7PST9voZuiUqfrwq
+	 awbuxdlMbcNiBbe1rnMOtYkHscOEyizg12dHb4Puz3oudsnOtPizUHwo261QfoSZhww==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=oss.qualcomm.com;
-	spf=pass smtp.mailfrom=oss.qualcomm.com;
-	dkim=pass header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b="nLS/r6At";
-	dkim=pass header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=VM1tADde;
-	arc=none smtp.remote-ip=205.220.168.131
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	dmarc=pass header.from=gmail.com;
+	spf=pass smtp.mailfrom=gmail.com;
+	dkim=pass header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yVSmZXRJ;
+	arc=none smtp.remote-ip=209.85.128.47
+Received: from mail-wm1-f47.google.com (mail-wm1-f47.google.com [209.85.128.47])
+	(using TLSv1.3 with cipher TLS_AES_128_GCM_SHA256 (128/128 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 9DA3B606A32C
-	for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 09:41:04 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 9DA3B606A32C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=oss.qualcomm.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=oss.qualcomm.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id E1831606A321
+	for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 10:30:42 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org E1831606A321
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=gmail.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (2048-bit key) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=nLS/r6At;
-	dkim=pass (2048-bit key) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=VM1tADde
-Received: from pps.filterd (m0279863.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6AR7GeYv1475095
-	for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 09:41:04 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	o3HiB2vJRWEBxUo+fvEqRZTvriSNZji2BGGHNXkYQ8Y=; b=nLS/r6AtWhGq+QJc
-	J0oiuyH5JRdARl32y5qkdYINZB5cJduI03RlxB238VpnYDaLbmUG9iqZHj/d9Wxc
-	wMKDw6zUmZ3+oO+MipcC7cjodcfGZPpgcmI/cJKf3TFEv9rrbj6araSwgGdz1mti
-	JehdOnQCrB3zkDAmkV3IL6ZyGjFU97Oy3ndDIgiVHeVOQmoeXENzgjLluXfhOCyj
-	2N9sL9a1kG+tJeYdlKl7BUW65s5aKLtOp4AWfV6qAyF4/OWNn2rCmSn6PhUV5mV+
-	6QO74eWqv5MsmufPwwdX9AErpCf61T4+iRQCosmQx+TeFSRE5p/GehKrBH14SCKP
-	MP0PKg==
-Received: from mail-qv1-f71.google.com (mail-qv1-f71.google.com [209.85.219.71])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4j6u4htbx0-1
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
-	for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 09:41:03 +0000 (GMT)
-Received: by mail-qv1-f71.google.com with SMTP id 6a1803df08f44-91f2f304414so4053826d6.2
-        for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 01:41:03 -0800 (PST)
+	dkim=pass (2048-bit key) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20260707 header.b=yVSmZXRJ
+Received: by mail-wm1-f47.google.com with SMTP id 5b1f17b1804b1-4a5177d78c7so80246255e9.2
+        for <linux-pm@vger.kernel.org>; Fri, 27 Nov 2026 02:30:42 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=oss.qualcomm.com; s=google; t=1795772463; x=1796377263; darn=vger.kernel.org;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:from:to:cc:subject:date:message-id:reply-to
-         :content-type;
-        bh=o3HiB2vJRWEBxUo+fvEqRZTvriSNZji2BGGHNXkYQ8Y=;
-        b=VM1tADdeBkw1c0R9KqrypaBQeQ7Cv/fijFi4jqICKhCL6x1MejslvntqtilFoP9Naq
-         z7E6w26AnHg7rbZLPv7DBSXxxnCzblUwFemOKy8w/7Vtb5I4Z6ZGWYapQ0SWqEixbe4l
-         66UvTlkrMF6QtmszwysmRa4Iq7qDkQFJgGTQfU1vHybXTNZJNt7deBD2/1pLbzffH8KU
-         h6s4Nmebm6yboLJ25929ERfZ+kG0Cddp7s0g0Vsjm3XPe24wdeWjeX8nHQMliXBoCvNg
-         7nlbfPHLxKHVDjK4UdZ4X276sN2ZHNfRfmX93phcqoyoQQWlh3GGSCMftAbN49DXB3Sh
-         EEXA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20260707; t=1795772463; x=1796377263;
-        h=content-transfer-encoding:content-type:in-reply-to:from
-         :content-language:references:cc:to:subject:user-agent:mime-version
-         :date:message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+        d=gmail.com; s=20260707; t=1795775441; x=1796380241; darn=vger.kernel.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to:content-type;
-        bh=o3HiB2vJRWEBxUo+fvEqRZTvriSNZji2BGGHNXkYQ8Y=;
-        b=zuwjzZWpeJokDhoQKAubniYWnApQ3wDGHp93vfeOBrXnucjbRBg7hYZOox6kF1n544
-         v47I+yqNrxmGFvta6L72beVPEX/v9qx7XrCW5UbAahhYOGQS9B5ALmzDw2xeVHqXpTVo
-         81SxN1dDoLl4BWwNvbNMqH8kAIB9gTj9snULmVforRdEjToO8vl2BnbsqVEEZ7n5/oR3
-         hEKILs2AEApK31WLeSFxhc6Nly3u2ojVLkS8IIr9mEWVCeUcp8SWy+XTT8ulfPP1nwOo
-         6KBIhDMnmgbzDAxHzDrKbeLnhGmo2qF76U368QSbVgQFsEzr1p4bl3KWI6GizdNdU4CJ
-         LPcw==
-X-Gm-Message-State: APuU4Z8Ztxc/5T6/FoDka7lLikBNrDUEmYrKUNV0gCNkShYgaJu15M8Q
-	5tona2LpaDbYbgOc7PPl9QENDw6+4yzvBSI4GCAldlMbIyVgBKvPSl9uVCRWdq3exbRNtxwSDUk
-	UCWwLp9NH4NZygBbmXzXgZBqOGKM3+jUQL7dNy7SeMHb8zgvGX/uOeNZ5FWfzaw==
-X-Gm-Gg: AZFdTZe53+kDbdPK2JNuVTEoUM80KK4sS8RXII6VEW0ErAY196fu9/TH8yOPR2sw3Ee
-	6rmLu+yKTZGVrh2jc1bU1Ci/Np9OJmb/cfF4avMptgUBLWLfe+3ZN+1M9AwTvAIYRTaLGG1mv9Z
-	vqF8EwsJmOPEfdVABylD9pmJxR5vVbVO5JA/yMLOMwckdMLPDh5xhgk+f0XH96Qc4sES8BrZ7ff
-	+62snG6Uc304lLoIpDfD4sEKiDJ2CcdWTjyEBots8fh1jxKV0DcLDtVOvS0e396g7cWz+orsxi1
-	ewC7cb/FKsQ6swbk25bG8QpRB3MDBKBk3M80wieaE9fOjEfCz9OjCGPcAgV47UYXNNdXpLO0r2w
-	9cKeLQTZ3GWjMSS0+XrsCQwl1lVBRF4grxHGCbuNhOOQWRZKprP1azggF+5TTl/moWq+9kUc=
-X-Received: by 2002:a05:6214:d85:b0:921:9965:89fd with SMTP id 6a1803df08f44-92199658a4fmr1859976d6.0.1795772462891;
-        Fri, 27 Nov 2026 01:41:02 -0800 (PST)
-X-Received: by 2002:a05:6214:d85:b0:921:9965:89fd with SMTP id 6a1803df08f44-92199658a4fmr1859526d6.0.1795772462429;
-        Fri, 27 Nov 2026 01:41:02 -0800 (PST)
-Received: from [192.168.226.72] ([178.235.128.140])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-c513ad00232sm870424266b.12.2026.11.27.01.41.00
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 27 Nov 2026 01:41:01 -0800 (PST)
-Message-ID: <945486a0-ee72-4518-9537-72c4893a4bad@oss.qualcomm.com>
-Date: Fri, 27 Nov 2026 10:41:00 +0100
+        bh=wDNCT5dmOQWaRk4g039B7mVnjd1E54Q443a1ugSNbRY=;
+        b=yVSmZXRJYx3E6v9UxQWskPzH8yjkZi2B4TVBRq4ks0OEuNtjjtwnLI+9Zk5LfuExQi
+         RiVych+svllJSThx5VcfSY5OVhFCF2BNWCLl5hhkA4NvjuZcexiDDVJNLQkHhs3CauNJ
+         keAgPD6I623K4zcUaUnWdGasPOZ00oqnV8/bBv2LPgz3+jFeXR8kxmBeav9u6dn7KlX6
+         qiiNlmLTPZpoBiWM9QJe7emXvwPhP2IYfUQO3jZaQjxFN/qdFxKFl9fIrp8q+OelE5+O
+         /ewA5wzfhSXz9WnUN9gDFirV1+qBycLZTQYLkfD/RHL5tRVrB90n/Wu7M8DYSsbkzY4h
+         3Fpw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20260707; t=1795775441; x=1796380241;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to:content-type;
+        bh=wDNCT5dmOQWaRk4g039B7mVnjd1E54Q443a1ugSNbRY=;
+        b=MbqZVyMZ/yRAypCSN2gSD+fsYClEfxMxvModh3zG02UY4hvjKH+KDB9VOuJRx54yY1
+         fyO0komaxsLSwII1LFy1FAwGmPEOVh3MR1uu0oDZfeVG6QMaBsWLqKJwX2GbVXvK/8Ka
+         VM7FSO+hc9yWV5CqAjEXYkLqqvZNTbYnwMRIaxNR0b/+rHuiq+HKIhPxYuOd3NTmDl5x
+         B/K+oBI9SeUt8UxMJr19fdXsd6WpzNtu8h/y6MNaZploiBE65P/3jMmHEuOjF7LrcID2
+         v3nRL9fiGaGvPV/vXLuh2zp1qSJMv8G0OTFkKpbvFuPKWzsglu6jW2iQo6lp5DS93GZN
+         ne/A==
+X-Forwarded-Encrypted: i=1; AL+hErE/CgzduwGBE0sBXn6LniqLuuoouhqgQqbwaBAUvF3gGBUvqaCUGTrKLl0KMhvP5vEQNelyB0n4Ew==@vger.kernel.org
+X-Gm-Message-State: APuU4Z/5BzEUgsUAQ24xviDQ18Vkj36sP+SAlCqr9x+nDOfE2pg7K29q
+	5kz5T2cm6iwoJ/MlwVl+0oUr6HcxWvjxwqrIgUX7L3GvvvbSVO0tnSed
+X-Gm-Gg: AZFdTZdMerPhVJgdG9g0ajXFainGnJeiJafz7lGp8PG5DzxN+CB+4hYujL6pYvoT9xo
+	ujayC8H/JUknEMhonTB7oF5+qP031UGHZnsVYYdOBw1ikiWoKR7w4qM6Oxbc5xFPPK74vKW+epn
+	DWuQF8zJG3Rjj0MAKQZAz1lq84YCbeRJlQDIrzSIJeqwPGANoqE3GcXOb6wDZMtcAhZiwLwupB1
+	btNlwZWl87OEAs7dp6LY8Y1WiJBWfZwWdjEdoQPJ/omFErWXaWZFqT4VD+992fYWIRP/yGhzui3
+	2hkIohGu7MklH6rQPCvfqHGNlpUt4EfKhS/3vFbDd9qTjOGwXd2Zx/RCPa0HANxQZk6L0XRaUTO
+	y+dlSTDWFm7rFRkg1vRmi0hPoDIFz+ts74iu+n8H8VQukonz1HDSMs8HG9KeDDzJl75JtmIRu/i
+	mKhBy6a2/EI5WP9AGm14I1/yr7ZjiaoF829b+Pp2aDeb+L9f+4BzpkES8WD2821Qj6oW/M7QrIo
+	YD+pYk80eWhMGbUYRw2zzPbzOz2gJZxFiAvWCMSPbumh1QTql3Q60FaukPjTU639YTBDaEiPUiv
+	t6mxjYcX3ys57LqPHxVqZd3XcCN53RZbFaNNfjsg20v2EYs1oYiWJXbO081lbWv6T1XS/iTL8qV
+	2pdBri/8ZGflkaA==
+X-Received: by 2002:a05:600c:6749:b0:4bb:5f95:c014 with SMTP id 5b1f17b1804b1-4bb8880f283mr486885245e9.19.1795775440820;
+        Fri, 27 Nov 2026 02:30:40 -0800 (PST)
+Received: from archlinux ([178.197.204.131])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4bb853a12acsm710882185e9.8.2026.11.27.02.30.39
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 27 Nov 2026 02:30:40 -0800 (PST)
+From: Tobias Predel <tobias.predel@gmail.com>
+To: linux-acpi@vger.kernel.org,
+	linux-pm@vger.kernel.org
+Cc: "Rafael J. Wysocki" <rafael@kernel.org>,
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+	Zhang Rui <rui.zhang@intel.com>
+Subject: Re: [BUG] HP Dragonfly G4: AML deadlock (ECMX vs. Serialized GBAP) between EC _Q08/_Q18 and int3400_notify() -> ODVP
+Date: Fri, 27 Nov 2026 11:30:39 +0100
+Message-ID: <20261127103039.5035-1-tobias.predel@gmail.com>
+X-Mailer: git-send-email 2.56.1
+In-Reply-To: <20261121093708.5097-1-tobias.predel@gmail.com>
+References: <20261120191423.10876-1-tobias.predel@gmail.com> <20261121093708.5097-1-tobias.predel@gmail.com>
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -113,62 +100,90 @@ List-Unsubscribe: <mailto:linux-pm+unsubscribe@vger.kernel.org>
 List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] interconnect: qcom: Propagate BCM vote commit errors
-To: getfeus@gmail.com, Georgi Djakov <djakov@kernel.org>
-Cc: linux-pm@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-        linux-kernel@vger.kernel.org
-References: <CA+m4KrCGfS46jvTdXiYorW=rFg4wOKJ=UHKDXq1a4qfN0r5x_g@mail.gmail.com>
-Content-Language: en-US
-From: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
-In-Reply-To: <CA+m4KrCGfS46jvTdXiYorW=rFg4wOKJ=UHKDXq1a4qfN0r5x_g@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-Proofpoint-Spam-Info: AW1haW4tMjYxMTI3MDAzOCBTYWx0ZWRfX4MfPnNnRNWQM
- KT4t8FQJU05WQoImBwzt1V+WmKjfRxPIk+ehokCLAnBPl1P41lDidC/yDhZ9GFPssjLV/yMQyna
- YAwIipaDheLR0wrFRdhPiDfrlz3Y8Wc=
-X-Proofpoint-GUID: zO8b0lcZUdwJju469EnbJpQqcTCwknS6
-X-Proofpoint-ORIG-GUID: zO8b0lcZUdwJju469EnbJpQqcTCwknS6
-X-Authority-Analysis: v=2.4 cv=M9fYuCws c=1 sm=1 tr=0 ts=6b09502f cx=c_pps
- a=UgVkIMxJMSkC9lv97toC5g==:117 a=PRfkaYvzSr8QmIIGAkY2Sg==:17
- a=IkcTkHD0fZMA:10 a=zJRp6_cAMcgA:10 a=s4-Qcg_JpJYA:10
- a=VkNPw1HP01LnGYTKEx00:22 a=u7WPNUs3qKkmUXheDGA7:22 a=yOCtJkima9RkubShWh1s:22
- a=pGLkceISAAAA:8 a=EUspDBNiAAAA:8 a=oBFxeG9DB_Cd-dzy6WoA:9 a=QEXdDO2ut3YA:10
- a=ZXulRonScM0A:10 a=zZCYzV9kfG8A:10 a=1HOtulTD9v-eNWfpl4qZ:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYxMTI3MDAzOCBTYWx0ZWRfX/gTzheDz7fS4
- j3/OZ/E+injsKlAr85ekRcQmAE/WTfvfTDN0LGEKzQOzxzSKFx9vcqnpVzRBV/5R+hWHyliuI4u
- QZ3dui2hQDDJAIYUm39eqQnSimrUxYESM5d+8MUrQ2kXPhH8nXMPAgIdZOoAAQFg8EHO7kAgDQV
- JWHd/Amx7enJZtSlKvpRwhN+gngO0KASn0oZN0lRMoXYpdPse5hE5CSGvvwjEqymaDoxJmNFNe3
- KL7RqNXPtzQHxjpCP0qbKfU/VIAJcN/UQaG2sP0VNpuqytqGPFBPItPs4xnQ94u2Z6Rt7FvWUVo
- xupSNTj3MSgH0gHlv3aRMZn0j0KPbhsKECemevMbOgyyKt56rB2ImaAZ5TEVNT5Hfa9YoyGsdA2
- Vl76v4eCE5YpsTFm5cX8lS6g+Nz7H+7YzRy9NB0HMYM9gRvGXi5blrm3lv0Idw+TJrJnqrx2Qro
- 5QL5+FMWgPfoLvSIMww==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1176,Hydra:6.1.138,FMLib:17.12.100.49
- definitions=2026-11-27_01,2026-11-26_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- bulkscore=0 adultscore=0 impostorscore=0 suspectscore=0 malwarescore=0
- spamscore=0 lowpriorityscore=0 priorityscore=1501 phishscore=0 clxscore=1015
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.22.0-2611040001 definitions=main-2611270038
+Content-Transfer-Encoding: 8bit
 
-On 11/27/26 10:34 AM, getfeus@gmail.com wrote:
-> qcom_icc_set() discards the return value from
-> qcom_icc_bcm_voter_commit(). If the commit fails, icc_set_bw() sees
-> success and skips its rollback of the previous bandwidth request.
-> 
-> Return the commit result so the interconnect core can restore the
-> previous request, attempt to reapply it and report the original error.
-> 
-> Verified with a mocked commit failure through icc_set_bw() and on a
-> Huawei MateBook E Go using a one-shot -ENOMEM injection in the BCM
-> voter. The caller received -ENOMEM, and the previous bandwidth request
-> was reapplied successfully. The ARM64 kernel and modules also build
-> successfully.
-> 
-> Signed-off-by: Lee Youngjoon <getfeus@gmail.com>
-> ---
+Hi,
 
-Reviewed-by: Konrad Dybcio <konrad.dybcio@oss.qualcomm.com>
+A third occurrence today (2026-11-27), on 7.3.6-arch1-1 (not tainted),
+same BIOS 01.13.01, again with acpi.ec_max_queries=1. It started about
+33 minutes after boot.
 
-Konrad
+This time it was the original variant from my first mail again, not the
+EC-only one from 2026-11-21:
+
+  - kworker/2:2 (kacpi_notify): int3400_notify() -> evaluate_odvp()
+    waits in acpi_ds_begin_method_execution(), i.e. on the sync mutex of
+    the Serialized GBAP, while ODVP already holds ECMX.
+  - kworker/2:1 (kec_query): waits in an explicit Acquire, matching
+    _Q08/_Q18 inside GBAP waiting for ECMX.
+
+hung_task reports each as waiting on what the other holds (excerpt
+below). Behind them were four more kec_query workers (kworker/5:1,
+7:1, 10:1, 11:1) and thermald (int340x_thermal_get_zone_temp).
+
+Two observations:
+
+1. This correction concerns my question in the previous mail. Making
+   kec_query unbound or ordered would not have prevented this
+   variant, because the other side runs on kacpi_notify, not on
+   kec_query. Both workers were even on the same CPU. Fully serializing
+   EC queries only covers the EC-only variant (_Q09 vs. _Q08/_Q18).
+
+2. It does support the max_active observation, though: with
+   ec_max_queries=1 there were five kec_query work items inside
+   acpi_ec_event_processor() at the same time, on CPUs 2, 5, 7, 10
+   and 11.
+
+The practical impact is that poweroff hangs. thermald and upowerd stay
+in D state, systemd's SIGKILL after the stop timeout has no effect, and
+the journal ends there. Only holding the power button turns the machine
+off.
+
+Since the firmware takes the two locks in opposite order on two kernel
+paths (EC query and Notify(IETM, 0x88)), is there a reasonable
+mitigation on the kernel side for this machine, for example a DMI
+quirk that runs EC query handlers and these notify handlers on one
+ordered workqueue? Or would you rather leave it to HP? I reported it to
+HP (case 5166872861) with the acpidump, but there's been no fix so far.
+
+Excerpt (unreliable frames and scheduler frames removed):
+
+  INFO: task kworker/2:2:247 blocked for more than 122 seconds.
+        Not tainted 7.3.6-arch1-1 #1
+  task:kworker/2:2     state:D stack:0     pid:247   tgid:247   ppid:2      task_flags:0x4208060 flags:0x00080000
+  Workqueue: kacpi_notify acpi_os_execute_deferred
+   acpi_os_wait_semaphore+0x76/0x1d0
+   acpi_ex_system_wait_mutex+0xb6/0x110
+   acpi_ds_begin_method_execution+0xb3/0x420
+   acpi_ds_call_control_method+0xae/0x4c0
+   acpi_ps_parse_aml+0x3f2/0x610
+   acpi_ps_execute_method+0x185/0x430
+   acpi_ns_evaluate+0x196/0x5d0
+   acpi_evaluate_object+0x1f4/0x470
+   evaluate_odvp.isra.0+0x4c/0x240 [int3400_thermal]
+   int3400_notify+0x192/0x1b0 [int3400_thermal]
+   acpi_ev_notify_dispatch+0x4e/0x70
+   acpi_os_execute_deferred+0x1a/0x30
+  INFO: task kworker/2:2:247 blocked on a semaphore likely last held by task kworker/2:1:33130
+  INFO: task kworker/2:1:33130 blocked for more than 122 seconds.
+        Not tainted 7.3.6-arch1-1 #1
+  task:kworker/2:1     state:D stack:0     pid:33130 tgid:33130 ppid:2      task_flags:0x4208060 flags:0x00080000
+  Workqueue: kec_query acpi_ec_event_processor
+   acpi_os_wait_semaphore+0x76/0x1d0
+   acpi_ex_system_wait_mutex+0xb6/0x110
+   acpi_ex_acquire_mutex_object+0x61/0x150
+   acpi_ex_acquire_mutex+0x8a/0x2a0
+   acpi_ex_opcode_2A_0T_1R+0x163/0x1e0
+   acpi_ds_exec_end_op+0x204/0x890
+   acpi_ps_parse_loop+0x13d/0xb80
+   acpi_ps_parse_aml+0x419/0x610
+   acpi_ps_execute_method+0x185/0x430
+   acpi_ns_evaluate+0x196/0x5d0
+   acpi_evaluate_object+0x1f4/0x470
+   acpi_ec_event_processor+0xe5/0x130
+  INFO: task kworker/2:1:33130 blocked on a semaphore likely last held by task kworker/2:2:247
+
+The full hung_task output and the acpidump are available on request.
+
+Thanks,
+Tobias Predel
