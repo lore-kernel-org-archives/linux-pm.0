@@ -1,58 +1,57 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=220.197.31.7
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=220.197.31.8
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795781593;
-	b=Zh/c5k9FwAy9fKX52n0ezonjQlv1oCQSPGsz0vcQCReAYu/HbJYXXYohp57pakHRuak7
-	 WsjRIoO6QhhmhcicYKEyKobMzuOELU5ygv02xQN42YUPKig5QCfbj+wjlsV1H0VmCZUoO
-	 f4ImYYIVq+YEQATifGdj3Di09jFXAjQ0boMpH0X0NP0ZjfHVhghJZ5F1uK7mC9PBGZZT+
-	 6gU+EqQf/DaCESgzJSpcQ9ZryVCliRhM5aWPdjPF4tVcy1BKUauWpzpL6VZPOMqhv/BDn
-	 +srROzJfXhGaQSsqB8CptoETHiwNj1m54/u0yf9rFTSW43ya7rz8HQyK38fkJX8Hf7Q==
+	t=1795783280;
+	b=wXKSZ+78/89V1O906m4UZJfZn0crxaV/DhiUQJzKBIWkUCnGjGZFNiD67DshxtEOBL+Z
+	 LKmtCobA3D4jwsypXes+55wlsnqSrjXtB0pLPwmkCogU71ZFylwUrUkOd6rqo71Ny91UB
+	 MJaWW3OF58su6s4ti47hzYOYxULblKDRW6MIvTRef/EmBdne5XB+4BgTBAVQP8+2+7Fcn
+	 i22liS5KSt2Mj4/UfNw0lzh9YW5rvM8Wv40XMwF3vQHKWM9A+HXcYwfgc/ocA0SwqB0sO
+	 PMHLgnb2mxOzP6pz0w/z+P+jzpkEieQpDGxf6BbaQY0UieRrMR9WUErj4nkAc3Bv9zA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795781593;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795783280;
 	h=DMARC-Filter:DKIM-Signature:Received:From:To:Cc:Subject:Date:
 	 Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding:
 	 X-CM-TRANSID:X-Coremail-Antispam:X-CM-SenderInfo;
-	bh=RCnlPXVG8B0hg6oe9oQwTSo61ISvBdYmhBXoawrpce0=;
-	b=gLbhsY88DOns2OdrhHpqg38mpntvdFYMPxSXMpCkWcCc60mivzLQE4rm7ytq2+vFP4Ik
-	 3Za6McQqp1vbgjHzcDZj7qn7qPolIXwaM4idyNBkNCk+WxszUKEQ6bBkS31Dpo56jRuof
-	 yDTRwockbiZAlAjPkk2xSMGNQLbBrnepkFOEyYWLjZxknSe8xP75EM9cCxWNZ2aBj05dk
-	 xy9VorLo8Ua0yvhAbH4J1gqkmwVHDrNhezdbph8Nk+LqlKLixM/fgLhscoezi0cH+a9Er
-	 Ihzg441x8jHqcl1N5ds02v9CuXcJIMPBRzCyvFTUuEkZNBP6c/VJwRnm6SKdAWgKjwQ==
+	bh=RX3fzEdwUjmGJgfb5WwQYbXjcguQbLTc/Bu5Kcu6W5Q=;
+	b=ZlfySpeSKZ3bL/0vvU96MQ10g6lge/Tn0+07dHFzYzgN5lZsJ8rqfREZCIEnSiJqEo0e
+	 BR1cpjbLH9ak2J9/Vs3acODIWiiCLoKJ5sD73rehJEAX5UjVg8f7sKagQDNj/NAE9cQCj
+	 CXNsRqvpwGEpm3DxuIN27JBfThasx7EAJ9O2FtpMadNnXpWN9usNrgOqhoDO2+DMlIT44
+	 W5xP6a8easy4tlxcze9KlobL5W8smXtIfZUPLO4H6lawc+hsrF+hXdX3I8MOMleE8qBIs
+	 WRkloMhKTOJ/NFZ5RxaovGIMYqvSZLso+JoDPBac5lm57KmN1LJA6N1gugb1oIPvxBw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=126.com;
 	spf=pass smtp.mailfrom=126.com;
-	dkim=pass header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=OZs8sNbP;
-	arc=none smtp.remote-ip=220.197.31.7
-Received: from m16.mail.126.com (m16.mail.126.com [220.197.31.7])
+	dkim=pass header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=pkB2H5XB;
+	arc=none smtp.remote-ip=220.197.31.8
+Received: from m16.mail.126.com (m16.mail.126.com [220.197.31.8])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 63E19606A31C;
-	Fri, 27 Nov 2026 12:13:11 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 63E19606A31C
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id D44CD606A31C;
+	Fri, 27 Nov 2026 12:41:16 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org D44CD606A31C
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=126.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=126.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=OZs8sNbP
+	dkim=pass (1024-bit key) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=pkB2H5XB
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
-	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=RC
-	nlPXVG8B0hg6oe9oQwTSo61ISvBdYmhBXoawrpce0=; b=OZs8sNbPrAclQDdhLD
-	gm7V+8yRi5EpzrKFaTT91IHIl9A3DyxhGLj173yCzu4sfXIvfTN7AQFGgYBVpISu
-	6xBW0SQ6864pxa4vSoc1gzMEF8qCvkQzDjeP1GKTt/+jrW0E+vO+B8X9XYu22JmM
-	uhg6ciCagjgAlgxRrYb4XCSWw=
+	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=RX
+	3fzEdwUjmGJgfb5WwQYbXjcguQbLTc/Bu5Kcu6W5Q=; b=pkB2H5XBBlnZbXO5lh
+	zLuUs3K5ttroa+hKTfB82Q0Jjf+bCdg0G26TwZxa1bWaaqQW9zLMPWfjSAihZ2ul
+	8OMwnR+q2tjy7TwIRFdv1d6tMGA4kzcZA6mK5EygfseGzKQFxBxFBOoDn1jM/L4n
+	uPp9L3VU2nh3ESc0AdILoQHhU=
 Received: from localhost.localdomain (unknown [])
-	by gzga-smtp-mtada-g0-1 (Coremail) with SMTP id _____wD37z+8cwlrQ7bQDQ--.52666S2;
-	Fri, 27 Nov 2026 20:12:48 +0800 (CST)
+	by gzga-smtp-mtada-g1-0 (Coremail) with SMTP id _____wD3t15NeglrlgYZBQ--.51046S2;
+	Fri, 27 Nov 2026 20:40:48 +0800 (CST)
 From: Bilal Hashim <AeeSec@126.com>
 To: Viresh Kumar <viresh.kumar@linaro.org>,
-	"Rafael J . Wysocki" <rafael@kernel.org>,
-	Miguel Ojeda <ojeda@kernel.org>
+	"Rafael J . Wysocki" <rafael@kernel.org>
 Cc: linux-pm@vger.kernel.org,
 	rust-for-linux@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Bilal Hashim <AeeSec@126.com>
-Subject: [PATCH] rust: cpufreq: mark Policy::data() as unsafe
-Date: Fri, 27 Nov 2026 20:12:16 +0800
-Message-ID: <20261127121216.1883-1-AeeSec@126.com>
+Subject: [PATCH] cpufreq: rcpufreq_dt: avoid dangling policy->freq_table on init error
+Date: Fri, 27 Nov 2026 20:40:18 +0800
+Message-ID: <20261127124018.972-1-AeeSec@126.com>
 X-Mailer: git-send-email 2.47.0.windows.2
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -64,47 +63,61 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wD37z+8cwlrQ7bQDQ--.52666S2
-X-Coremail-Antispam: 1Uf129KBjvJXoW7try8Gw1DAFW5Gry3KFWUtwb_yoW8XF4Upr
-	W7WryY934FqFn2qwnruryS9rnrCan7Jw1UKa95W34I9w4qyF109w1DKF1FvayvvrWvgF43
-	trs3Za13X3Z8trJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pE0eH7UUUUU=
-X-CM-SenderInfo: 5dhh2vbf6rjloofrz/xtbBrQEqxGsJc8F33AAA35
+X-CM-TRANSID:_____wD3t15NeglrlgYZBQ--.51046S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW7Ar1rWF45urWkAF4DCF4fAFb_yoW8Aw43pF
+	WrtrZ0yr1rXF9xZw47Xr4Y9r18tF4DCrWUGryUWrnav3srAF4j9a1jgry8XF4kurn8CrWS
+	yrnY9FW7JFW8JrUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0zi0D7DUUUUU=
+X-CM-SenderInfo: 5dhh2vbf6rjloofrz/xtbBnhHPamsJelGkfQAA36
 
-Policy::data<T: ForeignOwnable>(&mut self) is currently a safe public
-method that casts the untyped C pointer `policy->driver_data` via
-`T::borrow(...)` for any caller-chosen type `T`.
+In CPUFreqDTDriver::init(), policy.set_freq_table(&freq_table) stores a
+raw pointer to `freq_table` inside `policy->freq_table` before
+policy.set_clk() and Arc::new() are called.
 
-Because `Policy` is not parameterized by `Driver::PData` and performs no
-runtime type verification, any safe Rust caller with `&mut Policy` can
-invoke `policy.data::<WrongType>()` and reinterpret `driver_data` as an
-arbitrary `ForeignOwnable` type, causing type confusion and undefined
-behavior in safe Rust.
+If either policy.set_clk() or Arc::new() fails, Rust drops `freq_table`
+(freeing it via dev_pm_opp_free_cpufreq_table()), while the C cpufreq
+core's `out_clear_policy:` error path in cpufreq_online() only clears
+`policy->cpus` and does not reset `policy->freq_table`. When a policy is
+reused on subsequent CPU online attempts, `policy->freq_table` retains a
+dangling pointer to freed memory.
 
-Mark Policy::data() as `unsafe` and document the safety precondition that
-`T` must match the exact `ForeignOwnable` type previously stored in the
-policy's `driver_data`.
+Allocate the `Arc<CPUFreqDTDevice>` before installing `freq_table` into
+`policy` so that `policy->freq_table` is only set once `init()` cannot
+fail.
 
 Signed-off-by: Bilal Hashim <AeeSec@126.com>
 ---
---- a/rust/kernel/cpufreq.rs
-+++ b/rust/kernel/cpufreq.rs
-@@ -648,9 +648,15 @@ impl Policy {
-     /// Returns the [`Policy`]'s private data.
--    pub fn data<T: ForeignOwnable>(&mut self) -> Option<<T>::Borrowed<'_>> {
-+    ///
-+    /// # Safety
-+    ///
-+    /// The caller must ensure that `T` is the exact [`ForeignOwnable`] type previously stored in
-+    /// this [`Policy`]'s `driver_data`.
-+    pub unsafe fn data<T: ForeignOwnable>(&mut self) -> Option<<T>::Borrowed<'_>> {
-         if self.as_ref().driver_data.is_null() {
-             None
-         } else {
--            // SAFETY: The data is earlier set from [`set_data`].
-+            // SAFETY: The caller guarantees that `T` matches the type previously stored via
-+            // [`set_data`].
-             Some(unsafe { T::borrow(self.as_ref().driver_data.cast()) })
-         }
+--- a/drivers/cpufreq/rcpufreq_dt.rs
++++ b/drivers/cpufreq/rcpufreq_dt.rs
+@@ -134,15 +134,13 @@ impl cpufreq::Driver for CPUFreqDTDriver {
+             .set_transition_latency_ns(transition_latency);
+ 
+         let freq_table = opp_table.cpufreq_table()?;
+-        // SAFETY: The `freq_table` is not dropped while it is getting used by the C code.
+-        unsafe { policy.set_freq_table(&freq_table) };
+ 
+         // SAFETY: The returned `clk` is not dropped while it is getting used by the C code.
+         let clk = unsafe { policy.set_clk(dev, None)? };
+ 
+         mask.copy(policy.cpus());
+ 
+-        Ok(Arc::new(
++        let data = Arc::new(
+             CPUFreqDTDevice {
+                 opp_table,
+                 freq_table,
+@@ -151,7 +149,12 @@ impl cpufreq::Driver for CPUFreqDTDriver {
+                 _clk: clk,
+             },
+             GFP_KERNEL,
+-        )?)
++        )?;
++
++        // SAFETY: `data` owns `freq_table` and will not be dropped while in use by the C code.
++        unsafe { policy.set_freq_table(&data.freq_table) };
++
++        Ok(data)
      }
+ 
+     fn exit(_policy: &mut cpufreq::Policy, _data: Option<Self::PData>) -> Result {
 
