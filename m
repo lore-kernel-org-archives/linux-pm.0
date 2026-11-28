@@ -1,54 +1,53 @@
 Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=45.254.49.198
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
 	t=1795863748;
-	b=CQgBP+YmZs22lFpFpND2o0e2ro26zurpYzmqlRHubzOgRPKCc0JNiqGIM+U5bDxCSSqf
-	 Lrbz2hqWaMbAWP1SBmUUzA4b0bO6mVi2nHlFRX01gsHUQpm0Ck0W3DsPMuY1/Rc+5F0Ng
-	 YjyKNAYJUIOdoqBLy73awkgv6RwSdDpYTuzTvPsiCAyU5lGs88DokeZu2WAc7kR/8zTzp
-	 EdOupsAvsVbpMyrCufdcS7F2gwZPc79BH8f6MtMKHRQJqIVBBAtPoibSLGCxw4kWr1H5P
-	 6HWGob76+Fi2CoJaR8vRSMZQM+1gTv+e7gl0rI675+v8tAO4zm+4D4A4cMWEuEq4aiw==
+	b=n+6wg10Yu+HDur6JxjqmWWxZBu1j4qKk/Dv287a1petRMW+iqMUD7J3B0YH25nTtvPym
+	 rhOtoFARSKdKgWJWeG6NHOffYn5WXznYRzeJFJdahDeI0utIuB+emV3ZDxLO4U9iJFU+H
+	 nTsjDmufeGxT3/bmz80OHAtXcVIoy8py0AIYLjAJXEHJoZ1AUfEDMEO/pJVve8hWOq2ze
+	 DCdU8XWsUAYcFn8n+SiXZG4831PhiNCgS4yO8TJ9Vm9z9IkA270EVN/UhWLEm1rqsipMu
+	 pKI9+Sqcm+X45rjZOAeYsC/279kLUMCm+F57LkI+znQdWCrxWdLajoWJq+GvO13sppQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
 	a=rsa-sha256; c=relaxed/relaxed; t=1795863748;
 	h=DMARC-Filter:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:
 	 MIME-Version:Content-Transfer-Encoding:X-HM-Tid:X-HM-MType:
 	 X-HM-Spam-Status:DKIM-Signature;
-	bh=1iiyAT9AAkImriSAkCuGBq7hfmlUIBgJJjwrPdzvpWA=;
-	b=MW0TQ6BcYG/V4vbB+E4aP1Gg7f8x3Y3hI462fdk1ISDSZXNW42ltKSHKMXISQkYg6C+K
-	 4ptYo+o42R5OcrB2GtipA5nARordqQ82MjS8asr9KdnulYPDwEn4Ip/7XfWdPOQ4F5W3g
-	 FdkbcIg4/s4+EhhFKjcgmwSRpBNt1RLtF5vXA6WggzmcLT3FA0kqhDNYsHN/FWG5IxMr2
-	 YeoBIPMY9c3ve/r+9IjI0F9ImVq7RTroceJnC2DQkKHTyYReer+KxpWvIcAft5dT3ROwu
-	 A84rX0gFjWGXbjh2rbAWYrLm6dPYuQNstk4TVVkkjagCPffRGTrC0bbSeRku6yjjqUg==
+	bh=d4dDXttwlGHeRb7uEb4nDp+OKjr4bIrP/DgYATn9WDE=;
+	b=KqHbRAEwfVTAzOqVoo9WZMg0nAp9b/uTde4ehj0tERLJMC0g3+3Dx7pMnpM7Hu2MO7Yl
+	 BCcPEIC1nogrAq2qJ/QEGZrKb7NhWqjFwClC5db4OB0yjOQb0z4N/pM66ncBX7NXS+MeL
+	 lG0AEEY3TOQW4o1ZeK81TJotmfyGM0kJEXUWejxpeME56GJ9hL3e7hTTgJmTxTteL4jdZ
+	 kzmoNGmhQdmons39bSnkIBfgKha1ghBFCJYArpFC3onGPHwb4eI7SH5NOL2gAtQmbXLR6
+	 BUuL/MnxKvU9w4O2LSVmahDI+AegNxIj4yHUwynS/X1oJfCWar3Wg+uBtZRY0TRpqIg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=mail.sdu.edu.cn;
 	spf=pass smtp.mailfrom=mail.sdu.edu.cn;
-	dkim=pass header.d=mail.sdu.edu.cn header.i=@mail.sdu.edu.cn header.a=rsa-sha256 header.s=default header.b=ghwnPl3W;
+	dkim=pass header.d=mail.sdu.edu.cn header.i=@mail.sdu.edu.cn header.a=rsa-sha256 header.s=default header.b="e/YDwsZ7";
 	arc=none smtp.remote-ip=45.254.49.198
 Received: from mail-m49198.qiye.163.com (mail-m49198.qiye.163.com [45.254.49.198])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF0CB606A31F;
-	Sat, 28 Nov 2026 11:02:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org AF0CB606A31F
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF1B0606A321
+	for <linux-pm@vger.kernel.org>; Sat, 28 Nov 2026 11:02:26 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org AF1B0606A321
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mail.sdu.edu.cn
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mail.sdu.edu.cn
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=mail.sdu.edu.cn header.i=@mail.sdu.edu.cn header.a=rsa-sha256 header.s=default header.b=ghwnPl3W
+	dkim=pass (1024-bit key, unprotected) header.d=mail.sdu.edu.cn header.i=@mail.sdu.edu.cn header.a=rsa-sha256 header.s=default header.b=e/YDwsZ7
 Received: from user.localdomain (unknown [223.80.110.101])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 5656652a6;
-	Sat, 28 Nov 2026 19:02:21 +0800 (GMT+08:00)
+	by smtp.qiye.163.com (Hmail) with ESMTP id 5656652a8;
+	Sat, 28 Nov 2026 19:02:23 +0800 (GMT+08:00)
 From: Tian Xuechen <202300460064@mail.sdu.edu.cn>
-To: sudeep.holla@kernel.org,
-	ulfh@kernel.org,
-	khilman@baylibre.com,
-	tixy@linaro.org
-Cc: cristian.marussi@arm.com,
-	arm-scmi@vger.kernel.org,
+To: ulfh@kernel.org,
+	wens@kernel.org,
+	jernej.skrabec@gmail.com,
+	samuel@sholland.org
+Cc: linux-pm@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
-	linux-pm@vger.kernel.org,
+	linux-sunxi@lists.linux.dev,
 	liguangshuo@mail.sdu.edu.cn
-Subject: [PATCH] pmdomain: arm: Unregister SCPI domains on removal
-Date: Sat, 28 Nov 2026 19:02:20 +0800
-Message-Id: <20261128110220.875342-1-202300460064@mail.sdu.edu.cn>
+Subject: [PATCH] pmdomain: sunxi: Unregister D1 PPU domains on driver removal
+Date: Sat, 28 Nov 2026 19:02:22 +0800
+Message-Id: <20261128110222.875356-1-202300460064@mail.sdu.edu.cn>
 X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -60,117 +59,78 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0aa221d2053e03a2kunm50e636623cbc57
+X-HM-Tid: 0aa221d20bc903a2kunme53ad92e3cbc59
 X-HM-MType: 10
-X-HM-Spam-Status: e1kfGhgUHx5ZQUpXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVlCHxhMVksYSx5PGU4dTEtKQ1YeHw
-	5VEwETFhoSFyQUDg9ZV1kYEgtZQVlJSUhVQ0tVSkpLVUpLSllXWRYaDxIVHRRZQVlPS0hVSktJQk
-	NDTFVKS0tVS1kG
+X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
+	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVkZQ0xOVkwaSU1PTElOHkxOGVYeHw
+	5VEwETFhoSFyQUDg9ZV1kYEgtZQVlJSUhVQ0tVSkpLVUpLSllXWRYaDxIVHRRZQVlLVUtVS1VLWQ
+	Y+
 DKIM-Signature: a=rsa-sha256;
-	b=ghwnPl3WXP8VS77kfF/XDfU3Wv8UjAX3ZoOQJQKxpCwDxM7J6G+ob2KIxJX39zASMO1KV9cySFOHfsHtmsgNSFh5WJqBZyMQ6TuA/dNX9ZPQGIPqsyzpb2ul9QD/1+D+T9kQrzCSGqrUOMh012/lBtOm+8qAcMjHAb1tOE/XY+E=; s=default; c=relaxed/relaxed; d=mail.sdu.edu.cn; v=1;
-	bh=1iiyAT9AAkImriSAkCuGBq7hfmlUIBgJJjwrPdzvpWA=;
+	b=e/YDwsZ7WDymsmTSH2Qcs6s1zuicC05BI3FDN8QvlURXCtUACudjai744dRShqDhOu+FBBkkMfzVo0zpDL+qxih9QaIOtGwBOrSpDkojYdu0n+YnKYliTdgpxRtQSmM206N6moYsFwK5SgVua3C8OL3NJ14btuOLwhwazxmbCYo=; s=default; c=relaxed/relaxed; d=mail.sdu.edu.cn; v=1;
+	bh=d4dDXttwlGHeRb7uEb4nDp+OKjr4bIrP/DgYATn9WDE=;
 	h=date:mime-version:subject:message-id:from;
 
 From: Tian Xuechen <202300460064@mail.sdu.edu.cn>
 
-The SCPI driver releases its domain storage on removal without
-unregistering the provider or domains. Remove the provider before
-freeing its domains and unwind previously initialized domains if probe
-fails.
+The D1 PPU driver leaves its provider and power domains registered on
+module unload. Delete the provider and remove each domain that was
+initialized. Also unwind these domains if provider registration fails.
 
 This issue was found by our static analysis tool under development.
 
-Fixes: 8bec4337ad40 ("firmware: scpi: add device power domain support using genpd")
+Fixes: 0e30ca5ab0a8 ("soc: sunxi: Add Allwinner D1 PPU driver")
 Signed-off-by: Tian Xuechen <202300460064@mail.sdu.edu.cn>
 ---
- drivers/pmdomain/arm/scpi_pm_domain.c | 41 +++++++++++++++++++++------
- 1 file changed, 33 insertions(+), 8 deletions(-)
+ drivers/pmdomain/sunxi/sun20i-ppu.c | 20 ++++++++++++++++++--
+ 1 file changed, 18 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/pmdomain/arm/scpi_pm_domain.c b/drivers/pmdomain/arm/scpi_pm_domain.c
-index 1d55a9e548e0..d9fa5ef7c1ec 100644
---- a/drivers/pmdomain/arm/scpi_pm_domain.c
-+++ b/drivers/pmdomain/arm/scpi_pm_domain.c
-@@ -62,6 +62,21 @@ static int scpi_pd_power_off(struct generic_pm_domain *domain)
- 	return scpi_pd_power(pd, false);
+diff --git a/drivers/pmdomain/sunxi/sun20i-ppu.c b/drivers/pmdomain/sunxi/sun20i-ppu.c
+index 6af1dcad4a76..7a539e09f614 100644
+--- a/drivers/pmdomain/sunxi/sun20i-ppu.c
++++ b/drivers/pmdomain/sunxi/sun20i-ppu.c
+@@ -99,6 +99,19 @@ static int sun20i_ppu_pd_power_off(struct generic_pm_domain *genpd)
+ 	return sun20i_ppu_pd_set_power(pd, false);
  }
  
-+static void scpi_pm_remove_domains(struct genpd_onecell_data *data)
++static void sun20i_ppu_remove_domains(struct genpd_onecell_data *ppu)
 +{
-+	int i;
-+
-+	for (i = data->num_domains - 1; i >= 0; i--)
-+		if (data->domains[i])
-+			pm_genpd_remove(data->domains[i]);
++	for (unsigned int i = 0; i < ppu->num_domains; i++)
++		if (ppu->domains[i])
++			pm_genpd_remove(ppu->domains[i]);
 +}
 +
-+static void scpi_pm_domain_remove(struct platform_device *pdev)
++static void sun20i_ppu_remove(struct platform_device *pdev)
 +{
 +	of_genpd_del_provider(pdev->dev.of_node);
-+	scpi_pm_remove_domains(platform_get_drvdata(pdev));
++	sun20i_ppu_remove_domains(platform_get_drvdata(pdev));
 +}
 +
- static int scpi_pm_domain_probe(struct platform_device *pdev)
+ static int sun20i_ppu_probe(struct platform_device *pdev)
  {
- 	struct device *dev = &pdev->dev;
-@@ -105,9 +120,10 @@ static int scpi_pm_domain_probe(struct platform_device *pdev)
- 	if (!domains)
- 		return -ENOMEM;
- 
--	for (i = 0; i < num_domains; i++, scpi_pd++) {
--		domains[i] = &scpi_pd->genpd;
-+	scpi_pd_data->domains = domains;
-+	scpi_pd_data->num_domains = num_domains;
- 
-+	for (i = 0; i < num_domains; i++, scpi_pd++) {
- 		scpi_pd->domain = i;
- 		scpi_pd->ops = scpi_ops;
- 		scpi_pd->genpd.name = devm_kasprintf(dev, GFP_KERNEL,
-@@ -115,7 +131,8 @@ static int scpi_pm_domain_probe(struct platform_device *pdev)
- 		if (!scpi_pd->genpd.name) {
- 			dev_err(dev, "Failed to allocate genpd name:%pOFn.%d\n",
- 				np, i);
--			continue;
-+			ret = -ENOMEM;
-+			goto err_remove_domains;
- 		}
- 		scpi_pd->genpd.power_off = scpi_pd_power_off;
- 		scpi_pd->genpd.power_on = scpi_pd_power_on;
-@@ -126,15 +143,22 @@ static int scpi_pm_domain_probe(struct platform_device *pdev)
- 		 * The SCP firmware itself may have switched on some domains,
- 		 * but for reference counting purpose, keep it this way.
- 		 */
--		pm_genpd_init(&scpi_pd->genpd, NULL, true);
-+		ret = pm_genpd_init(&scpi_pd->genpd, NULL, true);
-+		if (ret)
-+			goto err_remove_domains;
-+		domains[i] = &scpi_pd->genpd;
+ 	const struct sun20i_ppu_desc *desc;
+@@ -164,10 +177,12 @@ static int sun20i_ppu_probe(struct platform_device *pdev)
  	}
  
--	scpi_pd_data->domains = domains;
--	scpi_pd_data->num_domains = num_domains;
--
--	of_genpd_add_provider_onecell(np, scpi_pd_data);
-+	ret = of_genpd_add_provider_onecell(np, scpi_pd_data);
-+	if (ret)
-+		goto err_remove_domains;
+ 	ret = of_genpd_add_provider_onecell(dev->of_node, ppu);
+-	if (ret)
++	if (ret) {
+ 		dev_warn(dev, "Failed to add provider: %d\n", ret);
++		sun20i_ppu_remove_domains(ppu);
++	}
  
-+	platform_set_drvdata(pdev, scpi_pd_data);
- 	return 0;
-+
-+err_remove_domains:
-+	scpi_pm_remove_domains(scpi_pd_data);
+-	return 0;
 +	return ret;
  }
  
- static const struct of_device_id scpi_power_domain_ids[] = {
-@@ -149,6 +173,7 @@ static struct platform_driver scpi_power_domain_driver = {
- 		.of_match_table = scpi_power_domain_ids,
- 	},
- 	.probe = scpi_pm_domain_probe,
-+	.remove = scpi_pm_domain_remove,
- };
- module_platform_driver(scpi_power_domain_driver);
+ static const char *const sun20i_d1_ppu_pd_names[] = {
+@@ -224,6 +239,7 @@ MODULE_DEVICE_TABLE(of, sun20i_ppu_of_match);
  
+ static struct platform_driver sun20i_ppu_driver = {
+ 	.probe	= sun20i_ppu_probe,
++	.remove	= sun20i_ppu_remove,
+ 	.driver	= {
+ 		.name			= "sun20i-ppu",
+ 		.of_match_table		= sun20i_ppu_of_match,
 
 base-commit: 4dce97c6c265544342e716e62fd24bbb232590c5
 -- 
