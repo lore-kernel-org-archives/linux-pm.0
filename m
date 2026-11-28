@@ -1,60 +1,58 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=117.135.210.7
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=220.197.31.5
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795874648;
-	b=qgt9Zhoypa+t/mFG1tObKA1q78nU+Q98bsgeJ7REXgN5iQhxs10GdufbbKHbHM+SphJ+
-	 RPGyQ6VGTG88qsOi3sO44dABvKR/FqFI01HnTWkk8AL7lu7fMp+656uRvlt5PgPAECYSA
-	 fM7moYzc3N4QHUpIEzj5EV6v/xqV1Jj+/ENSkIOn5GQE3H5h16gUXwmnZIePfqlBhK7Vm
-	 s1QtW7TtZsqtZFw4MFAHK9vRfZ8IXA8peCAX2OZcnBxHJqZJG+kSalZrdkLekh2u8KiwB
-	 oucIK9vGLSdg8+vV9CyfJOVyJZlmOawQCLKMYgaXyyaslLuDkfs4RiMPtssFUlKIMvA==
+	t=1795878279;
+	b=E4d9kMi93Ee3NYr/VtGs4IIe8z6EZRJJK5/DGgT5HKXHYrsG3SsAO09du0bVjgRLKOyV
+	 rLaommnvve28e4y3MgULox9CVcX0ufb4cB4u4xhcxgF5X2fysxoD9AOl3bEdR1Y167+z6
+	 oEz8LL6zQ18FG5mwqSxYsvJzO10+SHBTy+jalJrgGK+HcntXWV/FbgB6jo2Q29dJKoGlC
+	 cX/C2Y2R5HiHHkkTqJQ+u76V/0PwsHioE2LVFSo9q75bDGkhJN7QNfEFphWgKsO1/p5ec
+	 b84pUC2RV8wvf61p4lLeGI2KTPMxkAlDQqOqCiHizG5dWmE8n4LCa3od3PMHMgU1UOQ==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795874648;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795878279;
 	h=DMARC-Filter:DKIM-Signature:Received:From:To:Cc:Subject:Date:
-	 Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding:
-	 X-CM-TRANSID:X-Coremail-Antispam:X-CM-SenderInfo;
-	bh=g+aU33rCaXGGIUCW4L8T8mUG9pYVHyVForkS2T2eczE=;
-	b=ly6deCRNHKiGZ5udsQIdhpj/TEKbSwKQBly1MG3i+JqH/jgsxS5lkOyz/P0lUdpEDfKv
-	 C8hLkzAHGvFvUnb8EuRbUE5103VtZ2PYqqCcyBwIJ015bhdi3fY3RljDLwqi3Wh5gJ2T3
-	 PqAj/P4yPTEuYeAAuKcHA/2lAL0LLX9AiYpHETPGt9ARta26km2jZTAY2ttzRjGP690my
-	 Wf202G8wDMh12KXqW8OO+j0C8yGKxNxqs/NM5wMy7EDtL7SNzZi2BLy6ghu6DXqYwxzHt
-	 Fz1RqXg56ydAmOv04MhvUg5PAM60E4lg3HmBVMlx1E3tFXp5HTEKoFxBxd5ykruSXxw==
+	 Message-Id:X-Mailer:MIME-Version:Content-Transfer-Encoding:
+	 X-CM-TRANSID:X-Coremail-Antispam:X-Originating-IP:X-CM-SenderInfo;
+	bh=aZ1zL0ye815Rnv3lJ1KDxo5Ck4FCKhuP/puan0BTFrI=;
+	b=VZ0tZq7kwkUUwjh1aY+L4sEnqwx/rjRpMoHu1Gouk5WjWK6Ki1jWjxCHgXmPTwLHATG6
+	 xLjd7MInEkKDwGhf0jaLAstN/3hLm0bGVd3v5tkyawMAW4Tpf2xhGeJF3+hZtA1JSqb28
+	 fStlhXugaBC9pdp+1h4Pyc7FBvb5+F6AmfM4NaZYyIr6+CcNd3dNRSZSu6hwwA3BAvlW8
+	 bBHiPDqx7RfD2IXj7oWxQHFpoga/hW5CL8PXUyDu9ZwXrusgN40PAEp2SZ0RaTvXbkXpz
+	 aRUcvPgD/0uR8eXFh9rvVRf4oX/rdSQqbXM7BVD071KK9LUTaDErXotu+ELfSadiTLA==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=126.com;
-	spf=pass smtp.mailfrom=126.com;
-	dkim=pass header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=EhA+9Lx7;
-	arc=none smtp.remote-ip=117.135.210.7
-Received: from m16.mail.126.com (m16.mail.126.com [117.135.210.7])
+	dmarc=pass header.from=163.com;
+	spf=pass smtp.mailfrom=163.com;
+	dkim=pass header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=XC9UoD0V;
+	arc=none smtp.remote-ip=220.197.31.5
+Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF0ED606A31C;
-	Sat, 28 Nov 2026 14:04:03 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BF0ED606A31C
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=126.com
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=126.com
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0262F606A31C
+	for <linux-pm@vger.kernel.org>; Sat, 28 Nov 2026 15:04:36 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0262F606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=EhA+9Lx7
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
-	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=g+
-	aU33rCaXGGIUCW4L8T8mUG9pYVHyVForkS2T2eczE=; b=EhA+9Lx7sC4GtFdYTd
-	PUZbjeAeKCwja42CR828/Qekyp6KPpd4nwz2mapKPu3HAevLuVJyYWSE/oKFl1u0
-	q3maeGyLKrULXomIaFIUh/6MbCfEonmVRSHme+9V0kjXv2naEVSNQYgb6hYXQflG
-	AO/+ull8LtDFjJamQoKf+Eu60=
+	dkim=pass (1024-bit key, unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=XC9UoD0V
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=aZ
+	1zL0ye815Rnv3lJ1KDxo5Ck4FCKhuP/puan0BTFrI=; b=XC9UoD0VIWnoKyCCL0
+	576/CJQeYYf2ErpyLqajpphyLP9w3dqudoytpk9oGDvY8Qxn0htEEhvcn/siye/w
+	2V5n+YyG48+XiRnC7VGi8QSnmIAYF8EQN34fh0si3ZbS9qhT1hhoTHnSPCO0TI0I
+	5Q3l8UX7K/jTVezuRnRKzKwdA=
 Received: from localhost.localdomain (unknown [])
-	by gzsmtp2 (Coremail) with SMTP id PSkvCgC3hecn3wprDmJYDg--.24441S2;
-	Sat, 28 Nov 2026 22:03:20 +0800 (CST)
-From: Bilal Hashim <AeeSec@126.com>
-To: Viresh Kumar <viresh.kumar@linaro.org>,
-	"Rafael J . Wysocki" <rafael@kernel.org>
-Cc: Miguel Ojeda <ojeda@kernel.org>,
-	Alice Ryhl <aliceryhl@google.com>,
-	linux-pm@vger.kernel.org,
-	rust-for-linux@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Bilal Hashim <AeeSec@126.com>
-Subject: [PATCH v2] rust: cpufreq: mark Policy::data() as unsafe
-Date: Sat, 28 Nov 2026 22:02:53 +0800
-Message-ID: <20261128140253.1927-1-AeeSec@126.com>
-X-Mailer: git-send-email 2.47.0.windows.2
+	by gzga-smtp-mtada-g0-2 (Coremail) with SMTP id _____wD3_3lg7QprfTXHKw--.32244S2;
+	Sat, 28 Nov 2026 23:04:02 +0800 (CST)
+From: Haoxiang Li <haoxiang_li2024@163.com>
+To: rafael@kernel.org,
+	viresh.kumar@linaro.org,
+	rafalbilski@interia.pl,
+	davej@redhat.com
+Cc: linux-pm@vger.kernel.org,
+	Haoxiang Li <haoxiang_li2024@163.com>
+Subject: [PATCH] cpufreq: e_powersaver: Release ACPI data when BIOS limit lookup fails
+Date: Sat, 28 Nov 2026 23:03:58 +0800
+Message-Id: <20261128150358.1323440-1-haoxiang_li2024@163.com>
+X-Mailer: git-send-email 2.25.1
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -65,66 +63,44 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:PSkvCgC3hecn3wprDmJYDg--.24441S2
-X-Coremail-Antispam: 1Uf129KBjvJXoW7try8Gw1DAFWfXF4fXw15CFg_yoW8KrykpF
-	WUWrWqyry0qFsrtwnrCryj93WYkws7JrWUKrWkG34Fvwn8AF109w1DKFyrXF9Yvryvgr4a
-	yrs8Za1aqFs8trJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0z_EfoUUUUUU=
-X-CM-SenderInfo: 5dhh2vbf6rjloofrz/xtbBrAlf+WsK3ylDjAAA3b
+X-CM-TRANSID:_____wD3_3lg7QprfTXHKw--.32244S2
+X-Coremail-Antispam: 1Uf129KBjvJXoWrtFWkAF47uFykWFWDGF1ftFb_yoW8JryxpF
+	ZIkrWjkrW8GFWDGasFy3Wfua4rXa1qkayxGrW0kwn8Zrs8WFn8Wa43tr1UZF97ur4xua12
+	yFn8Ja4qyFW7Cw7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pRBHqrUUUUU=
+X-CM-SenderInfo: xkdr5xpdqjszblsqjki6rwjhhfrp/xtbC7QLwX2sK7WIyTQAA3R
 
-Policy::data<T: ForeignOwnable>(&mut self) is currently a safe public
-method that casts the untyped C pointer `policy->driver_data` via
-`T::borrow(...)` for any caller-chosen type `T`.
+The resources allocated by eps_cpu_init() are freed only when
+acpi_processor_get_bios_limit() succeeds. Also release it on
+it fails.
 
-Because `Policy` is not parameterized by `Driver::PData` and performs no
-runtime type verification, any safe Rust caller with `&mut Policy` can
-invoke `policy.data::<WrongType>()` and reinterpret `driver_data` as an
-arbitrary `ForeignOwnable` type, causing type confusion and undefined
-behavior in safe Rust.
-
-Mark Policy::data() as `unsafe`, document the safety precondition that
-`T` must match the exact `ForeignOwnable` type previously stored in the
-policy's `driver_data`, and update the in-tree caller in
-drivers/cpufreq/rcpufreq_dt.rs.
-
-Fixes: 6ebdd7c93177 ("rust: cpufreq: Extend abstractions for policy and driver ops")
-Signed-off-by: Bilal Hashim <AeeSec@126.com>
+Fixes: 27e954c24167 ("[CPUFREQ] e_powersaver: Check BIOS limit for CPU frequency")
+Signed-off-by: Haoxiang Li <haoxiang_li2024@163.com>
 ---
-Changes in v2:
-- Update caller in drivers/cpufreq/rcpufreq_dt.rs to wrap
-  policy.data::<Self::PData>() in an unsafe block with a SAFETY comment.
-- Add Fixes: tag.
----
---- a/drivers/cpufreq/rcpufreq_dt.rs
-+++ b/drivers/cpufreq/rcpufreq_dt.rs
-@@ -178,7 +178,9 @@ impl cpufreq::Driver for CPUFreqDTDriver {
-     }
- 
-     fn target_index(policy: &mut cpufreq::Policy, index: cpufreq::TableIndex) -> Result {
--        let Some(data) = policy.data::<Self::PData>() else {
-+        // SAFETY: `policy`'s private data was initialized with `Self::PData` in `Self::init()`.
-+        let Some(data) = (unsafe { policy.data::<Self::PData>() }) else {
-             return Err(ENOENT);
-         };
- 
---- a/rust/kernel/cpufreq.rs
-+++ b/rust/kernel/cpufreq.rs
-@@ -648,9 +648,15 @@ impl Policy {
-     /// Returns the [`Policy`]'s private data.
--    pub fn data<T: ForeignOwnable>(&mut self) -> Option<<T>::Borrowed<'_>> {
-+    ///
-+    /// # Safety
-+    ///
-+    /// The caller must ensure that `T` is the exact [`ForeignOwnable`] type previously stored in
-+    /// this [`Policy`]'s `driver_data`.
-+    pub unsafe fn data<T: ForeignOwnable>(&mut self) -> Option<<T>::Borrowed<'_>> {
-         if self.as_ref().driver_data.is_null() {
-             None
-         } else {
--            // SAFETY: The data is earlier set from [`set_data`].
-+            // SAFETY: The caller guarantees that `T` matches the type previously stored via
-+            // [`set_data`].
-             Some(unsafe { T::borrow(self.as_ref().driver_data.cast()) })
-         }
-     }
+ drivers/cpufreq/e_powersaver.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/drivers/cpufreq/e_powersaver.c b/drivers/cpufreq/e_powersaver.c
+index 54689ebadeb2..da2bb6d7dd15 100644
+--- a/drivers/cpufreq/e_powersaver.c
++++ b/drivers/cpufreq/e_powersaver.c
+@@ -284,11 +284,14 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
+ #if IS_ENABLED(CONFIG_ACPI_PROCESSOR)
+ 	/* Check for ACPI processor speed limit */
+ 	if (!ignore_acpi_limit && !eps_acpi_init()) {
+-		if (!acpi_processor_get_bios_limit(policy->cpu, &limit)) {
++		int ret = acpi_processor_get_bios_limit(policy->cpu, &limit);
++
++		eps_acpi_exit(policy);
++
++		if (!ret) {
+ 			pr_info("ACPI limit %u.%uGHz\n",
+ 				limit/1000000,
+ 				(limit%1000000)/10000);
+-			eps_acpi_exit(policy);
+ 			/* Check if max_multiplier is in BIOS limits */
+ 			if (limit && max_multiplier * fsb > limit) {
+ 				pr_info("Aborting\n");
+-- 
+2.25.1
 
