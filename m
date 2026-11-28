@@ -1,54 +1,60 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=45.254.49.198
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=117.135.210.7
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795863748;
-	b=n+6wg10Yu+HDur6JxjqmWWxZBu1j4qKk/Dv287a1petRMW+iqMUD7J3B0YH25nTtvPym
-	 rhOtoFARSKdKgWJWeG6NHOffYn5WXznYRzeJFJdahDeI0utIuB+emV3ZDxLO4U9iJFU+H
-	 nTsjDmufeGxT3/bmz80OHAtXcVIoy8py0AIYLjAJXEHJoZ1AUfEDMEO/pJVve8hWOq2ze
-	 DCdU8XWsUAYcFn8n+SiXZG4831PhiNCgS4yO8TJ9Vm9z9IkA270EVN/UhWLEm1rqsipMu
-	 pKI9+Sqcm+X45rjZOAeYsC/279kLUMCm+F57LkI+znQdWCrxWdLajoWJq+GvO13sppQ==
+	t=1795874648;
+	b=qgt9Zhoypa+t/mFG1tObKA1q78nU+Q98bsgeJ7REXgN5iQhxs10GdufbbKHbHM+SphJ+
+	 RPGyQ6VGTG88qsOi3sO44dABvKR/FqFI01HnTWkk8AL7lu7fMp+656uRvlt5PgPAECYSA
+	 fM7moYzc3N4QHUpIEzj5EV6v/xqV1Jj+/ENSkIOn5GQE3H5h16gUXwmnZIePfqlBhK7Vm
+	 s1QtW7TtZsqtZFw4MFAHK9vRfZ8IXA8peCAX2OZcnBxHJqZJG+kSalZrdkLekh2u8KiwB
+	 oucIK9vGLSdg8+vV9CyfJOVyJZlmOawQCLKMYgaXyyaslLuDkfs4RiMPtssFUlKIMvA==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795863748;
-	h=DMARC-Filter:Received:From:To:Cc:Subject:Date:Message-Id:X-Mailer:
-	 MIME-Version:Content-Transfer-Encoding:X-HM-Tid:X-HM-MType:
-	 X-HM-Spam-Status:DKIM-Signature;
-	bh=d4dDXttwlGHeRb7uEb4nDp+OKjr4bIrP/DgYATn9WDE=;
-	b=KqHbRAEwfVTAzOqVoo9WZMg0nAp9b/uTde4ehj0tERLJMC0g3+3Dx7pMnpM7Hu2MO7Yl
-	 BCcPEIC1nogrAq2qJ/QEGZrKb7NhWqjFwClC5db4OB0yjOQb0z4N/pM66ncBX7NXS+MeL
-	 lG0AEEY3TOQW4o1ZeK81TJotmfyGM0kJEXUWejxpeME56GJ9hL3e7hTTgJmTxTteL4jdZ
-	 kzmoNGmhQdmons39bSnkIBfgKha1ghBFCJYArpFC3onGPHwb4eI7SH5NOL2gAtQmbXLR6
-	 BUuL/MnxKvU9w4O2LSVmahDI+AegNxIj4yHUwynS/X1oJfCWar3Wg+uBtZRY0TRpqIg==
+	a=rsa-sha256; c=relaxed/relaxed; t=1795874648;
+	h=DMARC-Filter:DKIM-Signature:Received:From:To:Cc:Subject:Date:
+	 Message-ID:X-Mailer:MIME-Version:Content-Transfer-Encoding:
+	 X-CM-TRANSID:X-Coremail-Antispam:X-CM-SenderInfo;
+	bh=g+aU33rCaXGGIUCW4L8T8mUG9pYVHyVForkS2T2eczE=;
+	b=ly6deCRNHKiGZ5udsQIdhpj/TEKbSwKQBly1MG3i+JqH/jgsxS5lkOyz/P0lUdpEDfKv
+	 C8hLkzAHGvFvUnb8EuRbUE5103VtZ2PYqqCcyBwIJ015bhdi3fY3RljDLwqi3Wh5gJ2T3
+	 PqAj/P4yPTEuYeAAuKcHA/2lAL0LLX9AiYpHETPGt9ARta26km2jZTAY2ttzRjGP690my
+	 Wf202G8wDMh12KXqW8OO+j0C8yGKxNxqs/NM5wMy7EDtL7SNzZi2BLy6ghu6DXqYwxzHt
+	 Fz1RqXg56ydAmOv04MhvUg5PAM60E4lg3HmBVMlx1E3tFXp5HTEKoFxBxd5ykruSXxw==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
-	dmarc=pass header.from=mail.sdu.edu.cn;
-	spf=pass smtp.mailfrom=mail.sdu.edu.cn;
-	dkim=pass header.d=mail.sdu.edu.cn header.i=@mail.sdu.edu.cn header.a=rsa-sha256 header.s=default header.b="e/YDwsZ7";
-	arc=none smtp.remote-ip=45.254.49.198
-Received: from mail-m49198.qiye.163.com (mail-m49198.qiye.163.com [45.254.49.198])
+	dmarc=pass header.from=126.com;
+	spf=pass smtp.mailfrom=126.com;
+	dkim=pass header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=EhA+9Lx7;
+	arc=none smtp.remote-ip=117.135.210.7
+Received: from m16.mail.126.com (m16.mail.126.com [117.135.210.7])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id AF1B0606A321
-	for <linux-pm@vger.kernel.org>; Sat, 28 Nov 2026 11:02:26 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org AF1B0606A321
-Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=mail.sdu.edu.cn
-Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=mail.sdu.edu.cn
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id BF0ED606A31C;
+	Sat, 28 Nov 2026 14:04:03 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org BF0ED606A31C
+Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=126.com
+Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=126.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=mail.sdu.edu.cn header.i=@mail.sdu.edu.cn header.a=rsa-sha256 header.s=default header.b=e/YDwsZ7
-Received: from user.localdomain (unknown [223.80.110.101])
-	by smtp.qiye.163.com (Hmail) with ESMTP id 5656652a8;
-	Sat, 28 Nov 2026 19:02:23 +0800 (GMT+08:00)
-From: Tian Xuechen <202300460064@mail.sdu.edu.cn>
-To: ulfh@kernel.org,
-	wens@kernel.org,
-	jernej.skrabec@gmail.com,
-	samuel@sholland.org
-Cc: linux-pm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-sunxi@lists.linux.dev,
-	liguangshuo@mail.sdu.edu.cn
-Subject: [PATCH] pmdomain: sunxi: Unregister D1 PPU domains on driver removal
-Date: Sat, 28 Nov 2026 19:02:22 +0800
-Message-Id: <20261128110222.875356-1-202300460064@mail.sdu.edu.cn>
-X-Mailer: git-send-email 2.34.1
+	dkim=pass (1024-bit key) header.d=126.com header.i=@126.com header.a=rsa-sha256 header.s=s110527 header.b=EhA+9Lx7
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=126.com;
+	s=s110527; h=From:To:Subject:Date:Message-ID:MIME-Version; bh=g+
+	aU33rCaXGGIUCW4L8T8mUG9pYVHyVForkS2T2eczE=; b=EhA+9Lx7sC4GtFdYTd
+	PUZbjeAeKCwja42CR828/Qekyp6KPpd4nwz2mapKPu3HAevLuVJyYWSE/oKFl1u0
+	q3maeGyLKrULXomIaFIUh/6MbCfEonmVRSHme+9V0kjXv2naEVSNQYgb6hYXQflG
+	AO/+ull8LtDFjJamQoKf+Eu60=
+Received: from localhost.localdomain (unknown [])
+	by gzsmtp2 (Coremail) with SMTP id PSkvCgC3hecn3wprDmJYDg--.24441S2;
+	Sat, 28 Nov 2026 22:03:20 +0800 (CST)
+From: Bilal Hashim <AeeSec@126.com>
+To: Viresh Kumar <viresh.kumar@linaro.org>,
+	"Rafael J . Wysocki" <rafael@kernel.org>
+Cc: Miguel Ojeda <ojeda@kernel.org>,
+	Alice Ryhl <aliceryhl@google.com>,
+	linux-pm@vger.kernel.org,
+	rust-for-linux@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Bilal Hashim <AeeSec@126.com>
+Subject: [PATCH v2] rust: cpufreq: mark Policy::data() as unsafe
+Date: Sat, 28 Nov 2026 22:02:53 +0800
+Message-ID: <20261128140253.1927-1-AeeSec@126.com>
+X-Mailer: git-send-email 2.47.0.windows.2
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
 List-Post: <mailto:linux-pm@vger.kernel.org>
@@ -59,80 +65,66 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-HM-Tid: 0aa221d20bc903a2kunme53ad92e3cbc59
-X-HM-MType: 10
-X-HM-Spam-Status: e1kfGhgUHx5ZQUtXWQgPGg8OCBgUHx5ZQUlOS1dZFg8aDwILHllBWSg2Ly
-	tZV1koWUFITzdXWRgWCB1ZQUpXWS1ZQUlXWQ8JGhUIEh9ZQVkZQ0xOVkwaSU1PTElOHkxOGVYeHw
-	5VEwETFhoSFyQUDg9ZV1kYEgtZQVlJSUhVQ0tVSkpLVUpLSllXWRYaDxIVHRRZQVlLVUtVS1VLWQ
-	Y+
-DKIM-Signature: a=rsa-sha256;
-	b=e/YDwsZ7WDymsmTSH2Qcs6s1zuicC05BI3FDN8QvlURXCtUACudjai744dRShqDhOu+FBBkkMfzVo0zpDL+qxih9QaIOtGwBOrSpDkojYdu0n+YnKYliTdgpxRtQSmM206N6moYsFwK5SgVua3C8OL3NJ14btuOLwhwazxmbCYo=; s=default; c=relaxed/relaxed; d=mail.sdu.edu.cn; v=1;
-	bh=d4dDXttwlGHeRb7uEb4nDp+OKjr4bIrP/DgYATn9WDE=;
-	h=date:mime-version:subject:message-id:from;
+X-CM-TRANSID:PSkvCgC3hecn3wprDmJYDg--.24441S2
+X-Coremail-Antispam: 1Uf129KBjvJXoW7try8Gw1DAFWfXF4fXw15CFg_yoW8KrykpF
+	WUWrWqyry0qFsrtwnrCryj93WYkws7JrWUKrWkG34Fvwn8AF109w1DKFyrXF9Yvryvgr4a
+	yrs8Za1aqFs8trJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0z_EfoUUUUUU=
+X-CM-SenderInfo: 5dhh2vbf6rjloofrz/xtbBrAlf+WsK3ylDjAAA3b
 
-From: Tian Xuechen <202300460064@mail.sdu.edu.cn>
+Policy::data<T: ForeignOwnable>(&mut self) is currently a safe public
+method that casts the untyped C pointer `policy->driver_data` via
+`T::borrow(...)` for any caller-chosen type `T`.
 
-The D1 PPU driver leaves its provider and power domains registered on
-module unload. Delete the provider and remove each domain that was
-initialized. Also unwind these domains if provider registration fails.
+Because `Policy` is not parameterized by `Driver::PData` and performs no
+runtime type verification, any safe Rust caller with `&mut Policy` can
+invoke `policy.data::<WrongType>()` and reinterpret `driver_data` as an
+arbitrary `ForeignOwnable` type, causing type confusion and undefined
+behavior in safe Rust.
 
-This issue was found by our static analysis tool under development.
+Mark Policy::data() as `unsafe`, document the safety precondition that
+`T` must match the exact `ForeignOwnable` type previously stored in the
+policy's `driver_data`, and update the in-tree caller in
+drivers/cpufreq/rcpufreq_dt.rs.
 
-Fixes: 0e30ca5ab0a8 ("soc: sunxi: Add Allwinner D1 PPU driver")
-Signed-off-by: Tian Xuechen <202300460064@mail.sdu.edu.cn>
+Fixes: 6ebdd7c93177 ("rust: cpufreq: Extend abstractions for policy and driver ops")
+Signed-off-by: Bilal Hashim <AeeSec@126.com>
 ---
- drivers/pmdomain/sunxi/sun20i-ppu.c | 20 ++++++++++++++++++--
- 1 file changed, 18 insertions(+), 2 deletions(-)
-
-diff --git a/drivers/pmdomain/sunxi/sun20i-ppu.c b/drivers/pmdomain/sunxi/sun20i-ppu.c
-index 6af1dcad4a76..7a539e09f614 100644
---- a/drivers/pmdomain/sunxi/sun20i-ppu.c
-+++ b/drivers/pmdomain/sunxi/sun20i-ppu.c
-@@ -99,6 +99,19 @@ static int sun20i_ppu_pd_power_off(struct generic_pm_domain *genpd)
- 	return sun20i_ppu_pd_set_power(pd, false);
- }
+Changes in v2:
+- Update caller in drivers/cpufreq/rcpufreq_dt.rs to wrap
+  policy.data::<Self::PData>() in an unsafe block with a SAFETY comment.
+- Add Fixes: tag.
+---
+--- a/drivers/cpufreq/rcpufreq_dt.rs
++++ b/drivers/cpufreq/rcpufreq_dt.rs
+@@ -178,7 +178,9 @@ impl cpufreq::Driver for CPUFreqDTDriver {
+     }
  
-+static void sun20i_ppu_remove_domains(struct genpd_onecell_data *ppu)
-+{
-+	for (unsigned int i = 0; i < ppu->num_domains; i++)
-+		if (ppu->domains[i])
-+			pm_genpd_remove(ppu->domains[i]);
-+}
-+
-+static void sun20i_ppu_remove(struct platform_device *pdev)
-+{
-+	of_genpd_del_provider(pdev->dev.of_node);
-+	sun20i_ppu_remove_domains(platform_get_drvdata(pdev));
-+}
-+
- static int sun20i_ppu_probe(struct platform_device *pdev)
- {
- 	const struct sun20i_ppu_desc *desc;
-@@ -164,10 +177,12 @@ static int sun20i_ppu_probe(struct platform_device *pdev)
- 	}
+     fn target_index(policy: &mut cpufreq::Policy, index: cpufreq::TableIndex) -> Result {
+-        let Some(data) = policy.data::<Self::PData>() else {
++        // SAFETY: `policy`'s private data was initialized with `Self::PData` in `Self::init()`.
++        let Some(data) = (unsafe { policy.data::<Self::PData>() }) else {
+             return Err(ENOENT);
+         };
  
- 	ret = of_genpd_add_provider_onecell(dev->of_node, ppu);
--	if (ret)
-+	if (ret) {
- 		dev_warn(dev, "Failed to add provider: %d\n", ret);
-+		sun20i_ppu_remove_domains(ppu);
-+	}
- 
--	return 0;
-+	return ret;
- }
- 
- static const char *const sun20i_d1_ppu_pd_names[] = {
-@@ -224,6 +239,7 @@ MODULE_DEVICE_TABLE(of, sun20i_ppu_of_match);
- 
- static struct platform_driver sun20i_ppu_driver = {
- 	.probe	= sun20i_ppu_probe,
-+	.remove	= sun20i_ppu_remove,
- 	.driver	= {
- 		.name			= "sun20i-ppu",
- 		.of_match_table		= sun20i_ppu_of_match,
-
-base-commit: 4dce97c6c265544342e716e62fd24bbb232590c5
--- 
-2.43.0
+--- a/rust/kernel/cpufreq.rs
++++ b/rust/kernel/cpufreq.rs
+@@ -648,9 +648,15 @@ impl Policy {
+     /// Returns the [`Policy`]'s private data.
+-    pub fn data<T: ForeignOwnable>(&mut self) -> Option<<T>::Borrowed<'_>> {
++    ///
++    /// # Safety
++    ///
++    /// The caller must ensure that `T` is the exact [`ForeignOwnable`] type previously stored in
++    /// this [`Policy`]'s `driver_data`.
++    pub unsafe fn data<T: ForeignOwnable>(&mut self) -> Option<<T>::Borrowed<'_>> {
+         if self.as_ref().driver_data.is_null() {
+             None
+         } else {
+-            // SAFETY: The data is earlier set from [`set_data`].
++            // SAFETY: The caller guarantees that `T` matches the type previously stored via
++            // [`set_data`].
+             Some(unsafe { T::borrow(self.as_ref().driver_data.cast()) })
+         }
+     }
 
