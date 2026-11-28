@@ -1,57 +1,58 @@
-Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=220.197.31.5
+Authentication-Results: smtp.subspace.kernel.org; arc=none smtp.remote-ip=220.197.31.4
 ARC-Seal: i=1; d=subspace.kernel.org; s=arc20261015; a=rsa-sha256; cv=none;
-	t=1795878279;
-	b=E4d9kMi93Ee3NYr/VtGs4IIe8z6EZRJJK5/DGgT5HKXHYrsG3SsAO09du0bVjgRLKOyV
-	 rLaommnvve28e4y3MgULox9CVcX0ufb4cB4u4xhcxgF5X2fysxoD9AOl3bEdR1Y167+z6
-	 oEz8LL6zQ18FG5mwqSxYsvJzO10+SHBTy+jalJrgGK+HcntXWV/FbgB6jo2Q29dJKoGlC
-	 cX/C2Y2R5HiHHkkTqJQ+u76V/0PwsHioE2LVFSo9q75bDGkhJN7QNfEFphWgKsO1/p5ec
-	 b84pUC2RV8wvf61p4lLeGI2KTPMxkAlDQqOqCiHizG5dWmE8n4LCa3od3PMHMgU1UOQ==
+	t=1795879784;
+	b=ZC/u8wMGrbQawbhAC8gt4Y/JWbsBkEhxAvOQLdkBtEJ5f7xcwno7o/nlBv8qJZe1zQbP
+	 dhnipm9E2FdumyWd4FZ1BZczrtGaPj/bo6aCGYh5zjUIMii9tORoheh2QkeScl9ghDBz5
+	 Qs6wxjS3ka105pX3997h8Y4U3yaCsTM+fUr/dIMQZ3iBB/rvOkuGsNYC366NwAlLrPAKh
+	 +eYET/KwEaqM7noi0+7SZUaD+eSobejAk8+75TIRNwry3bkV66+DG+pe4WftH9znqrQku
+	 Bpyc7EY6A1vc89CU9xjiECtGTcL3qUb7EF+mGgZK6DWjmtfx8JxxLLLQzP3TXb8N//Q==
 ARC-Message-Signature: i=1; d=subspace.kernel.org; s=arc20261015;
-	a=rsa-sha256; c=relaxed/relaxed; t=1795878279;
+	a=rsa-sha256; c=relaxed/relaxed; t=1795879784;
 	h=DMARC-Filter:DKIM-Signature:Received:From:To:Cc:Subject:Date:
 	 Message-Id:X-Mailer:MIME-Version:Content-Transfer-Encoding:
 	 X-CM-TRANSID:X-Coremail-Antispam:X-Originating-IP:X-CM-SenderInfo;
-	bh=aZ1zL0ye815Rnv3lJ1KDxo5Ck4FCKhuP/puan0BTFrI=;
-	b=VZ0tZq7kwkUUwjh1aY+L4sEnqwx/rjRpMoHu1Gouk5WjWK6Ki1jWjxCHgXmPTwLHATG6
-	 xLjd7MInEkKDwGhf0jaLAstN/3hLm0bGVd3v5tkyawMAW4Tpf2xhGeJF3+hZtA1JSqb28
-	 fStlhXugaBC9pdp+1h4Pyc7FBvb5+F6AmfM4NaZYyIr6+CcNd3dNRSZSu6hwwA3BAvlW8
-	 bBHiPDqx7RfD2IXj7oWxQHFpoga/hW5CL8PXUyDu9ZwXrusgN40PAEp2SZ0RaTvXbkXpz
-	 aRUcvPgD/0uR8eXFh9rvVRf4oX/rdSQqbXM7BVD071KK9LUTaDErXotu+ELfSadiTLA==
+	bh=69kWFlc64oDWx4+1oU+Wiazj3ZPmIj+HYXpbh3IXN84=;
+	b=g2jjKEyc3x8J43zKMJ2zecRH2Z6yLg6erI5ISayTZCzHP25btDlKVd1r/ZCOVlVf3YYe
+	 iZupWYVbjlj0A537rDxAEDpbcAuY0QygWq7Xe54Zd7a5sTgf45ZD9oLHMPgJuub0oRkJU
+	 E8sz0jeN+lWHReYCJzIXGrL4qrw1QpYqMkFVrqzsdGfbsfCyikAeskPq4vRizNeNDvLlK
+	 sqW41XQiLRpuaZBcix0pcSunzTd1ObpayX17ycMmcbUStyG2JWpZalwxZqyPwsmWw9KdE
+	 +iOKFWluNA3SvlFrm5rBjDJA7Y7+SjSu9HGrycDMQ/cvnMKXegVrTNO7894+joOCEGg==
 ARC-Authentication-Results: i=1; smtp.subspace.kernel.org; 
 	dmarc=pass header.from=163.com;
 	spf=pass smtp.mailfrom=163.com;
-	dkim=pass header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=XC9UoD0V;
-	arc=none smtp.remote-ip=220.197.31.5
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.5])
+	dkim=pass header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b="nfN/voo3";
+	arc=none smtp.remote-ip=220.197.31.4
+Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature ECDSA (prime256v1) server-digest SHA256)
 	(No client certificate requested)
-	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 0262F606A31C
-	for <linux-pm@vger.kernel.org>; Sat, 28 Nov 2026 15:04:36 +0000 (UTC)
-DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 0262F606A31C
+	by smtp.subspace.kernel.org (Postfix) with ESMTPS id 518C8606A324
+	for <linux-pm@vger.kernel.org>; Sat, 28 Nov 2026 15:29:40 +0000 (UTC)
+DMARC-Filter: OpenDMARC Filter v1.4.2 smtp.subspace.kernel.org 518C8606A324
 Authentication-Results: smtp.subspace.kernel.org; dmarc=pass (p=none dis=none) header.from=163.com
 Authentication-Results: smtp.subspace.kernel.org; spf=pass smtp.mailfrom=163.com
 Authentication-Results: smtp.subspace.kernel.org;
-	dkim=pass (1024-bit key, unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=XC9UoD0V
+	dkim=pass (1024-bit key, unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=nfN/voo3
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=aZ
-	1zL0ye815Rnv3lJ1KDxo5Ck4FCKhuP/puan0BTFrI=; b=XC9UoD0VIWnoKyCCL0
-	576/CJQeYYf2ErpyLqajpphyLP9w3dqudoytpk9oGDvY8Qxn0htEEhvcn/siye/w
-	2V5n+YyG48+XiRnC7VGi8QSnmIAYF8EQN34fh0si3ZbS9qhT1hhoTHnSPCO0TI0I
-	5Q3l8UX7K/jTVezuRnRKzKwdA=
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=69
+	kWFlc64oDWx4+1oU+Wiazj3ZPmIj+HYXpbh3IXN84=; b=nfN/voo3wbsZnEKawM
+	roQD89ODoMAtgja8yKj9E0m5GQVpMCoqYo7MV6vHQ+l3H71Ng7QjevHitVn/wru4
+	+UT1Yc+aTepM/0HNyezWYDq1SCyjDJl4cqlkwHgNHY2IerLKqddaI8HmGAx6RtWX
+	R8bwEyDzpdJVGZyRqslZ10+CU=
 Received: from localhost.localdomain (unknown [])
-	by gzga-smtp-mtada-g0-2 (Coremail) with SMTP id _____wD3_3lg7QprfTXHKw--.32244S2;
-	Sat, 28 Nov 2026 23:04:02 +0800 (CST)
+	by gzga-smtp-mtada-g0-0 (Coremail) with SMTP id _____wD3Txgy8wprBF+ALg--.29300S2;
+	Sat, 28 Nov 2026 23:28:52 +0800 (CST)
 From: Haoxiang Li <haoxiang_li2024@163.com>
 To: rafael@kernel.org,
 	viresh.kumar@linaro.org,
-	rafalbilski@interia.pl,
+	linux@dominikbrodowski.net,
+	malattia@linux.it,
 	davej@redhat.com
 Cc: linux-pm@vger.kernel.org,
 	Haoxiang Li <haoxiang_li2024@163.com>
-Subject: [PATCH] cpufreq: e_powersaver: Release ACPI data when BIOS limit lookup fails
-Date: Sat, 28 Nov 2026 23:03:58 +0800
-Message-Id: <20261128150358.1323440-1-haoxiang_li2024@163.com>
+Subject: [PATCH] cpufreq: speedstep: Drop the chipset device reference on failure
+Date: Sat, 28 Nov 2026 23:28:49 +0800
+Message-Id: <20261128152849.1333461-1-haoxiang_li2024@163.com>
 X-Mailer: git-send-email 2.25.1
 X-Mailing-List: linux-pm@vger.kernel.org
 List-Id: <linux-pm.vger.kernel.org>
@@ -63,44 +64,39 @@ List-Owner: <mailto:linux-pm+owner@vger.kernel.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wD3_3lg7QprfTXHKw--.32244S2
-X-Coremail-Antispam: 1Uf129KBjvJXoWrtFWkAF47uFykWFWDGF1ftFb_yoW8JryxpF
-	ZIkrWjkrW8GFWDGasFy3Wfua4rXa1qkayxGrW0kwn8Zrs8WFn8Wa43tr1UZF97ur4xua12
-	yFn8Ja4qyFW7Cw7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pRBHqrUUUUU=
-X-CM-SenderInfo: xkdr5xpdqjszblsqjki6rwjhhfrp/xtbC7QLwX2sK7WIyTQAA3R
+X-CM-TRANSID:_____wD3Txgy8wprBF+ALg--.29300S2
+X-Coremail-Antispam: 1Uf129KBjvdXoW7GFWruF1rtr1UJF18KrW5trb_yoWftFcE9F
+	1jgr17tr4qga9Igr1Uur1avryrAFy3Wr1fZF40ya43t34rZF9Iqrn7Zr15Z3s5X3y2yr9r
+	Gw1UtF4SyF1akjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUvcSsGvfC2KfnxnUUI43ZEXa7sRGjgcUUUUUU==
+X-CM-SenderInfo: xkdr5xpdqjszblsqjki6rwjhhfrp/xtbC7hRn1WsK8zToxAAA3C
 
-The resources allocated by eps_cpu_init() are freed only when
-acpi_processor_get_bios_limit() succeeds. Also release it on
-it fails.
+speedstep_detect_chipset() leaves a reference in speedstep_chipset_dev.
+Drop it if speedstep_find_register() fails as already done when
+speedstep_activate() fails.
 
-Fixes: 27e954c24167 ("[CPUFREQ] e_powersaver: Check BIOS limit for CPU frequency")
+Fixes: 9a7d82a89a8b ("[CPUFREQ] Move PMBASE reading away and do it only once at initialization time")
 Signed-off-by: Haoxiang Li <haoxiang_li2024@163.com>
 ---
- drivers/cpufreq/e_powersaver.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
+ drivers/cpufreq/speedstep-ich.c | 4 +++-
+ 1 file changed, 3 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/cpufreq/e_powersaver.c b/drivers/cpufreq/e_powersaver.c
-index 54689ebadeb2..da2bb6d7dd15 100644
---- a/drivers/cpufreq/e_powersaver.c
-+++ b/drivers/cpufreq/e_powersaver.c
-@@ -284,11 +284,14 @@ static int eps_cpu_init(struct cpufreq_policy *policy)
- #if IS_ENABLED(CONFIG_ACPI_PROCESSOR)
- 	/* Check for ACPI processor speed limit */
- 	if (!ignore_acpi_limit && !eps_acpi_init()) {
--		if (!acpi_processor_get_bios_limit(policy->cpu, &limit)) {
-+		int ret = acpi_processor_get_bios_limit(policy->cpu, &limit);
-+
-+		eps_acpi_exit(policy);
-+
-+		if (!ret) {
- 			pr_info("ACPI limit %u.%uGHz\n",
- 				limit/1000000,
- 				(limit%1000000)/10000);
--			eps_acpi_exit(policy);
- 			/* Check if max_multiplier is in BIOS limits */
- 			if (limit && max_multiplier * fsb > limit) {
- 				pr_info("Aborting\n");
+diff --git a/drivers/cpufreq/speedstep-ich.c b/drivers/cpufreq/speedstep-ich.c
+index 262cfbde9ca7..14a734d304ee 100644
+--- a/drivers/cpufreq/speedstep-ich.c
++++ b/drivers/cpufreq/speedstep-ich.c
+@@ -357,8 +357,10 @@ static int __init speedstep_init(void)
+ 		return -EINVAL;
+ 	}
+ 
+-	if (speedstep_find_register())
++	if (speedstep_find_register()) {
++		pci_dev_put(speedstep_chipset_dev);
+ 		return -ENODEV;
++	}
+ 
+ 	return cpufreq_register_driver(&speedstep_driver);
+ }
 -- 
 2.25.1
 
